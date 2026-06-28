@@ -455,7 +455,7 @@
       pointer-events: none;
       display: none;
       z-index: 20;
-      transform: translate(-50%, calc(-100% - 12px));
+      transform: none;
     }
 
     /* Magnifier — touch (fixed at top of stage) */
@@ -760,9 +760,10 @@
             <div id="rmAgentAddress" class="rm-agent-meta">—</div>
             <div id="rmAgentPhone"   class="rm-agent-meta">—</div>
             <div id="rmAgentLinks"   class="rm-agent-links"></div>
-            <button id="rmCreateResources" class="rm-btn rm-btn-create" type="button" style="display:none">
+            <button id="rmCreateResources" class="rm-btn rm-btn-primary" type="button" style="display:none">
               ＋ Crear carpeta Drive y tarjeta Trello
             </button>
+            <p id="rmCreateResourcesHelp" class="rm-help" style="display:none">Crea la carpeta en Drive y la tarjeta en Trello para este agente.</p>
           </div>
         </section>
 
@@ -894,6 +895,9 @@
               <option value="vinilo_microperforado">Vinilo Microperforado</option>
               <option value="forex">Forex</option>
               <option value="mostrador">Mostrador</option>
+              <option value="lona_exterior">Lona Exterior</option>
+              <option value="led_caja">Caja de Luz LED</option>
+              <option value="otro">Otro elemento</option>
             </select>
             <div class="rm-row">
               <button id="rmAddAncho" class="rm-btn rm-btn-primary" type="button">Añadir como ancho</button>
@@ -964,11 +968,12 @@
 
     // Referencias predefinidas (cm: null = requiere input manual)
     const BUILTIN_REFS = [
-      { id: "vinilo_circular_ria",     label: "Vinilo circular RIA",          cm: 50  },
-      { id: "banderola_circular_ria",  label: "Banderola circular RIA",        cm: null },
-      { id: "linea_ria_basic",         label: "Línea RIA — basic dress",       cm: 20  },
-      { id: "adoquines_calle",         label: "Adoquines calle",               cm: null },
-      { id: "custom",                  label: "Personalizado…",                cm: null }
+      { id: "vinilo_circular_ria",    label: "Vinilo circular RIA",       cm: 50   },
+      { id: "vinilo_rectangular_ria", label: "Vinilo rectangular RIA",    cm: null },
+      { id: "puerta_estandar",        label: "Puerta estándar (ancho)",   cm: 90   },
+      { id: "puerta_altura",          label: "Puerta estándar (alto)",    cm: 210  },
+      { id: "baldosa_estandar",       label: "Baldosa estándar",          cm: 20   },
+      { id: "custom",                 label: "Personalizado…",            cm: null }
     ];
 
     let customRefs = [];
@@ -988,7 +993,10 @@
       vinilo_cristal:        { icon: "V", label: "Vinilo Cristal" },
       vinilo_microperforado: { icon: "M", label: "Vinilo Microperforado" },
       forex:                 { icon: "F", label: "Forex" },
-      mostrador:             { icon: "T", label: "Mostrador" }
+      mostrador:             { icon: "T", label: "Mostrador" },
+      lona_exterior:         { icon: "L", label: "Lona Exterior" },
+      led_caja:              { icon: "E", label: "Caja de Luz LED" },
+      otro:                  { icon: "O", label: "Otro elemento" }
     };
 
     const state = {
@@ -1076,8 +1084,26 @@
       const ctx = mag.getContext("2d");
       const R   = MAG_SIZE / 2;
       const Rpx = R * dpr;
-      mag.style.left    = svgX + "px";
-      mag.style.top     = svgY + "px";
+      // Quadrant-aware positioning: place lupa in opposite quadrant from cursor
+      const stage    = els.stageInner || mag.parentElement;
+      const sw       = stage.clientWidth;
+      const sh       = stage.clientHeight;
+      const offset   = 20; // px gap between cursor and lupa edge
+      let lx, ly;
+      if (svgX > sw / 2) {
+        lx = svgX - MAG_SIZE - offset;
+      } else {
+        lx = svgX + offset;
+      }
+      if (svgY > sh / 2) {
+        ly = svgY - MAG_SIZE - offset;
+      } else {
+        ly = svgY + offset;
+      }
+      lx = Math.max(0, Math.min(sw - MAG_SIZE, lx));
+      ly = Math.max(0, Math.min(sh - MAG_SIZE, ly));
+      mag.style.left    = lx + "px";
+      mag.style.top     = ly + "px";
       mag.style.display = "block";
       ctx.clearRect(0, 0, mag.width, mag.height);
       ctx.save();
@@ -1451,11 +1477,13 @@
       // Mostrar botón de creación solo si falta Drive o Trello
       const needsCreate = !c.driveUrl || !c.trelloUrl;
       els.createResources.style.display = needsCreate ? "" : "none";
-      els.createResources.textContent   = "+ Crear " +
+      els.createResources.innerHTML = "＋ Crear " +
         (!c.driveUrl && !c.trelloUrl ? "carpeta Drive y tarjeta Trello"
           : !c.driveUrl ? "carpeta Drive"
           : "tarjeta Trello");
       els.createResources.disabled = false;
+      const helpEl = document.getElementById("rmCreateResourcesHelp");
+      if (helpEl) helpEl.style.display = needsCreate ? "" : "none";
     }
 
     /* ─── CREAR RECURSOS EN N8N ─── */
@@ -1990,14 +2018,21 @@
       els.topScale.innerHTML  = '<span class="rm-chip-dot"></span>' +
         esc(state.pxPerCm ? state.pxPerCm.toFixed(2) + " px/cm" : "Sin escala");
 
+      if (state.productos.length > 0) {
+        const n = state.productos.length;
+        els.topResult.innerHTML = '<span class="rm-chip-dot"></span>' + esc(n + " producto" + (n === 1 ? "" : "s"));
+      } else if (state.measurement) {
+        els.topResult.innerHTML = '<span class="rm-chip-dot"></span>' + esc(Math.round(state.measurement.cm) + " cm");
+      } else {
+        els.topResult.innerHTML = '<span class="rm-chip-dot"></span>Sin medida';
+      }
+
       if (state.measurement) {
         els.result.textContent    = fmtCm(state.measurement.cm);
         els.resultSub.textContent = Math.round(state.measurement.cm) + " cm (+/- " + state.errorPct + "%) estimación preliminar";
-        els.topResult.innerHTML   = '<span class="rm-chip-dot"></span>' + esc(Math.round(state.measurement.cm) + " cm");
       } else {
         els.result.textContent    = "—";
         els.resultSub.textContent = state.pxPerCm ? "Escala lista. Marca el elemento." : "Medida pendiente";
-        els.topResult.innerHTML   = '<span class="rm-chip-dot"></span>Sin medida';
       }
       updateAddMeasureUI();
     }
@@ -2061,11 +2096,24 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error("HTTP " + res.status);
+        if (!res.ok) throw new Error(res.status);
         setSaveState("saved", "Guardado · Sheets + Trello actualizados");
         showToast("Guardado para " + (state.selectedClient.agent || state.selectedClient.name));
+        const prevText = els.save.textContent;
+        const prevCls  = els.save.className;
+        els.save.textContent = "✓ Guardado";
+        els.save.style.background = "#15803d";
+        els.save.style.color = "#fff";
+        els.save.style.borderColor = "#15803d";
+        setTimeout(() => {
+          els.save.textContent = prevText;
+          els.save.style.background = "";
+          els.save.style.color = "";
+          els.save.style.borderColor = "";
+        }, 3000);
       } catch (err) {
-        setSaveState("error", "Error: " + err.message);
+        const code = err.message.match(/^\d+$/) ? err.message : "";
+        setSaveState("error", code ? "Error " + code + " — reintenta" : "Error — reintenta");
         showToast("No se pudo guardar. Revisa n8n.");
       } finally {
         els.save.disabled = !state.selectedClient || !state.productos.length;
