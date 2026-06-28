@@ -1,0 +1,364 @@
+{
+  "name": "RIA W2 — Guardar Mediciones (Webhook → Sheets + Trello)",
+  "nodes": [
+    {
+      "id": "webhook-mediciones",
+      "name": "Webhook — POST /ria/measurements",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ria/measurements",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "ria-measurements"
+    },
+    {
+      "id": "validate-payload",
+      "name": "Validar payload",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "a",
+              "leftValue": "={{ $json.body.agent_id || $json.body.agentId }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            },
+            {
+              "id": "b",
+              "leftValue": "={{ $json.body.productos }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "normalize-measurement",
+      "name": "Normalizar medición",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 200],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "1",  "name": "agent_id",     "value": "={{ $json.body.agent_id || $json.body.agentId }}", "type": "string" },
+            { "id": "2",  "name": "agent_name",   "value": "={{ $json.body.agent_name || $json.body.agentName || '' }}", "type": "string" },
+            { "id": "3",  "name": "trello_card_id","value": "={{ $json.body.trello_card_id || $json.body.trelloCardId || '' }}", "type": "string" },
+            { "id": "4",  "name": "scale_px_cm",  "value": "={{ $json.body.scale_px_cm || $json.body.pxPerCm || 0 }}", "type": "number" },
+            { "id": "5",  "name": "ref_label",    "value": "={{ $json.body.ref_label || $json.body.refLabel || '' }}", "type": "string" },
+            { "id": "6",  "name": "productos",    "value": "={{ JSON.stringify($json.body.productos || []) }}", "type": "string" },
+            { "id": "7",  "name": "productos_arr","value": "={{ $json.body.productos || [] }}", "type": "array" },
+            { "id": "8",  "name": "imagen_base64","value": "={{ $json.body.imagen_base64 || '' }}", "type": "string" },
+            { "id": "9",  "name": "timestamp",    "value": "={{ $json.body.timestamp || new Date().toISOString() }}", "type": "string" },
+            { "id": "10", "name": "sheet_name",   "value": "={{ $json.body.sheet_name || 'AGENTES RIA 2026' }}", "type": "string" },
+            {
+              "id": "11",
+              "name": "productos_resumen",
+              "value": "={{ ($json.body.productos || []).map(p => p.label + ': ' + (p.altoCm ? p.anchoCm.toFixed(1) + ' x ' + p.altoCm.toFixed(1) : p.anchoCm.toFixed(1) + ' cm ancho')).join(' | ') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "find-agent-in-sheets",
+      "name": "Sheets — Buscar fila del agente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [900, 200],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.sheet_name }}",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID Agente",
+              "lookupValue": "={{ $json.agent_id }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets — Huexs"
+        }
+      }
+    },
+    {
+      "id": "update-sheets-measurements",
+      "name": "Sheets — Guardar mediciones",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1120, 200],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Normalizar medición').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Agente": "={{ $('Normalizar medición').item.json.agent_id }}",
+            "Mediciones": "={{ $('Normalizar medición').item.json.productos_resumen }}",
+            "Mediciones JSON": "={{ $('Normalizar medición').item.json.productos }}",
+            "Escala px/cm": "={{ $('Normalizar medición').item.json.scale_px_cm }}",
+            "Referencia usada": "={{ $('Normalizar medición').item.json.ref_label }}",
+            "Fecha medición": "={{ $('Normalizar medición').item.json.timestamp }}"
+          },
+          "matchingColumns": ["ID Agente"],
+          "schema": [
+            { "id": "ID Agente",       "displayName": "ID Agente",       "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Mediciones",      "displayName": "Mediciones",      "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Mediciones JSON", "displayName": "Mediciones JSON", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Escala px/cm",   "displayName": "Escala px/cm",   "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Referencia usada","displayName": "Referencia usada","required": false,"defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Fecha medición",  "displayName": "Fecha medición",  "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets — Huexs"
+        }
+      }
+    },
+    {
+      "id": "check-has-trello",
+      "name": "¿Tiene tarjeta Trello?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 200],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "a",
+              "leftValue": "={{ $('Normalizar medición').item.json.trello_card_id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "trello-add-comment",
+      "name": "Trello — Comentar medición",
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [1560, 120],
+      "parameters": {
+        "resource": "cardComment",
+        "operation": "create",
+        "cardId": "={{ $('Normalizar medición').item.json.trello_card_id }}",
+        "text": "=📐 **Medición registrada** — {{ $('Normalizar medición').item.json.timestamp.slice(0,10) }}\n\n{{ $('Normalizar medición').item.json.productos_resumen }}\n\n_Escala: {{ $('Normalizar medición').item.json.scale_px_cm }} px/cm · Ref: {{ $('Normalizar medición').item.json.ref_label }}_"
+      },
+      "credentials": {
+        "trelloApi": {
+          "id": "REPLACE_TRELLO_CREDENTIAL_ID",
+          "name": "Trello — Huexs"
+        }
+      }
+    },
+    {
+      "id": "trello-add-label-medidas",
+      "name": "Trello — Label Tenemos las medides",
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [1780, 120],
+      "parameters": {
+        "resource": "card",
+        "operation": "addLabel",
+        "cardId": "={{ $('Normalizar medición').item.json.trello_card_id }}",
+        "id": "orange_dark"
+      },
+      "credentials": {
+        "trelloApi": {
+          "id": "REPLACE_TRELLO_CREDENTIAL_ID",
+          "name": "Trello — Huexs"
+        }
+      }
+    },
+    {
+      "id": "upload-image-to-drive",
+      "name": "Drive — Subir imagen anotada",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "a",
+              "leftValue": "={{ $('Normalizar medición').item.json.imagen_base64 }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "decode-image",
+      "name": "Decodificar imagen base64",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1780, 260],
+      "parameters": {
+        "operation": "binaryData",
+        "sourceProperty": "imagen_base64",
+        "options": {
+          "fileName": "={{ 'medicion_' + $('Normalizar medición').item.json.agent_id + '_' + $('Normalizar medición').item.json.timestamp.slice(0,10) + '.jpg' }}",
+          "mimeType": "image/jpeg",
+          "encoding": "base64"
+        }
+      }
+    },
+    {
+      "id": "upload-to-drive-fotos",
+      "name": "Drive — Guardar en carpeta Fotografías",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [2000, 260],
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ 'medicion_' + $('Normalizar medición').item.json.agent_id + '_' + $('Normalizar medición').item.json.timestamp.slice(0,10) + '.jpg' }}",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_DYNAMIC_FOTOS_FOLDER_ID",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "respond-ok",
+      "name": "Responder 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2220, 200],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"agent_id\": \"{{ $('Normalizar medición').item.json.agent_id }}\", \"saved\": true }",
+        "options": { "responseCode": 200 }
+      }
+    },
+    {
+      "id": "respond-error",
+      "name": "Responder 400 Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 420],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"error\", \"message\": \"Payload inválido: se requiere agent_id y productos\" }",
+        "options": { "responseCode": 400 }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — POST /ria/measurements": {
+      "main": [[{ "node": "Validar payload", "type": "main", "index": 0 }]]
+    },
+    "Validar payload": {
+      "main": [
+        [{ "node": "Normalizar medición", "type": "main", "index": 0 }],
+        [{ "node": "Responder 400 Error", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar medición": {
+      "main": [[{ "node": "Sheets — Buscar fila del agente", "type": "main", "index": 0 }]]
+    },
+    "Sheets — Buscar fila del agente": {
+      "main": [[{ "node": "Sheets — Guardar mediciones", "type": "main", "index": 0 }]]
+    },
+    "Sheets — Guardar mediciones": {
+      "main": [[
+        { "node": "¿Tiene tarjeta Trello?", "type": "main", "index": 0 },
+        { "node": "Drive — Subir imagen anotada", "type": "main", "index": 0 }
+      ]]
+    },
+    "¿Tiene tarjeta Trello?": {
+      "main": [
+        [{ "node": "Trello — Comentar medición", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 OK", "type": "main", "index": 0 }]
+      ]
+    },
+    "Trello — Comentar medición": {
+      "main": [[{ "node": "Trello — Label Tenemos las medides", "type": "main", "index": 0 }]]
+    },
+    "Trello — Label Tenemos las medides": {
+      "main": [[{ "node": "Responder 200 OK", "type": "main", "index": 0 }]]
+    },
+    "Drive — Subir imagen anotada": {
+      "main": [
+        [{ "node": "Decodificar imagen base64", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Decodificar imagen base64": {
+      "main": [[{ "node": "Drive — Guardar en carpeta Fotografías", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": { "templateCredsSetupCompleted": false },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "tags": [{ "name": "RIA", "createdAt": "2026-06-28" }]
+}

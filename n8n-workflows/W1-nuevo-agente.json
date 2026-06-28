@@ -1,0 +1,559 @@
+{
+  "name": "RIA W1 — Nuevo Agente (Sheets → Drive + Trello + Contacts)",
+  "nodes": [
+    {
+      "id": "trigger-sheets",
+      "name": "Google Sheets — Nueva fila",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 4,
+      "position": [240, 300],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "AGENTES RIA 2026",
+          "mode": "name"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets — Huexs"
+        }
+      }
+    },
+    {
+      "id": "set-agent-data",
+      "name": "Normalizar datos agente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300],
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            { "id": "1", "name": "agent_id",  "value": "={{ $json['ID Agente'] || $json['A'] || $json['id'] }}", "type": "string" },
+            { "id": "2", "name": "name",       "value": "={{ $json['Nombre'] || $json['B'] || $json['name'] }}", "type": "string" },
+            { "id": "3", "name": "address",    "value": "={{ $json['Dirección'] || $json['C'] || $json['address'] }}", "type": "string" },
+            { "id": "4", "name": "city",       "value": "={{ $json['Ciudad'] || $json['D'] || $json['city'] }}", "type": "string" },
+            { "id": "5", "name": "province",   "value": "={{ $json['Provincia'] || $json['E'] || $json['province'] }}", "type": "string" },
+            { "id": "6", "name": "postal_code","value": "={{ $json['CP'] || $json['F'] || $json['postal_code'] }}", "type": "string" },
+            { "id": "7", "name": "phone",      "value": "={{ $json['Teléfono'] || $json['G'] || $json['phone'] }}", "type": "string" },
+            { "id": "8", "name": "category",   "value": "={{ $json['Categoría'] || $json['H'] || $json['category'] }}", "type": "string" },
+            { "id": "9", "name": "row_number", "value": "={{ $json['row_number'] || $json['__row'] }}", "type": "number" },
+            { "id": "10","name": "drive_url_existing", "value": "={{ $json['Drive URL'] || $json['I'] || '' }}", "type": "string" },
+            { "id": "11","name": "trello_url_existing","value": "={{ $json['Trello URL'] || $json['J'] || '' }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "check-already-exists",
+      "name": "¿Ya tiene Drive y Trello?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "a",
+              "leftValue": "={{ $json.drive_url_existing }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "check-agent-id",
+      "name": "¿Tiene ID de agente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 420],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "a",
+              "leftValue": "={{ $json.agent_id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "create-drive-folder",
+      "name": "Drive — Crear carpeta agente",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1120, 300],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "={{ $json.agent_id }} - {{ $json.name }}",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "REPLACE_PARENT_FOLDER_ID",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-fotos",
+      "name": "Drive — 01 Fotografías",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 160],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "01 Fotografías",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-disenos",
+      "name": "Drive — 02 Diseños",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 260],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "02 Diseños",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-presupuesto",
+      "name": "Drive — 03 Presupuesto",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 360],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "03 Presupuesto",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-produccion",
+      "name": "Drive — 04 Producción",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 460],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "04 Producción",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-instalacion",
+      "name": "Drive — 05 Instalación",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 560],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "05 Instalación",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-subfolder-facturacion",
+      "name": "Drive — 06 Facturación",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 660],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "06 Facturación",
+        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "build-drive-url",
+      "name": "Construir URL Drive",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 300],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "drive_folder_id",
+              "value": "={{ $('Drive — Crear carpeta agente').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "drive_url",
+              "value": "=https://drive.google.com/drive/folders/{{ $('Drive — Crear carpeta agente').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "agent_id",
+              "value": "={{ $('Normalizar datos agente').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "name",
+              "value": "={{ $('Normalizar datos agente').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "address",
+              "value": "={{ $('Normalizar datos agente').item.json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "city",
+              "value": "={{ $('Normalizar datos agente').item.json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "province",
+              "value": "={{ $('Normalizar datos agente').item.json.province }}",
+              "type": "string"
+            },
+            {
+              "id": "8",
+              "name": "postal_code",
+              "value": "={{ $('Normalizar datos agente').item.json.postal_code }}",
+              "type": "string"
+            },
+            {
+              "id": "9",
+              "name": "phone",
+              "value": "={{ $('Normalizar datos agente').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "10",
+              "name": "category",
+              "value": "={{ $('Normalizar datos agente').item.json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "11",
+              "name": "row_number",
+              "value": "={{ $('Normalizar datos agente').item.json.row_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "create-trello-card",
+      "name": "Trello — Crear tarjeta",
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "parameters": {
+        "resource": "card",
+        "operation": "create",
+        "listId": "6577274e636e7cc8419d0d4a",
+        "name": "={{ $json.agent_id }} — {{ $json.name }}",
+        "additionalFields": {
+          "desc": "=## Agente RIA\n\n**ID:** {{ $json.agent_id }}\n**Nombre:** {{ $json.name }}\n**Dirección:** {{ $json.address }}, {{ $json.city }}, {{ $json.province }} {{ $json.postal_code }}\n**Teléfono:** {{ $json.phone }}\n**Categoría:** {{ $json.category }}\n\n---\n📊 [Google Sheets](https://docs.google.com/spreadsheets/d/1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss)\n📁 [Carpeta Drive]({{ $json.drive_url }})",
+          "idLabels": []
+        }
+      },
+      "credentials": {
+        "trelloApi": {
+          "id": "REPLACE_TRELLO_CREDENTIAL_ID",
+          "name": "Trello — Huexs"
+        }
+      }
+    },
+    {
+      "id": "create-google-contact",
+      "name": "Google Contacts — Crear contacto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://people.googleapis.com/v1/people:createContact",
+        "authentication": "oAuth2",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "names": [{ "givenName": "={{ $('Construir URL Drive').item.json.name }}", "familyName": "=RIA {{ $('Construir URL Drive').item.json.agent_id }}" }],
+          "phoneNumbers": [{ "value": "={{ $('Construir URL Drive').item.json.phone }}", "type": "work" }],
+          "addresses": [{
+            "streetAddress": "={{ $('Construir URL Drive').item.json.address }}",
+            "city": "={{ $('Construir URL Drive').item.json.city }}",
+            "region": "={{ $('Construir URL Drive').item.json.province }}",
+            "postalCode": "={{ $('Construir URL Drive').item.json.postal_code }}",
+            "country": "España",
+            "type": "work"
+          }],
+          "organizations": [{ "name": "RIA Money Transfer", "title": "={{ $('Construir URL Drive').item.json.category }}", "type": "work" }],
+          "biographies": [{ "value": "=Agente RIA {{ $('Construir URL Drive').item.json.agent_id }}\nDrive: {{ $('Construir URL Drive').item.json.drive_url }}", "contentType": "TEXT_PLAIN" }]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_GOOGLE_PEOPLE_CREDENTIAL_ID",
+          "name": "Google People API — Huexs"
+        }
+      }
+    },
+    {
+      "id": "build-trello-url",
+      "name": "Construir URL Trello",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2220, 300],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "trello_url",
+              "value": "={{ 'https://trello.com/c/' + $('Trello — Crear tarjeta').item.json.shortLink }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "drive_url",
+              "value": "={{ $('Construir URL Drive').item.json.drive_url }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "row_number",
+              "value": "={{ $('Construir URL Drive').item.json.row_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "update-sheets-urls",
+      "name": "Sheets — Escribir Drive URL y Trello URL",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2440, 300],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "AGENTES RIA 2026",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Drive URL": "={{ $json.drive_url }}",
+            "Trello URL": "={{ $json.trello_url }}"
+          },
+          "matchingColumns": ["row_number"],
+          "schema": [
+            { "id": "Drive URL", "displayName": "Drive URL", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Trello URL", "displayName": "Trello URL", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets — Huexs"
+        }
+      }
+    },
+    {
+      "id": "already-exists-noop",
+      "name": "Ya procesado — Skip",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 180],
+      "parameters": {}
+    },
+    {
+      "id": "no-id-noop",
+      "name": "Sin ID — Skip",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 540],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Google Sheets — Nueva fila": {
+      "main": [[{ "node": "Normalizar datos agente", "type": "main", "index": 0 }]]
+    },
+    "Normalizar datos agente": {
+      "main": [[{ "node": "¿Ya tiene Drive y Trello?", "type": "main", "index": 0 }]]
+    },
+    "¿Ya tiene Drive y Trello?": {
+      "main": [
+        [{ "node": "Ya procesado — Skip", "type": "main", "index": 0 }],
+        [{ "node": "¿Tiene ID de agente?", "type": "main", "index": 0 }]
+      ]
+    },
+    "¿Tiene ID de agente?": {
+      "main": [
+        [{ "node": "Drive — Crear carpeta agente", "type": "main", "index": 0 }],
+        [{ "node": "Sin ID — Skip", "type": "main", "index": 0 }]
+      ]
+    },
+    "Drive — Crear carpeta agente": {
+      "main": [[
+        { "node": "Drive — 01 Fotografías",  "type": "main", "index": 0 },
+        { "node": "Drive — 02 Diseños",      "type": "main", "index": 0 },
+        { "node": "Drive — 03 Presupuesto",  "type": "main", "index": 0 },
+        { "node": "Drive — 04 Producción",   "type": "main", "index": 0 },
+        { "node": "Drive — 05 Instalación",  "type": "main", "index": 0 },
+        { "node": "Drive — 06 Facturación",  "type": "main", "index": 0 }
+      ]]
+    },
+    "Drive — 06 Facturación": {
+      "main": [[{ "node": "Construir URL Drive", "type": "main", "index": 0 }]]
+    },
+    "Construir URL Drive": {
+      "main": [[{ "node": "Trello — Crear tarjeta", "type": "main", "index": 0 }]]
+    },
+    "Trello — Crear tarjeta": {
+      "main": [[{ "node": "Google Contacts — Crear contacto", "type": "main", "index": 0 }]]
+    },
+    "Google Contacts — Crear contacto": {
+      "main": [[{ "node": "Construir URL Trello", "type": "main", "index": 0 }]]
+    },
+    "Construir URL Trello": {
+      "main": [[{ "node": "Sheets — Escribir Drive URL y Trello URL", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "REPLACE_INSTANCE_ID"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "tags": [{ "name": "RIA", "createdAt": "2026-06-28" }]
+}
