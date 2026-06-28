@@ -63,13 +63,13 @@
     }
     #rm-app .rm-brand { display: flex; align-items: center; gap: 12px; }
     #rm-app .rm-brand-mark {
-      display: grid;
-      place-items: center;
-      width: 160px;
-      height: 36px;
-      overflow: hidden;
+      display: flex;
+      align-items: center;
+      width: 200px;
+      height: 48px;
+      flex-shrink: 0;
     }
-    #rm-app .rm-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+    #rm-app .rm-logo { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center; }
     #rm-app .rm-brand-name { margin: 0; color: var(--text); font-size: 16px; font-weight: 700; line-height: 1.2; }
     #rm-app .rm-brand-sub  { margin: 2px 0 0; color: var(--text-2); font-size: 12px; }
 
@@ -519,7 +519,8 @@
     #rm-app .rm-add-measure-box { display: none; flex-direction: column; gap: 7px; padding: 10px; border: 1.5px dashed var(--teal-border); border-radius: 8px; background: var(--teal-bg); }
     #rm-app .rm-add-measure-box.rm-visible { display: flex; }
     #rm-app .rm-add-measure-box.rm-pending-alto { border-color: #fcd34d; background: var(--amber-bg); }
-    #rm-app .rm-pending-info { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 6px; background: #fef3c7; color: #92400e; font-size: 12px; font-weight: 600; }
+    #rm-app .rm-pending-info { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 6px; background: var(--accent-bg); color: var(--text-2); font-size: 12px; font-weight: 600; }
+    #rm-app .rm-add-measure-box.rm-pending-alto .rm-pending-info { background: #fef3c7; color: #92400e; }
     #rm-app .rm-productos-list { display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow-y: auto; max-height: 200px; }
     #rm-app .rm-producto-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 13px; }
     #rm-app .rm-producto-swatch { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; }
@@ -599,7 +600,7 @@
       }
       #rm-app .rm-appbar-wrap { margin: -10px -10px 0; }
       #rm-app .rm-appbar { padding: 10px 14px; margin: 0; }
-      #rm-app .rm-brand-mark { width: 110px; height: 26px; }
+      #rm-app .rm-brand-mark { width: 140px; height: 36px; }
       #rm-app .rm-brand-name, #rm-app .rm-brand-sub { display: none; }
       #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
       #rm-app .rm-chip { max-width: 140px; min-height: 28px; }
@@ -892,6 +893,7 @@
               <option value="vinilo_cristal">Vinilo Cristal</option>
               <option value="vinilo_microperforado">Vinilo Microperforado</option>
               <option value="forex">Forex</option>
+              <option value="mostrador">Mostrador</option>
             </select>
             <div class="rm-row">
               <button id="rmAddAncho" class="rm-btn rm-btn-primary" type="button">Añadir como ancho</button>
@@ -936,9 +938,9 @@
 
   <!-- Mobile nav -->
   <nav class="rm-mobile-nav">
-    <button class="rm-mobile-tab rm-active" type="button" data-tab="agents"  data-icon="👥">Agentes</button>
-    <button class="rm-mobile-tab"           type="button" data-tab="measure" data-icon="📐">Medir</button>
-    <button class="rm-mobile-tab"           type="button" data-tab="result"  data-icon="💾">Guardar</button>
+    <button class="rm-mobile-tab rm-active" type="button" data-tab="agents"  data-icon="≡">Agentes</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="measure" data-icon="⊕">Medir</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="result"  data-icon="↑">Guardar</button>
   </nav>
 
   <div id="rmToast" class="rm-toast"></div>
@@ -981,11 +983,12 @@
     ];
 
     const TIPO_META = {
-      rotulo_standard:       { icon: "R", label: "Rótulo Standard" },
-      rotulo_panaflex:       { icon: "P", label: "Rótulo Panaflex" },
+      rotulo_standard:       { icon: "R", label: "Rotulo Standard" },
+      rotulo_panaflex:       { icon: "P", label: "Rotulo Panaflex" },
       vinilo_cristal:        { icon: "V", label: "Vinilo Cristal" },
       vinilo_microperforado: { icon: "M", label: "Vinilo Microperforado" },
-      forex:                 { icon: "F", label: "Forex" }
+      forex:                 { icon: "F", label: "Forex" },
+      mostrador:             { icon: "T", label: "Mostrador" }
     };
 
     const state = {
@@ -1429,13 +1432,13 @@
 
       const driveBtn = document.createElement("a");
       driveBtn.className   = "rm-agent-link " + (c.driveUrl ? "rm-agent-link-drive" : "rm-agent-link-nourl");
-      driveBtn.textContent = c.driveUrl ? "🗂 Drive" : "Sin carpeta";
+      driveBtn.textContent = c.driveUrl ? "Drive" : "Sin carpeta";
       if (c.driveUrl) { driveBtn.href = c.driveUrl; driveBtn.target = "_blank"; }
       els.agentLinks.appendChild(driveBtn);
 
       const trelloBtn = document.createElement("a");
       trelloBtn.className   = "rm-agent-link " + (c.trelloUrl ? "rm-agent-link-trello" : "rm-agent-link-nourl");
-      trelloBtn.textContent = c.trelloUrl ? "📋 Trello" : "Sin tarjeta";
+      trelloBtn.textContent = c.trelloUrl ? "Trello" : "Sin tarjeta";
       if (c.trelloUrl) { trelloBtn.href = c.trelloUrl; trelloBtn.target = "_blank"; }
       els.agentLinks.appendChild(trelloBtn);
 
@@ -1448,7 +1451,7 @@
       // Mostrar botón de creación solo si falta Drive o Trello
       const needsCreate = !c.driveUrl || !c.trelloUrl;
       els.createResources.style.display = needsCreate ? "" : "none";
-      els.createResources.textContent   = "＋ Crear " +
+      els.createResources.textContent   = "+ Crear " +
         (!c.driveUrl && !c.trelloUrl ? "carpeta Drive y tarjeta Trello"
           : !c.driveUrl ? "carpeta Drive"
           : "tarjeta Trello");
@@ -1460,7 +1463,7 @@
       const c = state.selectedClient;
       if (!c) return;
       els.createResources.disabled = true;
-      els.createResources.textContent = "Creando…";
+      els.createResources.textContent = "Creando ...";
       try {
         const res = await fetch(config.n8nWebhookCreate, {
           method: "POST",
@@ -1485,7 +1488,7 @@
         showToast("Recursos creados ✓ · n8n ha actualizado Sheets");
       } catch (err) {
         els.createResources.disabled = false;
-        els.createResources.textContent = "＋ Reintentar creación";
+        els.createResources.textContent = "+ Reintentar creación";
         showToast("Error al crear recursos: " + err.message);
       }
     });
@@ -1876,28 +1879,48 @@
     }
 
     function updateAddMeasureUI() {
-      const hasMeasure = state.lastMeasureCm !== null;
-      const pending    = state.pendingProduct;
-      els.addMeasureBox.classList.toggle("rm-visible", hasMeasure || !!pending);
+      const hasMeasure   = state.lastMeasureCm !== null;
+      const pending      = state.pendingProduct;
+      const hasScale     = !!state.pxPerCm;
+      const hasProducts  = state.productos.length > 0;
+
+      // Visible siempre que haya escala calibrada o haya algo en curso
+      els.addMeasureBox.classList.toggle("rm-visible", hasScale || hasMeasure || !!pending);
       els.addMeasureBox.classList.toggle("rm-pending-alto", !!pending);
 
       if (pending) {
+        // Estado: ancho capturado, esperando alto
         const meta = TIPO_META[pending.tipo] || { label: pending.tipo };
         els.pendingInfo.style.display   = "flex";
         els.pendingInfoText.textContent =
           meta.label + " — ancho " + fmtCmRaw(pending.anchoCm) + " · Mide el alto";
-        els.addAncho.textContent    = "Nuevo producto";
-        els.addAlto.disabled        = !hasMeasure;
+        els.addAncho.textContent       = "Otro producto";
+        els.addAncho.disabled          = !hasMeasure;
+        els.addAlto.disabled           = !hasMeasure;
         els.addSoloAncho.style.display = "block";
-        els.productoTipo.disabled   = true;
+        els.productoTipo.disabled      = true;
+
+      } else if (hasMeasure) {
+        // Estado: medida activa lista para asignar a un producto
+        els.pendingInfo.style.display  = "none";
+        els.addAncho.textContent       = "Añadir como ancho";
+        els.addAncho.disabled          = false;
+        els.addAlto.disabled           = true;
+        els.addSoloAncho.style.display = "none";
+        els.productoTipo.disabled      = false;
+
       } else {
-        els.pendingInfo.style.display   = "none";
-        els.addAncho.textContent        = "Añadir como ancho";
-        els.addAlto.disabled            = true;
-        els.addSoloAncho.style.display  = "none";
-        els.productoTipo.disabled       = false;
+        // Estado: escala ok, sin medida activa — listo para medir siguiente
+        els.pendingInfo.style.display   = "flex";
+        els.pendingInfoText.textContent = hasProducts
+          ? "Producto " + (state.productos.length + 1) + " — mide el ancho en el canvas"
+          : "Escala calibrada — marca el ancho del elemento";
+        els.addAncho.textContent       = "Añadir como ancho";
+        els.addAncho.disabled          = true;   // se activa al marcar medida
+        els.addAlto.disabled           = true;
+        els.addSoloAncho.style.display = "none";
+        els.productoTipo.disabled      = false;
       }
-      els.addAncho.disabled = !hasMeasure && !pending;
     }
 
     function addComoAncho() {
