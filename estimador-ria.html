@@ -447,7 +447,7 @@
     #rm-app .rm-placeholder { display: grid; gap: 8px; place-items: center; max-width: 320px; padding: 24px; color: #64748b; text-align: center; }
     #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 18px; }
 
-    /* Magnifier */
+    /* Magnifier — desktop (follows cursor) */
     #rm-app .rm-magnifier {
       position: absolute;
       border-radius: 50%;
@@ -457,6 +457,45 @@
       z-index: 20;
       transform: translate(-50%, calc(-100% - 12px));
     }
+
+    /* Magnifier — touch (fixed at top of stage) */
+    #rm-app .rm-touch-mag-wrap {
+      display: none;
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+    #rm-app .rm-touch-mag-wrap.rm-visible { display: flex; }
+    #rm-app .rm-touch-mag {
+      border-radius: 50%;
+      box-shadow: 0 4px 24px rgba(0,0,0,.55), 0 0 0 3px #F68F2C;
+      display: block;
+    }
+    #rm-app .rm-touch-mag-label {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(0,0,0,.65);
+      padding: 3px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Create-resources button */
+    #rm-app .rm-btn-create {
+      background: linear-gradient(180deg,#F68F2C,#DD7D24);
+      color: #fff;
+      border-color: #DD7D24;
+      margin-top: 4px;
+    }
+    #rm-app .rm-btn-create:hover:not(:disabled) { background: linear-gradient(180deg,#F9A050,#F68F2C); border-color: #F68F2C; }
+    #rm-app .rm-btn-create:disabled { opacity: .6; cursor: wait; }
 
     /* ── MEASUREMENT DISPLAY ── */
     #rm-app .rm-measure-display {
@@ -587,6 +626,7 @@
       #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; }
       #rm-app[data-mobile-tab="measure"] .rm-center { display: grid; }
       #rm-app .rm-canvas-top { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+      #rm-app .rm-magnifier { display: none !important; }
       #rm-app .rm-canvas-bottom { padding: 6px 10px; }
       #rm-app .rm-row { grid-template-columns: 1fr; }
       #rm-app .rm-image { max-height: calc(100dvh - 170px); max-width: 100%; }
@@ -719,6 +759,9 @@
             <div id="rmAgentAddress" class="rm-agent-meta">—</div>
             <div id="rmAgentPhone"   class="rm-agent-meta">—</div>
             <div id="rmAgentLinks"   class="rm-agent-links"></div>
+            <button id="rmCreateResources" class="rm-btn rm-btn-create" type="button" style="display:none">
+              ＋ Crear carpeta Drive y tarjeta Trello
+            </button>
           </div>
         </section>
 
@@ -753,6 +796,11 @@
           <img id="rmImage" class="rm-image" alt="Fachada">
           <svg id="rmOverlay" class="rm-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
           <canvas id="rmMagnifier" class="rm-magnifier"></canvas>
+          <!-- Lupa fija para táctil (aparece en la parte superior del canvas) -->
+          <div id="rmTouchMagWrap" class="rm-touch-mag-wrap">
+            <canvas id="rmTouchMag" class="rm-touch-mag"></canvas>
+            <span id="rmTouchMagLabel" class="rm-touch-mag-label">Toca para medir</span>
+          </div>
         </div>
         <div id="rmPlaceholder" class="rm-placeholder">
           <strong>Estimador de rótulos RIA</strong>
@@ -902,7 +950,9 @@
     const config = {
       spreadsheetId:     "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
       spreadsheetSheets: ["Agentes RIA", "AGENTES RIA 2025", "AGENTES RIA 2026"],
-      n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements"
+      n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements",
+      // n8n: crea carpeta Drive + tarjeta Trello para el agente y escribe URLs en Sheets
+      n8nWebhookCreate:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent"
     };
 
     const MAG_SIZE = 120;
@@ -1000,7 +1050,9 @@
       newRefLabel: el("#rmNewRefLabel"), newRefCm: el("#rmNewRefCm"),
       newRefPhoto: el("#rmNewRefPhoto"), newRefPhotoName: el("#rmNewRefPhotoName"),
       newRefPhotoPreview: el("#rmNewRefPhotoPreview"),
-      saveRef: el("#rmSaveRef"), cancelRef: el("#rmCancelRef")
+      saveRef: el("#rmSaveRef"), cancelRef: el("#rmCancelRef"),
+      createResources: el("#rmCreateResources"),
+      touchMagWrap: el("#rmTouchMagWrap"), touchMag: el("#rmTouchMag"), touchMagLabel: el("#rmTouchMagLabel")
     };
 
     let newRefPhotoDataUrl = null;
@@ -1058,6 +1110,130 @@
       ctx.restore();
     }
     function hideMagnifier() { els.magnifier.style.display = "none"; }
+
+    /* ─── LUPA TÁCTIL ─── */
+    const TOUCH_MAG_SIZE = 180;
+    (function () {
+      const dpr = window.devicePixelRatio || 1;
+      const px  = Math.round(TOUCH_MAG_SIZE * dpr);
+      els.touchMag.width  = px;
+      els.touchMag.height = px;
+      els.touchMag.style.width  = TOUCH_MAG_SIZE + "px";
+      els.touchMag.style.height = TOUCH_MAG_SIZE + "px";
+    })();
+
+    function drawTouchMag(svgX, svgY, pointsPlaced) {
+      const mag = els.touchMag;
+      const dpr = window.devicePixelRatio || 1;
+      const ctx = mag.getContext("2d");
+      const R   = TOUCH_MAG_SIZE / 2;
+      const Rpx = R * dpr;
+      const color = state.mode === "ref" ? "#f59e0b" : "#F68F2C";
+
+      ctx.clearRect(0, 0, mag.width, mag.height);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(Rpx, Rpx, Rpx, 0, Math.PI * 2);
+      ctx.clip();
+      const imgRect = els.image.getBoundingClientRect();
+      const scaleX  = els.image.naturalWidth  / imgRect.width;
+      const scaleY  = els.image.naturalHeight / imgRect.height;
+      const srcSize = TOUCH_MAG_SIZE / MAG_ZOOM;
+      ctx.drawImage(els.image,
+        (svgX - srcSize / 2) * scaleX, (svgY - srcSize / 2) * scaleY,
+        srcSize * scaleX, srcSize * scaleY,
+        0, 0, mag.width, mag.height);
+      ctx.restore();
+      // Dot if second point
+      if (pointsPlaced) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(Rpx, Rpx, 4 * dpr, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill(); ctx.restore();
+      }
+      // Crosshair
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5 * dpr; ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(0, Rpx);             ctx.lineTo(Rpx - 8*dpr, Rpx);
+      ctx.moveTo(Rpx + 8*dpr, Rpx);  ctx.lineTo(mag.width, Rpx);
+      ctx.moveTo(Rpx, 0);             ctx.lineTo(Rpx, Rpx - 8*dpr);
+      ctx.moveTo(Rpx, Rpx + 8*dpr);  ctx.lineTo(Rpx, mag.height);
+      ctx.stroke();
+      // Ring
+      ctx.beginPath();
+      ctx.arc(Rpx, Rpx, Rpx - dpr, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 3 * dpr; ctx.globalAlpha = 0.5; ctx.stroke();
+      ctx.restore();
+    }
+
+    function showTouchMag(svgX, svgY, label) {
+      drawTouchMag(svgX, svgY, state.points.length > 0);
+      els.touchMagLabel.textContent = label || "";
+      els.touchMagWrap.classList.add("rm-visible");
+    }
+    function hideTouchMag() { els.touchMagWrap.classList.remove("rm-visible"); }
+
+    function getTouchSvgPt(touch) {
+      const r = els.overlay.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(r.width,  touch.clientX - r.left)),
+        y: Math.max(0, Math.min(r.height, touch.clientY - r.top))
+      };
+    }
+
+    /* Touch state */
+    const touchSt = { active: false, pt: null, hideTimer: null };
+
+    function doPlacePoint(pt) {
+      if (state.mode === "measure" && !state.pxPerCm) {
+        showToast("Primero define una referencia de escala.");
+        hideTouchMag(); return;
+      }
+      state.points.push(pt);
+      if (state.points.length === 2) {
+        const [p1, p2] = state.points; state.points = [];
+        addLine(p1, p2);
+        hideTouchMag();
+      } else {
+        const hint = state.mode === "ref" ? "Punto 1 ✓ · Marca el punto 2" : "Punto 1 ✓ · Marca el extremo";
+        showTouchMag(pt.x, pt.y, hint);
+        clearTimeout(touchSt.hideTimer);
+        touchSt.hideTimer = setTimeout(hideTouchMag, 1500);
+      }
+      updateGuidance(); updatePanel(); render();
+    }
+
+    els.overlay.addEventListener("touchstart", e => {
+      if (!state.imageSource || e.touches.length !== 1) return;
+      e.preventDefault();
+      clearTimeout(touchSt.hideTimer);
+      touchSt.active = true;
+      touchSt.pt = getTouchSvgPt(e.touches[0]);
+      const hint = state.points.length ? "Suelta para fijar punto 2" : "Suelta para fijar punto 1";
+      showTouchMag(touchSt.pt.x, touchSt.pt.y, hint);
+    }, { passive: false });
+
+    els.overlay.addEventListener("touchmove", e => {
+      if (!touchSt.active || e.touches.length !== 1) return;
+      e.preventDefault();
+      touchSt.pt = getTouchSvgPt(e.touches[0]);
+      let label = state.points.length
+        ? (state.pxPerCm && state.mode === "measure"
+            ? fmtCmRaw(dist(state.points[0], touchSt.pt) / state.pxPerCm)
+            : Math.round(dist(state.points[0], touchSt.pt)) + " px")
+        : "Suelta para fijar";
+      showTouchMag(touchSt.pt.x, touchSt.pt.y, label);
+    }, { passive: false });
+
+    els.overlay.addEventListener("touchend", e => {
+      if (!touchSt.active) return;
+      e.preventDefault();
+      touchSt.active = false;
+      if (touchSt.pt) doPlacePoint(touchSt.pt);
+    }, { passive: false });
+
+    els.overlay.addEventListener("touchcancel", () => { touchSt.active = false; hideTouchMag(); });
 
     /* ─── TOAST ─── */
     function showToast(msg) {
@@ -1250,22 +1426,69 @@
       els.agentAddress.textContent = c.fullAddress || "Sin dirección";
       els.agentPhone.textContent   = c.phone ? c.phone : "";
       els.agentLinks.innerHTML = "";
+
       const driveBtn = document.createElement("a");
       driveBtn.className   = "rm-agent-link " + (c.driveUrl ? "rm-agent-link-drive" : "rm-agent-link-nourl");
-      driveBtn.textContent = c.driveUrl ? "Drive" : "Sin carpeta";
+      driveBtn.textContent = c.driveUrl ? "🗂 Drive" : "Sin carpeta";
       if (c.driveUrl) { driveBtn.href = c.driveUrl; driveBtn.target = "_blank"; }
       els.agentLinks.appendChild(driveBtn);
+
       const trelloBtn = document.createElement("a");
       trelloBtn.className   = "rm-agent-link " + (c.trelloUrl ? "rm-agent-link-trello" : "rm-agent-link-nourl");
-      trelloBtn.textContent = c.trelloUrl ? "Trello" : "Sin tarjeta";
+      trelloBtn.textContent = c.trelloUrl ? "📋 Trello" : "Sin tarjeta";
       if (c.trelloUrl) { trelloBtn.href = c.trelloUrl; trelloBtn.target = "_blank"; }
       els.agentLinks.appendChild(trelloBtn);
+
       if (c.estado) {
         const s = document.createElement("span");
         s.className = "rm-agent-link rm-agent-link-nourl"; s.textContent = c.estado;
         els.agentLinks.appendChild(s);
       }
+
+      // Mostrar botón de creación solo si falta Drive o Trello
+      const needsCreate = !c.driveUrl || !c.trelloUrl;
+      els.createResources.style.display = needsCreate ? "" : "none";
+      els.createResources.textContent   = "＋ Crear " +
+        (!c.driveUrl && !c.trelloUrl ? "carpeta Drive y tarjeta Trello"
+          : !c.driveUrl ? "carpeta Drive"
+          : "tarjeta Trello");
+      els.createResources.disabled = false;
     }
+
+    /* ─── CREAR RECURSOS EN N8N ─── */
+    els.createResources.addEventListener("click", async () => {
+      const c = state.selectedClient;
+      if (!c) return;
+      els.createResources.disabled = true;
+      els.createResources.textContent = "Creando…";
+      try {
+        const res = await fetch(config.n8nWebhookCreate, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            agentId:   c.agent  || "",
+            agentName: c.name   || "",
+            address:   c.fullAddress || "",
+            phone:     c.phone  || "",
+            city:      c.city   || "",
+            province:  c.province || "",
+            sheet:     c.sheet  || ""
+          })
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json().catch(() => ({}));
+        // Actualizar el cliente en memoria con las URLs devueltas por n8n
+        if (data.driveUrl)  c.driveUrl  = data.driveUrl;
+        if (data.trelloUrl) c.trelloUrl = data.trelloUrl;
+        if (data.trelloId)  c.trelloId  = data.trelloId;
+        renderAgentCard(c);
+        showToast("Recursos creados ✓ · n8n ha actualizado Sheets");
+      } catch (err) {
+        els.createResources.disabled = false;
+        els.createResources.textContent = "＋ Reintentar creación";
+        showToast("Error al crear recursos: " + err.message);
+      }
+    });
     function loadOneSheet(sheetName) {
       return new Promise(resolve => {
         const cbName = "rmCb_" + sheetName.replace(/\W/g, "_") + "_" + Date.now();
