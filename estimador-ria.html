@@ -289,6 +289,18 @@
     #rm-app .rm-agent-link-trello { background: var(--accent-bg); color: #1d4ed8; border: 1px solid var(--accent-border); }
     #rm-app .rm-agent-link-nourl  { background: var(--amber-bg); color: var(--amber); border: 1px solid #fde68a; }
 
+    /* ── REFERENCIAS PERSONALIZADAS ── */
+    #rm-app .rm-ref-photo { display: block; width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+    #rm-app .rm-custom-refs-list { display: flex; flex-direction: column; gap: 4px; }
+    #rm-app .rm-custom-ref-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 12px; }
+    #rm-app .rm-custom-ref-name { flex: 1; min-width: 0; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #rm-app .rm-custom-ref-cm { color: var(--text-2); font-size: 11px; flex-shrink: 0; }
+    #rm-app .rm-custom-ref-del { flex-shrink: 0; display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 4px; background: transparent; color: var(--text-3); font-size: 14px; cursor: pointer; padding: 0; transition: background 100ms, color 100ms; }
+    #rm-app .rm-custom-ref-del:hover { background: #fee2e2; color: var(--red); }
+    #rm-app .rm-new-ref-form { display: flex; flex-direction: column; gap: 7px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+    #rm-app .rm-ref-photo-label { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px dashed var(--border-strong); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 12px; color: var(--text-2); transition: border-color 120ms, background 120ms; }
+    #rm-app .rm-ref-photo-label:hover { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+
     /* ── SORT BUTTON ── */
     #rm-app .rm-sort-btn { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text-2); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 120ms, border-color 120ms, color 120ms; letter-spacing: .02em; white-space: nowrap; }
     #rm-app .rm-sort-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
@@ -699,13 +711,7 @@
 
       <!-- Mobile tools -->
       <div class="rm-mobile-tools">
-        <select id="rmMobileRefType" class="rm-select">
-          <option value="90">Puerta ancho (90 cm)</option>
-          <option value="210">Puerta alto (210 cm)</option>
-          <option value="120">Ventana (120 cm)</option>
-          <option value="20">Baldosa (20 cm)</option>
-          <option value="custom">Personalizado</option>
-        </select>
+        <select id="rmMobileRefType" class="rm-select"></select>
         <input id="rmMobileCustomRef" class="rm-input" type="number" inputmode="decimal" min="1" step="0.1" placeholder="cm" hidden>
         <div class="rm-row">
           <button id="rmMobileModeRef"     class="rm-btn rm-active" type="button">Ref</button>
@@ -731,15 +737,31 @@
             <span class="rm-step-num">01</span>
             <span class="rm-step-title">Escala de referencia</span>
           </div>
-          <select id="rmRefType" class="rm-select">
-            <option value="90">Puerta — ancho (90 cm)</option>
-            <option value="210">Puerta — alto (210 cm)</option>
-            <option value="120">Ventana — ancho (120 cm)</option>
-            <option value="20">Baldosa (20 cm)</option>
-            <option value="custom">Personalizado…</option>
-          </select>
+          <!-- Select se rellena dinámicamente por JS -->
+          <select id="rmRefType" class="rm-select"></select>
           <input id="rmCustomRef" class="rm-input" type="number" inputmode="decimal" min="1" step="0.1" placeholder="Medida en cm" hidden>
-          <p class="rm-help">Selecciona la referencia conocida, luego dibuja sobre ella en la imagen.</p>
+          <!-- Foto de referencia (si la tiene) -->
+          <div id="rmRefPhotoPreview" style="display:none">
+            <img id="rmRefPhotoImg" class="rm-ref-photo" alt="Imagen de referencia">
+            <p class="rm-help" style="margin-top:4px">Imagen de referencia guardada</p>
+          </div>
+          <!-- Lista de referencias personalizadas guardadas -->
+          <div id="rmCustomRefsList" class="rm-custom-refs-list"></div>
+          <!-- Formulario nueva referencia -->
+          <button id="rmAddRefBtn" class="rm-btn" type="button">+ Nueva referencia</button>
+          <div id="rmNewRefForm" class="rm-new-ref-form" style="display:none">
+            <input id="rmNewRefLabel" class="rm-input" type="text" placeholder="Nombre de la referencia">
+            <input id="rmNewRefCm"    class="rm-input" type="number" inputmode="decimal" min="0.1" step="0.1" placeholder="Medida en cm">
+            <label class="rm-ref-photo-label" for="rmNewRefPhoto">
+              <input id="rmNewRefPhoto" type="file" accept="image/*" style="display:none">
+              <span id="rmNewRefPhotoName">Foto de referencia (opcional)</span>
+            </label>
+            <img id="rmNewRefPhotoPreview" class="rm-ref-photo" style="display:none" alt="">
+            <div class="rm-row">
+              <button id="rmSaveRef"   class="rm-btn rm-btn-primary" type="button">Guardar</button>
+              <button id="rmCancelRef" class="rm-btn"                type="button">Cancelar</button>
+            </div>
+          </div>
         </section>
 
         <!-- PASO 02: Productos -->
@@ -830,6 +852,23 @@
     const MAG_SIZE = 120;
     const MAG_ZOOM = 4;
 
+    const STORAGE_KEY_REFS = "rm_custom_refs_v1";
+
+    // Referencias predefinidas (cm: null = requiere input manual)
+    const BUILTIN_REFS = [
+      { id: "vinilo_circular_ria",     label: "Vinilo circular RIA",          cm: 50  },
+      { id: "banderola_circular_ria",  label: "Banderola circular RIA",        cm: null },
+      { id: "linea_ria_basic",         label: "Línea RIA — basic dress",       cm: 20  },
+      { id: "adoquines_calle",         label: "Adoquines calle",               cm: null },
+      { id: "custom",                  label: "Personalizado…",                cm: null }
+    ];
+
+    let customRefs = [];
+    try { customRefs = JSON.parse(localStorage.getItem(STORAGE_KEY_REFS) || "[]"); } catch { customRefs = []; }
+    function saveCustomRefsToStorage() {
+      try { localStorage.setItem(STORAGE_KEY_REFS, JSON.stringify(customRefs)); } catch {}
+    }
+
     const PRODUCT_COLORS = [
       "#14b8a6","#3b82f6","#a855f7","#ec4899",
       "#f97316","#84cc16","#ef4444","#06b6d4"
@@ -897,8 +936,17 @@
       genPreview: el("#rmGenPreview"), previewImg: el("#rmPreviewImg"),
       saveStatus: el("#rmSaveStatus"), saveText: el("#rmSaveText"),
       save: el("#rmSave"), saveHint: el("#rmSaveHint"),
-      toast: el("#rmToast")
+      toast: el("#rmToast"),
+      refPhotoPreview: el("#rmRefPhotoPreview"), refPhotoImg: el("#rmRefPhotoImg"),
+      customRefsList: el("#rmCustomRefsList"),
+      addRefBtn: el("#rmAddRefBtn"), newRefForm: el("#rmNewRefForm"),
+      newRefLabel: el("#rmNewRefLabel"), newRefCm: el("#rmNewRefCm"),
+      newRefPhoto: el("#rmNewRefPhoto"), newRefPhotoName: el("#rmNewRefPhotoName"),
+      newRefPhotoPreview: el("#rmNewRefPhotoPreview"),
+      saveRef: el("#rmSaveRef"), cancelRef: el("#rmCancelRef")
     };
+
+    let newRefPhotoDataUrl = null;
 
     /* ─── LUPA ─── */
     (function () {
@@ -1171,13 +1219,134 @@
       });
     }
 
+    /* ─── SISTEMA DE REFERENCIAS ─── */
+    function getRefById(id) {
+      return BUILTIN_REFS.find(r => r.id === id) || customRefs.find(r => r.id === id) || null;
+    }
+    function refNeedsInput(id) {
+      const ref = getRefById(id);
+      return !ref || ref.cm === null;
+    }
+
+    function populateRefSelects() {
+      const allRefs = [
+        ...BUILTIN_REFS,
+        ...(customRefs.length ? [{ id: "_sep", label: "─── Mis referencias ───", cm: null, disabled: true }] : []),
+        ...customRefs
+      ];
+      [els.refType, els.mobileRefType].forEach(sel => {
+        const current = sel.value;
+        sel.innerHTML = "";
+        allRefs.forEach(r => {
+          const o = document.createElement("option");
+          o.value = r.id;
+          o.textContent = r.cm !== null && !r.disabled ? r.label + " (" + r.cm + " cm)" : r.label;
+          if (r.disabled) o.disabled = true;
+          sel.appendChild(o);
+        });
+        if (current && sel.querySelector('option[value="' + current + '"]')) sel.value = current;
+      });
+    }
+
+    function onRefChange() {
+      const id = els.refType.value;
+      const needsInput = refNeedsInput(id);
+      els.customRef.hidden = !needsInput;
+      els.mobileRefType.value = id;
+      els.mobileCustomRef.hidden = !needsInput;
+      if (needsInput) els.customRef.value = "";
+      updateRefPhotoPreview();
+    }
+
+    function updateRefPhotoPreview() {
+      const id = els.refType.value;
+      const custom = customRefs.find(r => r.id === id);
+      if (custom && custom.photoDataUrl) {
+        els.refPhotoImg.src = custom.photoDataUrl;
+        els.refPhotoPreview.style.display = "block";
+      } else {
+        els.refPhotoPreview.style.display = "none";
+      }
+    }
+
+    function renderCustomRefsList() {
+      els.customRefsList.innerHTML = "";
+      customRefs.forEach(r => {
+        const item = document.createElement("div");
+        item.className = "rm-custom-ref-item";
+        item.innerHTML =
+          '<span class="rm-custom-ref-name">' + esc(r.label) + '</span>' +
+          '<span class="rm-custom-ref-cm">' + (r.cm ? r.cm + " cm" : "manual") + '</span>' +
+          '<button class="rm-custom-ref-del" type="button" data-id="' + esc(r.id) + '" title="Eliminar">×</button>';
+        els.customRefsList.appendChild(item);
+      });
+    }
+
+    els.customRefsList.addEventListener("click", e => {
+      const btn = e.target.closest(".rm-custom-ref-del");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      customRefs = customRefs.filter(r => r.id !== id);
+      saveCustomRefsToStorage();
+      populateRefSelects();
+      renderCustomRefsList();
+      onRefChange();
+      showToast("Referencia eliminada.");
+    });
+
+    els.addRefBtn.addEventListener("click", () => {
+      els.newRefForm.style.display = els.newRefForm.style.display === "none" ? "flex" : "none";
+      els.newRefForm.style.flexDirection = "column";
+      els.newRefLabel.value = "";
+      els.newRefCm.value    = "";
+      newRefPhotoDataUrl    = null;
+      els.newRefPhotoPreview.style.display = "none";
+      els.newRefPhotoName.textContent = "Foto de referencia (opcional)";
+    });
+
+    els.newRefPhoto.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        newRefPhotoDataUrl = String(ev.target.result);
+        els.newRefPhotoPreview.src = newRefPhotoDataUrl;
+        els.newRefPhotoPreview.style.display = "block";
+        els.newRefPhotoName.textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    els.saveRef.addEventListener("click", () => {
+      const label = els.newRefLabel.value.trim();
+      if (!label) { showToast("Escribe un nombre para la referencia."); return; }
+      const cm = Number(els.newRefCm.value);
+      const newRef = {
+        id:           "cr_" + Date.now(),
+        label,
+        cm:           Number.isFinite(cm) && cm > 0 ? parseFloat(cm.toFixed(2)) : null,
+        photoDataUrl: newRefPhotoDataUrl || null
+      };
+      customRefs.push(newRef);
+      saveCustomRefsToStorage();
+      populateRefSelects();
+      renderCustomRefsList();
+      els.refType.value = newRef.id;
+      els.mobileRefType.value = newRef.id;
+      onRefChange();
+      els.newRefForm.style.display = "none";
+      showToast("Referencia '" + label + "' guardada.");
+    });
+
+    els.cancelRef.addEventListener("click", () => { els.newRefForm.style.display = "none"; });
+
     /* ─── MEDICIÓN ─── */
     function getRefCm() {
-      if (els.refType.value === "custom") {
-        const v = Number(els.customRef.value);
-        return Number.isFinite(v) && v > 0 ? v : null;
-      }
-      return Number(els.refType.value);
+      const id = els.refType.value;
+      const ref = getRefById(id);
+      if (ref && ref.cm) return ref.cm;
+      const v = Number(els.customRef.value);
+      return Number.isFinite(v) && v > 0 ? v : null;
     }
     function getSvgPoint(e) {
       const r = els.overlay.getBoundingClientRect();
@@ -1654,16 +1823,8 @@
       if (els.previewImg.src) window.open(els.previewImg.src, "_blank");
     });
 
-    els.refType.addEventListener("change", () => {
-      els.customRef.hidden       = els.refType.value !== "custom";
-      els.mobileRefType.value    = els.refType.value;
-      els.mobileCustomRef.hidden = els.refType.value !== "custom";
-    });
-    els.mobileRefType.addEventListener("change", () => {
-      els.refType.value          = els.mobileRefType.value;
-      els.customRef.hidden       = els.mobileRefType.value !== "custom";
-      els.mobileCustomRef.hidden = els.mobileRefType.value !== "custom";
-    });
+    els.refType.addEventListener("change",       onRefChange);
+    els.mobileRefType.addEventListener("change", () => { els.refType.value = els.mobileRefType.value; onRefChange(); });
     els.customRef.addEventListener("input",       () => { els.mobileCustomRef.value = els.customRef.value; });
     els.mobileCustomRef.addEventListener("input", () => { els.customRef.value       = els.mobileCustomRef.value; });
 
@@ -1700,6 +1861,9 @@
     window.addEventListener("resize", () => { if (state.imageSource) render(); });
 
     /* ─── INIT ─── */
+    populateRefSelects();
+    renderCustomRefsList();
+    onRefChange();
     setMode("ref");
     updatePanel();
     updateSaveButton();
