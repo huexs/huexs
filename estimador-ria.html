@@ -1,0 +1,1922 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estimador de Fachadas — RIA Money Transfer</title>
+</head>
+<body>
+<div id="rm-app" data-mobile-tab="agents">
+  <style>
+    body { margin: 0; }
+
+    #rm-app {
+      --rm-bg: #f5f7fa;
+      --rm-panel: #ffffff;
+      --rm-panel-2: #f9fafb;
+      --rm-text: #171717;
+      --rm-muted: #6b7280;
+      --rm-line: #e5e7eb;
+      --rm-strong-line: #d1d5db;
+      --rm-brand: #111827;
+      --rm-accent: #2563eb;
+      --rm-ref: #f59e0b;
+      --rm-measure: #14b8a6;
+      --rm-ok: #16a34a;
+      --rm-warn: #d97706;
+      --rm-danger: #dc2626;
+      --rm-shadow: 0 18px 45px rgba(15,23,42,.09);
+      --rm-shadow-soft: 0 8px 24px rgba(15,23,42,.06);
+      box-sizing: border-box;
+      min-height: 100vh;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      padding: 18px;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 32%),
+        linear-gradient(180deg, #fbfcff 0%, var(--rm-bg) 100%);
+      color: var(--rm-text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #rm-app *, #rm-app *::before, #rm-app *::after { box-sizing: border-box; }
+
+    #rm-app button, #rm-app input, #rm-app select {
+      font: inherit;
+      font-size: 13px !important;
+    }
+
+    /* ── APPBAR ── */
+    #rm-app .rm-appbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      max-width: 1520px;
+      margin: 0 auto 12px;
+    }
+
+    #rm-app .rm-brand { display: flex; align-items: center; gap: 12px; }
+
+    #rm-app .rm-brand-mark {
+      display: grid;
+      place-items: center;
+      width: 189px;
+      height: 40px;
+      border-radius: 12px;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    #rm-app .rm-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+    #rm-app .rm-brand-name { margin: 0; color: #0f172a; font-size: 18px; font-weight: 820; line-height: 1.15; }
+    #rm-app .rm-brand-sub  { margin: 3px 0 0; color: var(--rm-muted); font-size: 12px; }
+
+    #rm-app .rm-live-summary { display: flex; align-items: center; gap: 8px; }
+
+    #rm-app .rm-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      max-width: 230px;
+      border: 1px solid rgba(229,231,235,.85);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      color: #374151;
+      padding: 7px 11px;
+      box-shadow: var(--rm-shadow-soft);
+      font-size: 12px;
+      font-weight: 720;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #rm-app .rm-chip-dot {
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rm-accent);
+    }
+
+    /* ── SHELL ── */
+    #rm-app .rm-shell {
+      display: grid;
+      grid-template-columns: minmax(260px,310px) minmax(420px,1fr) minmax(280px,330px);
+      gap: 16px;
+      max-width: 1520px;
+      height: calc(100vh - 86px);
+      min-height: 0;
+      margin: 0 auto;
+    }
+
+    #rm-app .rm-panel {
+      min-width: 0;
+      border: 1px solid rgba(229,235,235,.86);
+      border-radius: 22px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--rm-shadow);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    #rm-app .rm-side { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+
+    #rm-app .rm-side-inner {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      gap: 10px;
+      padding: 14px;
+      overflow-y: auto;
+    }
+
+    /* ── SECTIONS ── */
+    #rm-app .rm-section { display: flex; flex-direction: column; gap: 7px; }
+
+    #rm-app .rm-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #rm-app .rm-title {
+      margin: 0;
+      color: #374151;
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    #rm-app .rm-help {
+      margin: 0;
+      color: var(--rm-muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    #rm-app .rm-divider {
+      height: 1px;
+      background: var(--rm-line);
+      margin: 2px 0;
+    }
+
+    /* ── INPUTS ── */
+    #rm-app .rm-input, #rm-app .rm-select {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--rm-line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.92);
+      color: var(--rm-text);
+      padding: 8px 11px !important;
+      font-size: 13px !important;
+      outline: none;
+      transition: border-color 140ms, box-shadow 140ms;
+    }
+
+    #rm-app .rm-input::placeholder { color: #9ca3af; }
+
+    #rm-app .rm-input:focus, #rm-app .rm-select:focus {
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    #rm-app .rm-input[readonly] {
+      background: #f9fafb;
+      color: var(--rm-muted);
+      cursor: default;
+    }
+
+    /* ── FILE ZONE ── */
+    #rm-app .rm-file-zone {
+      display: grid;
+      place-items: center;
+      min-height: 80px;
+      border: 1.5px dashed var(--rm-strong-line);
+      border-radius: 14px;
+      background: linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      color: var(--rm-muted);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 140ms, background 140ms;
+    }
+
+    #rm-app .rm-file-zone:hover, #rm-app .rm-file-zone.rm-drag {
+      border-color: var(--rm-accent);
+      background: #eff6ff;
+    }
+
+    #rm-app .rm-file-zone input { position: absolute; width: 1px; height: 1px; clip: rect(0,0,0,0); overflow: hidden; }
+
+    #rm-app .rm-file-copy { display: grid; gap: 4px; padding: 10px; font-size: 12px; }
+    #rm-app .rm-file-main { color: var(--rm-text); font-size: 13px; font-weight: 750; }
+
+    /* ── BUTTONS ── */
+    #rm-app .rm-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 8px 12px !important;
+      color: var(--rm-text);
+      background: #f3f4f6;
+      font-size: 13px !important;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform 120ms, background 120ms, border-color 120ms;
+      white-space: normal;
+    }
+
+    #rm-app .rm-btn:hover:not(:disabled) { transform: translateY(-1px); background: #e5e7eb; }
+    #rm-app .rm-btn:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+
+    #rm-app .rm-btn-primary {
+      background: var(--rm-brand);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(17,24,39,.14);
+    }
+    #rm-app .rm-btn-primary:hover:not(:disabled) { background: #000; }
+
+    #rm-app .rm-btn-success {
+      background: #16a34a;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(22,163,74,.18);
+    }
+    #rm-app .rm-btn-success:hover:not(:disabled) { background: #15803d; }
+
+    #rm-app .rm-btn-ref.rm-active {
+      border-color: rgba(245,158,11,.45);
+      background: rgba(245,158,11,.18);
+      color: #7c2d12;
+    }
+
+    #rm-app .rm-btn-measure.rm-active {
+      border-color: rgba(20,184,166,.45);
+      background: rgba(20,184,166,.16);
+      color: #134e4a;
+    }
+
+    #rm-app .rm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #rm-app .rm-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+
+    /* ── AGENT INFO CARD ── */
+    #rm-app .rm-agent-card {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      border: 1px solid var(--rm-line);
+      border-radius: 12px;
+      background: #f8faff;
+    }
+
+    #rm-app .rm-agent-card.rm-visible { display: flex; }
+
+    #rm-app .rm-agent-name {
+      color: var(--rm-text);
+      font-size: 13px;
+      font-weight: 780;
+      line-height: 1.2;
+    }
+
+    #rm-app .rm-agent-meta {
+      color: var(--rm-muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    #rm-app .rm-agent-links {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    #rm-app .rm-agent-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    #rm-app .rm-agent-link-drive  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    #rm-app .rm-agent-link-trello { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+    #rm-app .rm-agent-link-nourl  { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+
+    /* ── CLIENT LIST ── */
+    #rm-app .rm-client-list {
+      display: grid;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    #rm-app .rm-client-item {
+      display: grid;
+      gap: 2px;
+      border: 1px solid var(--rm-line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    #rm-app .rm-client-item:hover, #rm-app .rm-client-item.rm-selected {
+      border-color: rgba(37,99,235,.45);
+      background: #f8fbff;
+    }
+
+    #rm-app .rm-client-main { color: var(--rm-text); font-size: 12px; font-weight: 780; }
+    #rm-app .rm-client-meta { color: var(--rm-muted); font-size: 11px; line-height: 1.35; }
+
+    /* ── CANVAS ── */
+    #rm-app .rm-center {
+      display: grid;
+      grid-template-rows: auto minmax(300px,1fr) auto;
+      background: #0f172a;
+      overflow: hidden;
+      box-shadow: 0 22px 60px rgba(15,23,42,.2);
+    }
+
+    #rm-app .rm-canvas-top, #rm-app .rm-canvas-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      color: #e5e7eb;
+      background: rgba(15,23,42,.94);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    #rm-app .rm-canvas-bottom { border-top: 1px solid rgba(255,255,255,.08); border-bottom: 0; }
+
+    #rm-app .rm-mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    #rm-app .rm-mode-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--rm-ref);
+    }
+
+    #rm-app .rm-mode-pill[data-mode="measure"] .rm-mode-dot { background: var(--rm-measure); }
+
+    #rm-app .rm-canvas-note { color: #cbd5e1; font-size: 12px; text-align: right; }
+
+    #rm-app .rm-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        linear-gradient(45deg,rgba(255,255,255,.04) 25%,transparent 25%),
+        linear-gradient(-45deg,rgba(255,255,255,.04) 25%,transparent 25%),
+        linear-gradient(45deg,transparent 75%,rgba(255,255,255,.04) 75%),
+        linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.04) 75%),
+        #111827;
+      background-position: 0 0,0 12px,12px -12px,-12px 0;
+      background-size: 24px 24px;
+      user-select: none;
+    }
+
+    #rm-app .rm-stage-inner { position: relative; display: none; max-width: 100%; max-height: 100%; }
+    #rm-app .rm-stage-inner.rm-ready { display: block; }
+
+    #rm-app .rm-image {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 176px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    #rm-app .rm-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      overflow: visible;
+    }
+
+    #rm-app .rm-placeholder {
+      display: grid;
+      gap: 10px;
+      place-items: center;
+      max-width: 360px;
+      padding: 24px;
+      color: #d1d5db;
+      text-align: center;
+    }
+
+    #rm-app .rm-placeholder strong { color: #fff; font-size: 20px; }
+
+    #rm-app .rm-line-ref     { stroke: var(--rm-ref); }
+    #rm-app .rm-line-measure { stroke: var(--rm-measure); }
+
+    #rm-app .rm-handle { fill: #fff; stroke-width: 3; }
+
+    /* ── LUPA ── */
+    #rm-app .rm-magnifier {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.75);
+      box-shadow: 0 4px 16px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.15);
+      pointer-events: none;
+      display: none;
+      z-index: 20;
+      /* centrada encima del cursor */
+      transform: translate(-50%, calc(-100% - 14px));
+    }
+
+    /* ── KPI / RESULT ── */
+    #rm-app .rm-kpi {
+      display: grid;
+      gap: 4px;
+      padding: 14px;
+      border: 1px solid var(--rm-line);
+      border-radius: 14px;
+      background: var(--rm-panel-2, #f9fafb);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+    }
+
+    #rm-app .rm-result {
+      color: #020617;
+      font-size: clamp(24px,3vw,40px);
+      font-weight: 820;
+      line-height: 1;
+    }
+
+    #rm-app .rm-result-sub { color: var(--rm-muted); font-size: 12px; line-height: 1.35; }
+
+    /* ── PRODUCTOS ── */
+    #rm-app .rm-add-measure-box {
+      display: none;
+      flex-direction: column;
+      gap: 7px;
+      padding: 10px;
+      border: 1.5px dashed var(--rm-measure);
+      border-radius: 12px;
+      background: rgba(20,184,166,.05);
+    }
+
+    #rm-app .rm-add-measure-box.rm-visible { display: flex; }
+
+    #rm-app .rm-add-measure-box.rm-pending-alto {
+      border-color: var(--rm-ref);
+      background: rgba(245,158,11,.05);
+    }
+
+    #rm-app .rm-pending-info {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(245,158,11,.12);
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #rm-app .rm-productos-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+      overflow-y: auto;
+      max-height: 220px;
+    }
+
+    #rm-app .rm-producto-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--rm-line);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    #rm-app .rm-producto-icon { font-size: 16px; flex-shrink: 0; }
+    #rm-app .rm-producto-info { flex: 1; min-width: 0; }
+    #rm-app .rm-producto-tipo { font-weight: 780; color: var(--rm-text); text-transform: capitalize; }
+    #rm-app .rm-producto-dims { color: var(--rm-muted); font-size: 11px; }
+
+    #rm-app .rm-producto-del {
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--rm-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: background 120ms, color 120ms;
+    }
+
+    #rm-app .rm-producto-del:hover { background: #fee2e2; color: var(--rm-danger); }
+
+    #rm-app .rm-productos-empty {
+      color: var(--rm-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* ── SAVE STATE ── */
+    #rm-app .rm-save-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid var(--rm-line);
+      font-size: 12px;
+      color: var(--rm-muted);
+      min-height: 36px;
+    }
+
+    #rm-app .rm-save-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rm-strong-line);
+      flex-shrink: 0;
+    }
+
+    #rm-app .rm-save-status.rm-saving .rm-save-dot { background: var(--rm-warn); animation: rm-pulse 1s infinite; }
+    #rm-app .rm-save-status.rm-saved  .rm-save-dot { background: var(--rm-ok); }
+    #rm-app .rm-save-status.rm-error  .rm-save-dot { background: var(--rm-danger); }
+
+    @keyframes rm-pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+    /* ── TOAST ── */
+    #rm-app .rm-toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 20;
+      max-width: min(360px,calc(100vw - 40px));
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: 14px;
+      background: rgba(17,24,39,.94);
+      color: #fff;
+      padding: 12px 14px;
+      box-shadow: 0 16px 40px rgba(15,23,42,.22);
+      font-size: 13px;
+      line-height: 1.35;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 160ms, transform 160ms;
+    }
+
+    #rm-app .rm-toast.rm-show { opacity: 1; transform: translateY(0); }
+
+    /* ── MOBILE ── */
+    #rm-app .rm-mobile-tools { display: none; }
+    #rm-app .rm-mobile-nav   { display: none; }
+
+    @media (min-width:1121px) {
+      #rm-app .rm-controls .rm-side-inner {
+        display: grid;
+        grid-template-rows: auto auto minmax(0,1fr) auto auto;
+      }
+      #rm-app .rm-controls .rm-section:nth-child(3) { min-height: 0; overflow: hidden; }
+      #rm-app .rm-results .rm-side-inner {
+        display: grid;
+        grid-template-rows: auto auto minmax(0,1fr) auto;
+      }
+    }
+
+    @media (max-width:1120px) and (min-width:761px) {
+      #rm-app { padding: 14px; }
+      #rm-app .rm-shell { grid-template-columns: 1fr; min-height: auto; }
+      #rm-app .rm-side { overflow: visible; }
+      #rm-app .rm-center { min-height: 540px; }
+      #rm-app .rm-image { max-height: 460px; }
+    }
+
+    @media (max-width:760px) {
+      #rm-app {
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr) auto;
+        width: 100%;
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+        padding: 10px;
+      }
+
+      #rm-app .rm-appbar { margin: 0 0 10px; }
+      #rm-app .rm-brand-mark { width: 140px; height: 34px; }
+      #rm-app .rm-brand-name, #rm-app .rm-brand-sub { display: none; }
+      #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
+      #rm-app .rm-chip { max-width: 130px; min-height: 30px; }
+
+      #rm-app .rm-shell { display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; }
+
+      #rm-app .rm-panel {
+        display: none;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 20px;
+      }
+
+      #rm-app[data-mobile-tab="agents"]  .rm-controls  { display: flex; }
+      #rm-app[data-mobile-tab="measure"] .rm-workbench { display: grid; }
+      #rm-app[data-mobile-tab="result"]  .rm-results   { display: flex; }
+
+      #rm-app .rm-side { min-height: 0; overflow: hidden; }
+      #rm-app .rm-side-inner { min-height: 0; padding: 12px; overflow-y: auto; }
+
+      #rm-app .rm-controls .rm-side-inner {
+        display: grid;
+        grid-template-rows: auto auto minmax(0,1fr);
+      }
+
+      #rm-app .rm-controls .rm-section:nth-child(3) { min-height: 0; }
+      #rm-app .rm-controls .rm-section:nth-child(n+4) { display: none; }
+
+      #rm-app .rm-client-list { max-height: none; min-height: 0; }
+
+      #rm-app .rm-center {
+        display: none;
+        grid-template-rows: auto minmax(0,1fr) auto auto;
+        min-height: 0;
+      }
+
+      #rm-app[data-mobile-tab="measure"] .rm-center { display: grid; }
+
+      #rm-app .rm-canvas-top, #rm-app .rm-canvas-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 9px 12px;
+      }
+
+      #rm-app .rm-canvas-bottom { flex-direction: row; align-items: center; }
+      #rm-app .rm-row { grid-template-columns: 1fr; }
+
+      #rm-app .rm-image { max-height: calc(100dvh - 178px); max-width: 100%; }
+
+      #rm-app .rm-mobile-tools {
+        display: grid;
+        gap: 7px;
+        border-top: 1px solid rgba(255,255,255,.08);
+        background: rgba(15,23,42,.96);
+        padding: 10px 12px;
+      }
+
+      #rm-app .rm-mobile-tools .rm-row { grid-template-columns: 1fr 1fr; }
+
+      #rm-app .rm-mobile-tools .rm-select,
+      #rm-app .rm-mobile-tools .rm-input,
+      #rm-app .rm-mobile-tools .rm-btn {
+        min-height: 38px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+
+      #rm-app .rm-mobile-tools .rm-select,
+      #rm-app .rm-mobile-tools .rm-input {
+        border-color: rgba(255,255,255,.14);
+        background: rgba(255,255,255,.08);
+        color: #fff;
+      }
+
+      #rm-app .rm-mobile-tools .rm-select option { color: #111827; }
+      #rm-app .rm-mobile-tools .rm-btn { background: rgba(255,255,255,.09); color: #e5e7eb; }
+      #rm-app .rm-mobile-tools .rm-btn-primary { background: #fff; color: #111827; }
+
+      #rm-app .rm-kpi { padding: 16px; border-radius: 18px; }
+      #rm-app .rm-result { font-size: 40px; }
+
+      #rm-app .rm-mobile-nav {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 8px;
+        margin-top: 10px;
+        padding: 8px;
+        border: 1px solid rgba(229,231,235,.9);
+        border-radius: 20px;
+        background: rgba(255,255,255,.9);
+        box-shadow: 0 12px 30px rgba(15,23,42,.11);
+        backdrop-filter: blur(18px);
+      }
+
+      #rm-app .rm-mobile-tab {
+        display: grid;
+        place-items: center;
+        min-height: 44px;
+        border: 0;
+        border-radius: 14px;
+        background: transparent;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      #rm-app .rm-mobile-tab.rm-active { background: #111827; color: #fff; }
+    }
+  </style>
+
+  <!-- APPBAR -->
+  <header class="rm-appbar">
+    <div class="rm-brand">
+      <div class="rm-brand-mark">
+        <img class="rm-logo" src="https://rotulamax.com/wp-content/uploads/2023/09/Recurso-7.png" alt="Rotulamax">
+      </div>
+      <div>
+        <h1 class="rm-brand-name">Estimador de fachadas</h1>
+        <p class="rm-brand-sub">Medidas preliminares · RIA Money Transfer</p>
+      </div>
+    </div>
+    <div class="rm-live-summary">
+      <span id="rmTopClient" class="rm-chip"><span class="rm-chip-dot"></span>Sin agente</span>
+      <span id="rmTopScale"  class="rm-chip"><span class="rm-chip-dot"></span>Sin escala</span>
+      <span id="rmTopResult" class="rm-chip"><span class="rm-chip-dot"></span>Sin medida</span>
+    </div>
+  </header>
+
+  <div class="rm-shell">
+
+    <!-- ── PANEL IZQUIERDO: Agentes + Imagen ── -->
+    <aside class="rm-panel rm-side rm-controls">
+      <div class="rm-side-inner">
+
+        <!-- Imagen -->
+        <section class="rm-section">
+          <div class="rm-section-head">
+            <h2 class="rm-title">Imagen</h2>
+            <span id="rmImageBadge" class="rm-badge rm-badge-warn">Sin imagen</span>
+          </div>
+          <label id="rmDropZone" class="rm-file-zone" for="rmUpload">
+            <input id="rmUpload" type="file" accept="image/*">
+            <span class="rm-file-copy">
+              <span class="rm-file-main">Subir foto de fachada</span>
+              <span>Arrastra o haz clic para elegir</span>
+            </span>
+          </label>
+        </section>
+
+        <div class="rm-divider"></div>
+
+        <!-- Agentes -->
+        <section class="rm-section">
+          <div class="rm-section-head">
+            <h2 class="rm-title">Agentes RIA</h2>
+            <span id="rmClientBadge" class="rm-badge">Cargando…</span>
+          </div>
+          <input id="rmClientSearch" class="rm-input" type="search" placeholder="Buscar agente, contacto o ciudad…">
+          <div id="rmClientList" class="rm-client-list">
+            <p class="rm-help">Cargando desde Google Sheets…</p>
+          </div>
+          <button id="rmReloadAgents" class="rm-btn" type="button">↺ Recargar agentes</button>
+        </section>
+
+        <!-- Ficha del agente seleccionado -->
+        <section class="rm-section">
+          <div id="rmAgentCard" class="rm-agent-card">
+            <div id="rmAgentName"    class="rm-agent-name">—</div>
+            <div id="rmAgentAddress" class="rm-agent-meta">—</div>
+            <div id="rmAgentPhone"   class="rm-agent-meta">—</div>
+            <div id="rmAgentLinks"   class="rm-agent-links"></div>
+          </div>
+        </section>
+
+        <div class="rm-divider"></div>
+
+        <!-- Referencia -->
+        <section class="rm-section">
+          <h2 class="rm-title">Referencia de escala</h2>
+          <select id="rmRefType" class="rm-select">
+            <option value="90"  data-kind="puerta">Puerta — ancho (90 cm)</option>
+            <option value="210" data-kind="puerta_altura">Puerta — alto (210 cm)</option>
+            <option value="120" data-kind="ventana">Ventana — ancho (120 cm)</option>
+            <option value="20"  data-kind="baldosa">Baldosa (20 cm)</option>
+            <option value="custom">Personalizado…</option>
+          </select>
+          <input id="rmCustomRef" class="rm-input" type="number" inputmode="decimal" min="1" step="0.1" placeholder="Medida en cm" hidden>
+          <div class="rm-row">
+            <button id="rmModeRef"     class="rm-btn rm-btn-ref rm-active" type="button">📐 Referencia</button>
+            <button id="rmModeMeasure" class="rm-btn rm-btn-measure"       type="button">📏 Medición</button>
+          </div>
+          <p class="rm-help">1. Marca la referencia conocida · 2. Mide el rótulo o cristal</p>
+        </section>
+
+        <!-- Acciones canvas -->
+        <section class="rm-section">
+          <div class="rm-row">
+            <button id="rmUndo"  class="rm-btn" type="button">↩ Deshacer</button>
+            <button id="rmClear" class="rm-btn" type="button">🗑 Limpiar</button>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- ── CENTRO: Canvas ── -->
+    <main class="rm-panel rm-center rm-workbench">
+      <div class="rm-canvas-top">
+        <div id="rmModePill" class="rm-mode-pill" data-mode="ref">
+          <span class="rm-mode-dot"></span>
+          <span id="rmModeText">Modo referencia</span>
+        </div>
+        <div id="rmCanvasNote" class="rm-canvas-note">Sube una imagen para empezar</div>
+      </div>
+
+      <div id="rmStage" class="rm-stage">
+        <div id="rmStageInner" class="rm-stage-inner">
+          <img id="rmImage" class="rm-image" alt="Fachada">
+          <svg id="rmOverlay" class="rm-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+          <!-- Lupa de precisión -->
+          <canvas id="rmMagnifier" class="rm-magnifier"></canvas>
+        </div>
+        <div id="rmPlaceholder" class="rm-placeholder">
+          <strong>Estimador de rótulos RIA</strong>
+          <span>Selecciona un agente y sube la foto de la fachada para empezar a medir.</span>
+        </div>
+      </div>
+
+      <div class="rm-canvas-bottom">
+        <span id="rmClickHint">Esperando imagen</span>
+        <span id="rmPointerReadout" class="rm-canvas-note">0 px</span>
+      </div>
+
+      <!-- Mobile tools -->
+      <div class="rm-mobile-tools">
+        <select id="rmMobileRefType" class="rm-select">
+          <option value="90">Puerta ancho (90 cm)</option>
+          <option value="210">Puerta alto (210 cm)</option>
+          <option value="120">Ventana (120 cm)</option>
+          <option value="20">Baldosa (20 cm)</option>
+          <option value="custom">Personalizado</option>
+        </select>
+        <input id="rmMobileCustomRef" class="rm-input" type="number" inputmode="decimal" min="1" step="0.1" placeholder="cm" hidden>
+        <div class="rm-row">
+          <button id="rmMobileModeRef"     class="rm-btn rm-btn-ref rm-active" type="button">📐 Ref</button>
+          <button id="rmMobileModeMeasure" class="rm-btn rm-btn-measure"       type="button">📏 Medir</button>
+        </div>
+        <div class="rm-row">
+          <button id="rmMobileUndo"  class="rm-btn" type="button">↩ Deshacer</button>
+          <button id="rmMobileClear" class="rm-btn" type="button">🗑 Limpiar</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PANEL DERECHO: Resultado + Productos + Guardar ── -->
+    <aside class="rm-panel rm-side rm-results">
+      <div class="rm-side-inner">
+
+        <!-- Resultado activo (KPI) -->
+        <section class="rm-section">
+          <h2 class="rm-title">Resultado activo</h2>
+          <div class="rm-kpi">
+            <div id="rmResult" class="rm-result">—</div>
+            <div id="rmResultSub" class="rm-result-sub">Medida pendiente</div>
+          </div>
+          <button id="rmCopy" class="rm-btn" type="button">📋 Copiar resultado</button>
+        </section>
+
+        <div class="rm-divider"></div>
+
+        <!-- Añadir medida (aparece tras medir) -->
+        <section class="rm-section">
+          <h2 class="rm-title">Productos medidos</h2>
+
+          <!-- Caja añadir medida: visible cuando hay resultado activo -->
+          <div id="rmAddMeasureBox" class="rm-add-measure-box">
+            <!-- Estado: esperando alto de producto pendiente -->
+            <div id="rmPendingInfo" class="rm-pending-info" style="display:none">
+              <span>⏳</span>
+              <span id="rmPendingInfoText">Mide el alto para completar el producto</span>
+            </div>
+            <select id="rmProductoTipo" class="rm-select">
+              <option value="rotulo">🪟 Rótulo</option>
+              <option value="cristal">🔲 Cristal</option>
+              <option value="vinilo">🎨 Vinilo</option>
+              <option value="otro">📐 Otro</option>
+            </select>
+            <div class="rm-row">
+              <button id="rmAddAncho" class="rm-btn rm-btn-primary" type="button">+ Añadir como ancho</button>
+              <button id="rmAddAlto"  class="rm-btn" type="button" disabled>+ Añadir alto</button>
+            </div>
+          </div>
+
+          <!-- Lista de productos -->
+          <div id="rmProductosList" class="rm-productos-list">
+            <div class="rm-productos-empty">Sin productos añadidos</div>
+          </div>
+        </section>
+
+        <div class="rm-divider"></div>
+
+        <!-- Guardar -->
+        <section class="rm-section">
+          <h2 class="rm-title">Guardar en el sistema</h2>
+          <div id="rmSaveStatus" class="rm-save-status">
+            <span class="rm-save-dot"></span>
+            <span id="rmSaveText">Sin guardar</span>
+          </div>
+          <button id="rmSave" class="rm-btn rm-btn-success" type="button" disabled>
+            💾 Guardar medición
+          </button>
+          <p class="rm-help" id="rmSaveHint">Selecciona un agente para poder guardar.</p>
+        </section>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Mobile nav -->
+  <nav class="rm-mobile-nav">
+    <button class="rm-mobile-tab rm-active" type="button" data-tab="agents">Agentes</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="measure">Medir</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="result">Guardar</button>
+  </nav>
+
+  <div id="rmToast" class="rm-toast"></div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ── CONFIGURACIÓN ── */
+    const config = {
+      spreadsheetId:    "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+      spreadsheetSheet: "agentes ria 2026",
+      n8nWebhookSave:   "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements"
+    };
+
+    /* ── LUPA ── */
+    const MAG_SIZE = 120;  // diámetro px (CSS)
+    const MAG_ZOOM = 4;
+
+    /* ── ESTADO ── */
+    const state = {
+      mode:           "ref",
+      imageDataUrl:   "",
+      imageSource:    "",
+      points:         [],
+      lines:          [],
+      clients:        [],
+      selectedClient: null,
+      pxPerCm:        null,
+      reference:      null,
+      measurement:    null,
+      errorPct:       12,
+      saveState:      "idle",
+      // Productos
+      productos:      [],       // [{ tipo, anchoCm, altoCm? }]
+      pendingProduct: null,     // { tipo, anchoCm } — esperando alto
+      lastMeasureCm:  null
+    };
+
+    /* ── ELEMENTOS ── */
+    const app = document.getElementById("rm-app");
+    const el  = id => app.querySelector(id);
+
+    const els = {
+      upload:            el("#rmUpload"),
+      dropZone:          el("#rmDropZone"),
+      clientSearch:      el("#rmClientSearch"),
+      clientList:        el("#rmClientList"),
+      clientBadge:       el("#rmClientBadge"),
+      reloadAgents:      el("#rmReloadAgents"),
+      agentCard:         el("#rmAgentCard"),
+      agentName:         el("#rmAgentName"),
+      agentAddress:      el("#rmAgentAddress"),
+      agentPhone:        el("#rmAgentPhone"),
+      agentLinks:        el("#rmAgentLinks"),
+      topClient:         el("#rmTopClient"),
+      topScale:          el("#rmTopScale"),
+      topResult:         el("#rmTopResult"),
+      mobileTabs:        app.querySelectorAll(".rm-mobile-tab"),
+      refType:           el("#rmRefType"),
+      customRef:         el("#rmCustomRef"),
+      modeRef:           el("#rmModeRef"),
+      modeMeasure:       el("#rmModeMeasure"),
+      mobileRefType:     el("#rmMobileRefType"),
+      mobileCustomRef:   el("#rmMobileCustomRef"),
+      mobileModeRef:     el("#rmMobileModeRef"),
+      mobileModeMeasure: el("#rmMobileModeMeasure"),
+      mobileUndo:        el("#rmMobileUndo"),
+      mobileClear:       el("#rmMobileClear"),
+      undo:              el("#rmUndo"),
+      clear:             el("#rmClear"),
+      imageBadge:        el("#rmImageBadge"),
+      stage:             el("#rmStage"),
+      stageInner:        el("#rmStageInner"),
+      image:             el("#rmImage"),
+      overlay:           el("#rmOverlay"),
+      magnifier:         el("#rmMagnifier"),
+      placeholder:       el("#rmPlaceholder"),
+      modePill:          el("#rmModePill"),
+      modeText:          el("#rmModeText"),
+      canvasNote:        el("#rmCanvasNote"),
+      clickHint:         el("#rmClickHint"),
+      pointerReadout:    el("#rmPointerReadout"),
+      result:            el("#rmResult"),
+      resultSub:         el("#rmResultSub"),
+      copy:              el("#rmCopy"),
+      // Productos
+      addMeasureBox:     el("#rmAddMeasureBox"),
+      pendingInfo:       el("#rmPendingInfo"),
+      pendingInfoText:   el("#rmPendingInfoText"),
+      productoTipo:      el("#rmProductoTipo"),
+      addAncho:          el("#rmAddAncho"),
+      addAlto:           el("#rmAddAlto"),
+      productosList:     el("#rmProductosList"),
+      // Guardar
+      saveStatus:        el("#rmSaveStatus"),
+      saveText:          el("#rmSaveText"),
+      save:              el("#rmSave"),
+      saveHint:          el("#rmSaveHint"),
+      toast:             el("#rmToast")
+    };
+
+    /* ─────────────────────────────────────────
+       LUPA DE PRECISIÓN
+    ───────────────────────────────────────── */
+    (function initMagnifier() {
+      const dpr = window.devicePixelRatio || 1;
+      const px  = Math.round(MAG_SIZE * dpr);
+      els.magnifier.width  = px;
+      els.magnifier.height = px;
+      els.magnifier.style.width  = MAG_SIZE + "px";
+      els.magnifier.style.height = MAG_SIZE + "px";
+    })();
+
+    function showMagnifier(svgX, svgY, clicked) {
+      const mag = els.magnifier;
+      const dpr = window.devicePixelRatio || 1;
+      const ctx = mag.getContext("2d");
+      const R   = MAG_SIZE / 2;       // radio CSS
+      const Rpx = R * dpr;            // radio canvas
+
+      // Posicionar encima del cursor, centrado horizontalmente
+      mag.style.left = svgX + "px";
+      mag.style.top  = svgY + "px";
+      mag.style.display = "block";
+
+      ctx.clearRect(0, 0, mag.width, mag.height);
+
+      // Recorte circular
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(Rpx, Rpx, Rpx, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Calcular región fuente en coordenadas de imagen natural
+      const imgRect = els.image.getBoundingClientRect();
+      const scaleX  = els.image.naturalWidth  / imgRect.width;
+      const scaleY  = els.image.naturalHeight / imgRect.height;
+      const srcSize = MAG_SIZE / MAG_ZOOM;   // px de imagen mostrada cubiertos
+      const sx = (svgX - srcSize / 2) * scaleX;
+      const sy = (svgY - srcSize / 2) * scaleY;
+      const sw = srcSize * scaleX;
+      const sh = srcSize * scaleY;
+
+      // Dibujar región ampliada
+      ctx.drawImage(els.image, sx, sy, sw, sh, 0, 0, mag.width, mag.height);
+      ctx.restore();
+
+      // Punto marcado (al hacer clic)
+      if (clicked) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(Rpx, Rpx, 3 * dpr, 0, Math.PI * 2);
+        ctx.fillStyle = state.mode === "ref" ? "#f59e0b" : "#14b8a6";
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Cruz de precisión
+      const color = state.mode === "ref" ? "#f59e0b" : "#14b8a6";
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = dpr;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      // horizontal
+      ctx.moveTo(0,    Rpx); ctx.lineTo(Rpx - 6 * dpr, Rpx);
+      ctx.moveTo(Rpx + 6 * dpr, Rpx); ctx.lineTo(mag.width, Rpx);
+      // vertical
+      ctx.moveTo(Rpx, 0);    ctx.lineTo(Rpx, Rpx - 6 * dpr);
+      ctx.moveTo(Rpx, Rpx + 6 * dpr); ctx.lineTo(Rpx, mag.height);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function hideMagnifier() {
+      els.magnifier.style.display = "none";
+    }
+
+    /* ── TOAST ── */
+    function showToast(msg) {
+      els.toast.textContent = msg;
+      els.toast.classList.add("rm-show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => els.toast.classList.remove("rm-show"), 2800);
+    }
+
+    /* ── MOBILE TABS ── */
+    function setMobileTab(tab) {
+      app.dataset.mobileTab = tab;
+      els.mobileTabs.forEach(b => b.classList.toggle("rm-active", b.dataset.tab === tab));
+      requestAnimationFrame(() => { if (state.imageSource) render(); });
+    }
+
+    /* ── MODE ── */
+    function setMode(mode) {
+      state.mode   = mode;
+      state.points = [];
+      els.modePill.dataset.mode = mode;
+      els.modeText.textContent  = mode === "ref" ? "Modo referencia" : "Modo medición";
+      els.modeRef.classList.toggle("rm-active", mode === "ref");
+      els.modeMeasure.classList.toggle("rm-active", mode === "measure");
+      els.mobileModeRef.classList.toggle("rm-active", mode === "ref");
+      els.mobileModeMeasure.classList.toggle("rm-active", mode === "measure");
+      updateGuidance();
+      render();
+    }
+
+    function updateGuidance() {
+      if (!state.imageSource) {
+        els.canvasNote.textContent = "Sube una imagen para empezar";
+        els.clickHint.textContent  = "Esperando imagen";
+        return;
+      }
+      if (state.mode === "ref") {
+        els.canvasNote.textContent = "Marca dos puntos sobre una medida conocida";
+        els.clickHint.textContent  = state.points.length
+          ? "Segundo clic: final de referencia"
+          : "Primer clic: inicio de referencia";
+        return;
+      }
+      if (!state.pxPerCm) {
+        els.canvasNote.textContent = "Define primero una referencia de escala";
+        els.clickHint.textContent  = "Cambia a modo referencia";
+        return;
+      }
+      if (state.pendingProduct) {
+        els.canvasNote.textContent = "Mide el alto del producto pendiente";
+        els.clickHint.textContent  = state.points.length
+          ? "Segundo clic: final de medición (alto)"
+          : "Primer clic: inicio de medición (alto)";
+        return;
+      }
+      els.canvasNote.textContent = "Marca el ancho o alto de la pieza";
+      els.clickHint.textContent  = state.points.length
+        ? "Segundo clic: final de medición"
+        : "Primer clic: inicio de medición";
+    }
+
+    /* ── IMAGEN ── */
+    function loadImage(src, dataUrl) {
+      state.imageSource  = src;
+      state.imageDataUrl = dataUrl || "";
+      state.points       = [];
+      state.lines        = [];
+      state.pxPerCm      = null;
+      state.reference    = null;
+      state.measurement  = null;
+      state.lastMeasureCm = null;
+
+      els.image.onload = () => {
+        els.stageInner.classList.add("rm-ready");
+        els.placeholder.style.display = "none";
+        els.imageBadge.textContent    = "Imagen lista";
+        els.imageBadge.className      = "rm-badge rm-badge-ok";
+        syncOverlaySize();
+        updatePanel();
+        updateGuidance();
+        render();
+      };
+      els.image.src = src;
+    }
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        showToast("Selecciona una imagen válida.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        loadImage(String(e.target.result), String(e.target.result));
+        setMobileTab("measure");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ── SHEETS ── */
+    function normalizeHeader(v) {
+      return String(v || "").toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/\s+/g, " ").trim();
+    }
+
+    function getCellValue(row, headerMap, names) {
+      for (const name of names) {
+        const idx = headerMap[normalizeHeader(name)];
+        if (typeof idx === "number") {
+          const cell = (row.c || [])[idx];
+          if (cell && cell.v !== undefined) return String(cell.f || cell.v || "").trim();
+        }
+      }
+      return "";
+    }
+
+    function clientFullAddress(c) {
+      return [c.address, c.city, c.province, c.postalCode, "España"].filter(Boolean).join(", ");
+    }
+
+    function mapSheetClients(table) {
+      const headers   = (table.cols || []).map(c => c.label || "");
+      const headerMap = {};
+      headers.forEach((h, i) => { headerMap[normalizeHeader(h)] = i; });
+
+      return (table.rows || []).map(row => {
+        const c = {
+          agent:      getCellValue(row, headerMap, ["Número de agente", "Numero de agente"]),
+          name:       getCellValue(row, headerMap, ["Nombre de Contacto", "Nombre", "Contacto"]),
+          address:    getCellValue(row, headerMap, ["Dirección", "Direccion"]),
+          city:       getCellValue(row, headerMap, ["Ciudad"]),
+          province:   getCellValue(row, headerMap, ["Provincia"]),
+          postalCode: getCellValue(row, headerMap, ["Código postal", "Codigo postal", "CP"]),
+          phone:      getCellValue(row, headerMap, ["Teléfono", "Telefono"]),
+          branding:   getCellValue(row, headerMap, ["Branding"]),
+          estado:     getCellValue(row, headerMap, ["Estado"]),
+          driveUrl:   getCellValue(row, headerMap, ["URL Carpeta Drive"]),
+          trelloUrl:  getCellValue(row, headerMap, ["URL Trello"]),
+          trelloId:   getCellValue(row, headerMap, ["ID Trello Card"])
+        };
+        c.fullAddress = clientFullAddress(c);
+        return c;
+      }).filter(c => c.agent || c.name || c.address);
+    }
+
+    function renderClients() {
+      const query = normalizeHeader(els.clientSearch.value);
+      const list  = state.clients.filter(c => {
+        const hay = normalizeHeader([c.agent, c.name, c.city, c.province, c.branding].join(" "));
+        return !query || hay.includes(query);
+      });
+
+      els.clientBadge.textContent = state.clients.length
+        ? state.clients.length + " agentes" : "Sin datos";
+
+      if (!list.length) {
+        els.clientList.innerHTML = '<p class="rm-help">No hay resultados para esa búsqueda.</p>';
+        return;
+      }
+
+      els.clientList.innerHTML = "";
+      list.forEach(c => {
+        const btn = document.createElement("button");
+        btn.type      = "button";
+        btn.className = "rm-client-item" +
+          (state.selectedClient?.agent === c.agent ? " rm-selected" : "");
+        btn.innerHTML =
+          '<span class="rm-client-main">' + esc([c.agent, c.name].filter(Boolean).join(" · ")) + '</span>' +
+          '<span class="rm-client-meta">' + esc(c.city || c.fullAddress || "Sin dirección") + '</span>' +
+          (c.branding ? '<span class="rm-client-meta">' + esc(c.branding) + '</span>' : "");
+        btn.addEventListener("click", () => selectClient(c));
+        els.clientList.appendChild(btn);
+      });
+    }
+
+    function selectClient(c) {
+      state.selectedClient = c;
+      renderClients();
+      renderAgentCard(c);
+      updateSaveButton();
+      showToast("Agente seleccionado: " + (c.agent || c.name));
+      updatePanel();
+    }
+
+    function renderAgentCard(c) {
+      els.agentCard.classList.add("rm-visible");
+      els.agentName.textContent    = [c.agent, c.name].filter(Boolean).join(" · ");
+      els.agentAddress.textContent = c.fullAddress || "Sin dirección";
+      els.agentPhone.textContent   = c.phone ? "📞 " + c.phone : "";
+
+      els.agentLinks.innerHTML = "";
+
+      const driveBtn = document.createElement("a");
+      driveBtn.className = "rm-agent-link " + (c.driveUrl ? "rm-agent-link-drive" : "rm-agent-link-nourl");
+      driveBtn.textContent = c.driveUrl ? "📁 Drive" : "📁 Sin carpeta";
+      if (c.driveUrl) { driveBtn.href = c.driveUrl; driveBtn.target = "_blank"; }
+      els.agentLinks.appendChild(driveBtn);
+
+      const trelloBtn = document.createElement("a");
+      trelloBtn.className = "rm-agent-link " + (c.trelloUrl ? "rm-agent-link-trello" : "rm-agent-link-nourl");
+      trelloBtn.textContent = c.trelloUrl ? "📋 Trello" : "📋 Sin tarjeta";
+      if (c.trelloUrl) { trelloBtn.href = c.trelloUrl; trelloBtn.target = "_blank"; }
+      els.agentLinks.appendChild(trelloBtn);
+
+      if (c.estado) {
+        const estadoBadge = document.createElement("span");
+        estadoBadge.className   = "rm-agent-link rm-agent-link-nourl";
+        estadoBadge.textContent = c.estado;
+        els.agentLinks.appendChild(estadoBadge);
+      }
+    }
+
+    function loadClientsFromSheet() {
+      const cbName = "rmCb_" + Date.now();
+      const script = document.createElement("script");
+      const params = new URLSearchParams({
+        tqx:   "out:json;responseHandler:" + cbName,
+        sheet: config.spreadsheetSheet,
+        tq:    "select *"
+      });
+
+      els.clientBadge.textContent = "Cargando…";
+      els.clientList.innerHTML    = '<p class="rm-help">Conectando con Google Sheets…</p>';
+      els.reloadAgents.disabled   = true;
+
+      window[cbName] = response => {
+        try {
+          if (!response || response.status === "error") throw new Error("Error en respuesta");
+          state.clients        = mapSheetClients(response.table || {});
+          state.selectedClient = null;
+          els.agentCard.classList.remove("rm-visible");
+          renderClients();
+          if (state.clients.length) showToast(state.clients.length + " agentes cargados.");
+        } catch {
+          els.clientBadge.textContent = "Error";
+          els.clientList.innerHTML    = '<p class="rm-help">No se pudieron cargar los agentes. Revisa permisos del Spreadsheet.</p>';
+        } finally {
+          els.reloadAgents.disabled = false;
+          delete window[cbName];
+          script.remove();
+        }
+      };
+
+      script.onerror = () => {
+        els.clientBadge.textContent = "Error";
+        els.clientList.innerHTML    = '<p class="rm-help">Sin conexión con Google Sheets.</p>';
+        els.reloadAgents.disabled   = false;
+        delete window[cbName];
+        script.remove();
+      };
+
+      script.src = "https://docs.google.com/spreadsheets/d/" +
+        encodeURIComponent(config.spreadsheetId) + "/gviz/tq?" + params.toString();
+      document.body.appendChild(script);
+    }
+
+    /* ── MEDICIÓN ── */
+    function getRefCm() {
+      if (els.refType.value === "custom") {
+        const v = Number(els.customRef.value);
+        return Number.isFinite(v) && v > 0 ? v : null;
+      }
+      return Number(els.refType.value);
+    }
+
+    function getSvgPoint(e) {
+      const r = els.overlay.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(r.width,  e.clientX - r.left)),
+        y: Math.max(0, Math.min(r.height, e.clientY - r.top))
+      };
+    }
+
+    function dist(a, b) {
+      return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+    }
+
+    function fmtCm(cm) {
+      if (!Number.isFinite(cm)) return "—";
+      return cm >= 100 ? (cm / 100).toFixed(2) + " m" : cm.toFixed(1) + " cm";
+    }
+
+    function fmtCmRaw(cm) {
+      if (!Number.isFinite(cm)) return "—";
+      return cm >= 100
+        ? Math.round(cm) + " cm · " + (cm / 100).toFixed(2) + " m"
+        : cm.toFixed(1) + " cm";
+    }
+
+    function addLine(p1, p2) {
+      const d = dist(p1, p2);
+      if (d < 6) { showToast("Línea demasiado corta."); return; }
+
+      if (state.mode === "ref") {
+        const cm = getRefCm();
+        if (!cm) { showToast("Introduce una referencia personalizada válida."); return; }
+        state.pxPerCm    = d / cm;
+        state.reference  = { p1, p2, px: d, cm };
+        state.lines      = state.lines.filter(l => l.type !== "ref");
+        state.lines.push({ type: "ref", p1, p2, px: d, cm });
+        setMode("measure");
+        showToast("Referencia definida. Ahora mide el rótulo.");
+        return;
+      }
+
+      if (!state.pxPerCm) { showToast("Primero define una referencia de escala."); return; }
+
+      const cm = d / state.pxPerCm;
+      state.measurement   = { p1, p2, px: d, cm };
+      state.lastMeasureCm = cm;
+      state.lines         = state.lines.filter(l => l.type !== "measure");
+      state.lines.push({ type: "measure", p1, p2, px: d, cm });
+
+      // Si hay producto pendiente esperando alto, completarlo automáticamente
+      if (state.pendingProduct) {
+        completePendingWithAlto(cm);
+      }
+
+      updatePanel();
+      updateSaveButton();
+    }
+
+    /* ── SYNC OVERLAY ── */
+    function syncOverlaySize() {
+      const r = els.image.getBoundingClientRect();
+      els.overlay.setAttribute("viewBox", `0 0 ${r.width} ${r.height}`);
+      els.overlay.setAttribute("width",   r.width);
+      els.overlay.setAttribute("height",  r.height);
+    }
+
+    /* ── RENDER SVG ── */
+    function svgEl(tag, attrs) {
+      const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs || {}).forEach(([k, v]) => n.setAttribute(k, v));
+      return n;
+    }
+
+    function drawLine(line) {
+      const cls = line.type === "ref" ? "rm-line-ref" : "rm-line-measure";
+      const g   = svgEl("g", {});
+      g.appendChild(svgEl("line", {
+        x1: line.p1.x, y1: line.p1.y,
+        x2: line.p2.x, y2: line.p2.y,
+        class: cls, "stroke-width": 4, "stroke-linecap": "round"
+      }));
+      [line.p1, line.p2].forEach(p => {
+        g.appendChild(svgEl("circle", { cx: p.x, cy: p.y, r: 6, class: "rm-handle " + cls }));
+      });
+      const label = line.type === "ref"
+        ? "Ref " + fmtCmRaw(line.cm)
+        : "Medición " + fmtCmRaw(line.cm);
+      const tx = svgEl("text", {
+        x: (line.p1.x + line.p2.x) / 2 + 8,
+        y: (line.p1.y + line.p2.y) / 2 - 8,
+        fill: "#fff", "font-size": 13, "font-weight": 750,
+        "paint-order": "stroke", stroke: "rgba(15,23,42,.9)", "stroke-width": 4
+      });
+      tx.textContent = label;
+      g.appendChild(tx);
+      els.overlay.appendChild(g);
+    }
+
+    function render() {
+      syncOverlaySize();
+      els.overlay.innerHTML = "";
+      state.lines.forEach(drawLine);
+      state.points.forEach(p => {
+        els.overlay.appendChild(svgEl("circle", {
+          cx: p.x, cy: p.y, r: 6,
+          fill:         state.mode === "ref" ? "#f59e0b" : "#14b8a6",
+          stroke:       "#fff", "stroke-width": 3
+        }));
+      });
+    }
+
+    /* ─────────────────────────────────────────
+       SISTEMA DE PRODUCTOS
+    ───────────────────────────────────────── */
+    const TIPO_META = {
+      rotulo:  { icon: "🪟", label: "Rótulo" },
+      cristal: { icon: "🔲", label: "Cristal" },
+      vinilo:  { icon: "🎨", label: "Vinilo" },
+      otro:    { icon: "📐", label: "Otro" }
+    };
+
+    function renderProductosList() {
+      const list = els.productosList;
+      if (!state.productos.length) {
+        list.innerHTML = '<div class="rm-productos-empty">Sin productos añadidos</div>';
+        return;
+      }
+      list.innerHTML = "";
+      state.productos.forEach((p, i) => {
+        const meta   = TIPO_META[p.tipo] || { icon: "📐", label: p.tipo };
+        const dimStr = p.altoCm != null
+          ? fmtCmRaw(p.anchoCm) + " × " + fmtCmRaw(p.altoCm)
+          : fmtCmRaw(p.anchoCm) + " (solo ancho)";
+
+        const item = document.createElement("div");
+        item.className = "rm-producto-item";
+        item.innerHTML =
+          '<span class="rm-producto-icon">' + meta.icon + '</span>' +
+          '<span class="rm-producto-info">' +
+            '<div class="rm-producto-tipo">' + esc(meta.label) + '</div>' +
+            '<div class="rm-producto-dims">' + esc(dimStr) + '</div>' +
+          '</span>' +
+          '<button class="rm-producto-del" type="button" title="Eliminar" data-idx="' + i + '">×</button>';
+        list.appendChild(item);
+      });
+    }
+
+    function updateAddMeasureUI() {
+      const hasMeasure = state.lastMeasureCm !== null && state.pxPerCm !== null;
+      const pending    = state.pendingProduct;
+
+      // Mostrar caja solo si hay medida activa
+      els.addMeasureBox.classList.toggle("rm-visible", hasMeasure || !!pending);
+      els.addMeasureBox.classList.toggle("rm-pending-alto", !!pending);
+
+      if (pending) {
+        els.pendingInfo.style.display  = "flex";
+        els.pendingInfoText.textContent =
+          "Pendiente: " + (TIPO_META[pending.tipo]?.label || pending.tipo) +
+          " — ancho " + fmtCmRaw(pending.anchoCm) + " · Mide el alto";
+        els.addAncho.textContent  = "+ Nuevo producto";
+        els.addAlto.disabled      = !hasMeasure;
+        els.productoTipo.disabled = true;
+      } else {
+        els.pendingInfo.style.display  = "none";
+        els.addAncho.textContent       = "+ Añadir como ancho";
+        els.addAlto.disabled           = true;
+        els.productoTipo.disabled      = false;
+      }
+
+      // Habilitar addAncho solo si hay medida
+      els.addAncho.disabled = !hasMeasure && !pending;
+    }
+
+    function addComoAncho() {
+      if (state.lastMeasureCm === null) { showToast("Primero mide algo en el canvas."); return; }
+      const tipo = els.productoTipo.value;
+
+      // Si había producto pendiente, lo descartamos y empezamos uno nuevo
+      if (state.pendingProduct) {
+        showToast("Producto anterior descartado. Nuevo ancho registrado.");
+      }
+
+      state.pendingProduct = { tipo, anchoCm: state.lastMeasureCm };
+      state.lastMeasureCm  = null;
+      state.measurement    = null;
+      state.lines          = state.lines.filter(l => l.type !== "measure");
+
+      updatePanel();
+      updateAddMeasureUI();
+      updateGuidance();
+      render();
+      showToast("Ancho registrado. Ahora mide el alto o añade directamente.");
+    }
+
+    function completePendingWithAlto(altoCm) {
+      if (!state.pendingProduct) return;
+      const prod = { ...state.pendingProduct, altoCm };
+      state.productos.push(prod);
+      state.pendingProduct = null;
+
+      const meta = TIPO_META[prod.tipo] || { label: prod.tipo };
+      showToast(meta.label + " añadido: " + fmtCmRaw(prod.anchoCm) + " × " + fmtCmRaw(prod.altoCm));
+
+      state.lastMeasureCm = null;
+      state.measurement   = null;
+      state.lines         = state.lines.filter(l => l.type !== "measure");
+
+      renderProductosList();
+      updateAddMeasureUI();
+      updateSaveButton();
+      updatePanel();
+      updateGuidance();
+      render();
+    }
+
+    function addComoAlto() {
+      if (!state.pendingProduct) { showToast("No hay producto pendiente de alto."); return; }
+      if (state.lastMeasureCm === null) { showToast("Mide el alto en el canvas primero."); return; }
+      completePendingWithAlto(state.lastMeasureCm);
+    }
+
+    function deleteProducto(idx) {
+      state.productos.splice(idx, 1);
+      renderProductosList();
+      updateSaveButton();
+    }
+
+    // Guardar producto con solo ancho (sin alto), cerrándolo
+    function cerrarPendienteComoSoloAncho() {
+      if (!state.pendingProduct) return;
+      const prod = { ...state.pendingProduct };
+      state.productos.push(prod);
+      state.pendingProduct = null;
+      const meta = TIPO_META[prod.tipo] || { label: prod.tipo };
+      showToast(meta.label + " añadido (solo ancho): " + fmtCmRaw(prod.anchoCm));
+      renderProductosList();
+      updateAddMeasureUI();
+      updateSaveButton();
+      updatePanel();
+      updateGuidance();
+    }
+
+    /* ── PANEL UPDATE ── */
+    function updatePanel() {
+      els.topClient.innerHTML = '<span class="rm-chip-dot"></span>' +
+        esc(state.selectedClient
+          ? (state.selectedClient.agent || state.selectedClient.name || "Agente")
+          : "Sin agente");
+      els.topScale.innerHTML = '<span class="rm-chip-dot"></span>' +
+        esc(state.pxPerCm ? state.pxPerCm.toFixed(2) + " px/cm" : "Sin escala");
+
+      if (state.measurement) {
+        els.result.textContent    = fmtCm(state.measurement.cm);
+        els.resultSub.textContent =
+          Math.round(state.measurement.cm) + " cm (+/- " + state.errorPct + "%) estimación preliminar";
+        els.topResult.innerHTML =
+          '<span class="rm-chip-dot"></span>' + esc(Math.round(state.measurement.cm) + " cm");
+      } else {
+        els.result.textContent    = "—";
+        els.resultSub.textContent = state.pxPerCm ? "Escala lista. Marca el rótulo." : "Medida pendiente";
+        els.topResult.innerHTML   = '<span class="rm-chip-dot"></span>Sin medida';
+      }
+
+      updateAddMeasureUI();
+    }
+
+    /* ── SAVE BUTTON ── */
+    function updateSaveButton() {
+      const canSave = !!state.selectedClient && state.productos.length > 0;
+      els.save.disabled        = !canSave;
+      els.saveHint.textContent = !state.selectedClient
+        ? "Selecciona un agente para poder guardar."
+        : state.productos.length === 0
+          ? "Añade al menos un producto medido para guardar."
+          : "Guardará en Google Sheets y actualizará Trello.";
+    }
+
+    function setSaveState(s, msg) {
+      state.saveState = s;
+      els.saveStatus.className = "rm-save-status" + (s !== "idle" ? " rm-" + s : "");
+      els.saveText.textContent = msg;
+    }
+
+    /* ── GUARDAR vía n8n ── */
+    async function saveMeasurement() {
+      if (!state.selectedClient) { showToast("Selecciona un agente primero."); return; }
+      if (!state.productos.length) { showToast("Añade al menos un producto medido."); return; }
+
+      // Si queda producto pendiente (solo ancho), lo cerramos antes de guardar
+      if (state.pendingProduct) cerrarPendienteComoSoloAncho();
+
+      const payload = {
+        agentId:      state.selectedClient.agent,
+        agentName:    state.selectedClient.name,
+        referenceCm:  state.reference ? state.reference.cm : null,
+        referencePx:  state.reference ? Math.round(state.reference.px) : null,
+        scalePxPerCm: state.pxPerCm   ? parseFloat(state.pxPerCm.toFixed(4)) : null,
+        margenErrorPct: state.errorPct,
+        productos:    state.productos.map(p => ({
+          tipo:     p.tipo,
+          anchoCm:  parseFloat(p.anchoCm.toFixed(1)),
+          altoCm:   p.altoCm != null ? parseFloat(p.altoCm.toFixed(1)) : null
+        })),
+        timestamp: new Date().toISOString()
+      };
+
+      els.save.disabled = true;
+      setSaveState("saving", "Guardando…");
+
+      try {
+        const res = await fetch(config.n8nWebhookSave, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        setSaveState("saved", "Guardado correctamente ✓");
+        showToast("Medición guardada para " + (state.selectedClient.agent || state.selectedClient.name));
+      } catch (err) {
+        setSaveState("error", "Error al guardar: " + err.message);
+        showToast("No se pudo guardar. Revisa la conexión con n8n.");
+      } finally {
+        els.save.disabled = !state.selectedClient || !state.productos.length;
+      }
+    }
+
+    /* ── UNDO / CLEAR ── */
+    function undo() {
+      if (state.points.length) { state.points.pop(); updateGuidance(); render(); return; }
+      const last = state.lines.pop();
+      if (!last) return;
+      if (last.type === "measure") {
+        state.measurement   = null;
+        state.lastMeasureCm = null;
+      }
+      if (last.type === "ref") {
+        state.reference     = null;
+        state.pxPerCm       = null;
+        state.measurement   = null;
+        state.lastMeasureCm = null;
+        state.lines         = state.lines.filter(l => l.type !== "measure");
+      }
+      updatePanel();
+      updateSaveButton();
+      render();
+    }
+
+    function clearAll() {
+      state.points        = [];
+      state.lines         = [];
+      state.pxPerCm       = null;
+      state.reference     = null;
+      state.measurement   = null;
+      state.lastMeasureCm = null;
+      state.pendingProduct = null;
+      updatePanel();
+      updateGuidance();
+      render();
+    }
+
+    /* ── COPY ── */
+    function copyResult() {
+      const text = state.measurement
+        ? "Rótulo estimado: " + Math.round(state.measurement.cm) + " cm (+/- " + state.errorPct + "%)"
+        : "Sin medida activa";
+      navigator.clipboard.writeText(text)
+        .then(() => showToast("Resultado copiado."))
+        .catch(() => showToast("No se pudo copiar al portapapeles."));
+    }
+
+    /* ── ESC HTML ── */
+    function esc(v) {
+      return String(v)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    /* ─────────────────────────────────────────
+       EVENTOS
+    ───────────────────────────────────────── */
+    els.upload.addEventListener("change", e => handleFile(e.target.files[0]));
+
+    ["dragenter", "dragover"].forEach(n =>
+      els.dropZone.addEventListener(n, e => { e.preventDefault(); els.dropZone.classList.add("rm-drag"); }));
+    ["dragleave", "drop"].forEach(n =>
+      els.dropZone.addEventListener(n, e => { e.preventDefault(); els.dropZone.classList.remove("rm-drag"); }));
+    els.dropZone.addEventListener("drop", e => handleFile(e.dataTransfer.files[0]));
+
+    els.clientSearch.addEventListener("input", renderClients);
+    els.reloadAgents.addEventListener("click", loadClientsFromSheet);
+
+    els.mobileTabs.forEach(b => b.addEventListener("click", () => setMobileTab(b.dataset.tab)));
+
+    els.modeRef.addEventListener("click",           () => setMode("ref"));
+    els.modeMeasure.addEventListener("click",        () => setMode("measure"));
+    els.mobileModeRef.addEventListener("click",      () => setMode("ref"));
+    els.mobileModeMeasure.addEventListener("click",  () => setMode("measure"));
+
+    els.undo.addEventListener("click",        undo);
+    els.mobileUndo.addEventListener("click",  undo);
+    els.clear.addEventListener("click",       clearAll);
+    els.mobileClear.addEventListener("click", clearAll);
+    els.copy.addEventListener("click",        copyResult);
+    els.save.addEventListener("click",        saveMeasurement);
+
+    // Productos
+    els.addAncho.addEventListener("click", addComoAncho);
+    els.addAlto.addEventListener("click",  addComoAlto);
+
+    els.productosList.addEventListener("click", e => {
+      const btn = e.target.closest(".rm-producto-del");
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.idx, 10);
+      if (Number.isFinite(idx)) deleteProducto(idx);
+    });
+
+    els.refType.addEventListener("change", () => {
+      els.customRef.hidden       = els.refType.value !== "custom";
+      els.mobileRefType.value    = els.refType.value;
+      els.mobileCustomRef.hidden = els.refType.value !== "custom";
+    });
+
+    els.mobileRefType.addEventListener("change", () => {
+      els.refType.value          = els.mobileRefType.value;
+      els.customRef.hidden       = els.mobileRefType.value !== "custom";
+      els.mobileCustomRef.hidden = els.mobileRefType.value !== "custom";
+    });
+
+    els.customRef.addEventListener("input",       () => { els.mobileCustomRef.value = els.customRef.value; });
+    els.mobileCustomRef.addEventListener("input", () => { els.customRef.value       = els.mobileCustomRef.value; });
+
+    /* ── Canvas: clic ── */
+    els.overlay.addEventListener("click", e => {
+      if (!state.imageSource) return;
+      if (state.mode === "measure" && !state.pxPerCm) {
+        showToast("Primero define una referencia de escala.");
+        return;
+      }
+      const pt = getSvgPoint(e);
+      state.points.push(pt);
+
+      // Mostrar punto en lupa
+      showMagnifier(pt.x, pt.y, true);
+
+      if (state.points.length === 2) {
+        const [p1, p2] = state.points;
+        state.points   = [];
+        addLine(p1, p2);
+      }
+      updateGuidance();
+      updatePanel();
+      render();
+    });
+
+    /* ── Canvas: movimiento → lupa ── */
+    els.overlay.addEventListener("mousemove", e => {
+      if (!state.imageSource) return;
+
+      const pt = getSvgPoint(e);
+
+      // Actualizar readout
+      if (!state.points.length) {
+        els.pointerReadout.textContent = state.pxPerCm
+          ? state.pxPerCm.toFixed(2) + " px/cm"
+          : "0 px";
+      } else {
+        const d = dist(state.points[0], pt);
+        els.pointerReadout.textContent = state.pxPerCm && state.mode === "measure"
+          ? fmtCmRaw(d / state.pxPerCm)
+          : Math.round(d) + " px";
+      }
+
+      // Lupa solo en modo ref o measure
+      if (state.mode === "ref" || state.mode === "measure") {
+        showMagnifier(pt.x, pt.y, false);
+      }
+    });
+
+    els.overlay.addEventListener("mouseleave", hideMagnifier);
+
+    window.addEventListener("resize", () => {
+      if (state.imageSource) render();
+    });
+
+    /* ── INIT ── */
+    setMode("ref");
+    updatePanel();
+    updateSaveButton();
+    renderProductosList();
+    loadClientsFromSheet();
+
+  })();
+  </script>
+</div>
+</body>
+</html>
