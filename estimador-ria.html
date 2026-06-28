@@ -99,7 +99,7 @@
       grid-template-columns: minmax(260px, 300px) minmax(400px, 1fr) minmax(280px, 320px);
       gap: 12px;
       max-width: 1600px;
-      height: calc(100vh - 78px);
+      height: calc(100vh - 90px);
       min-height: 0;
       margin: 0 auto;
     }
@@ -325,6 +325,24 @@
 
     /* ── CLIENT LIST ── */
     #rm-app .rm-client-list { display: grid; gap: 5px; max-height: 180px; overflow-y: auto; padding-right: 2px; }
+    #rm-app .rm-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    #rm-app .rm-page-info { color: var(--text-3); font-size: 11px; font-weight: 600; flex: 1; text-align: center; }
+    #rm-app .rm-page-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 30px; min-width: 30px;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--surface); color: var(--text-2);
+      font-size: 13px; font-weight: 700; cursor: pointer; padding: 0 8px;
+      transition: background 100ms, border-color 100ms, color 100ms;
+    }
+    #rm-app .rm-page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    #rm-app .rm-page-btn:disabled { opacity: .35; cursor: not-allowed; }
     #rm-app .rm-client-item { display: grid; gap: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 8px 10px; cursor: pointer; text-align: left; transition: border-color 100ms, background 100ms; }
     #rm-app .rm-client-item:hover,
     #rm-app .rm-client-item.rm-selected { border-color: var(--accent); background: var(--accent-bg); }
@@ -538,15 +556,16 @@
         min-height: 100dvh;
         max-height: 100dvh;
         overflow: hidden;
-        padding: 10px;
+        padding: 0;
       }
-      #rm-app .rm-appbar { margin: 0 0 10px; }
-      #rm-app .rm-brand-mark { width: 130px; height: 30px; }
+      #rm-app .rm-appbar-wrap { margin: -10px -10px 0; }
+      #rm-app .rm-appbar { padding: 10px 14px; margin: 0; }
+      #rm-app .rm-brand-mark { width: 110px; height: 26px; }
       #rm-app .rm-brand-name, #rm-app .rm-brand-sub { display: none; }
       #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
       #rm-app .rm-chip { max-width: 140px; min-height: 28px; }
 
-      #rm-app .rm-shell { display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; }
+      #rm-app .rm-shell { display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; }
       #rm-app .rm-panel { display: none; height: 100%; max-height: 100%; border-radius: 12px; }
       #rm-app[data-mobile-tab="agents"]  .rm-controls  { display: flex; }
       #rm-app[data-mobile-tab="measure"] .rm-workbench { display: grid; }
@@ -561,7 +580,9 @@
       }
       #rm-app .rm-controls .rm-section:nth-child(3) { min-height: 0; }
       #rm-app .rm-controls .rm-section:nth-child(n+4) { display: none; }
-      #rm-app .rm-client-list { max-height: none; min-height: 0; }
+      #rm-app .rm-client-list { max-height: none; min-height: 0; flex: 1; }
+      #rm-app .rm-pagination { margin-top: 6px; }
+      #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
       #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; }
       #rm-app[data-mobile-tab="measure"] .rm-center { display: grid; }
@@ -574,7 +595,7 @@
         display: grid;
         gap: 6px;
         border-top: 1px solid rgba(255,255,255,.08);
-        background: rgba(15,23,42,.97);
+        background: #191919;
         padding: 10px;
       }
       #rm-app .rm-mobile-tools .rm-row { grid-template-columns: 1fr 1fr; }
@@ -583,9 +604,10 @@
       #rm-app .rm-mobile-tools .rm-btn { min-height: 40px; border-radius: 8px; }
       #rm-app .rm-mobile-tools .rm-select,
       #rm-app .rm-mobile-tools .rm-input { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.08); color: #fff; }
-      #rm-app .rm-mobile-tools .rm-select option { color: #0f172a; }
-      #rm-app .rm-mobile-tools .rm-btn { background: rgba(255,255,255,.08); color: #e2e8f0; border-color: rgba(255,255,255,.12); }
-      #rm-app .rm-mobile-tools .rm-btn-primary { background: #fff; color: #0f172a; border-color: #fff; }
+      #rm-app .rm-mobile-tools .rm-select option { color: #303030; }
+      #rm-app .rm-mobile-tools .rm-btn { background: rgba(255,255,255,.08); color: #f4ede3; border-color: rgba(255,255,255,.12); }
+      #rm-app .rm-mobile-tools .rm-btn-primary { background: linear-gradient(180deg,#F68F2C,#DD7D24); color: #fff; border-color: #DD7D24; }
+      #rm-app .rm-mobile-tools .rm-btn.rm-active { background: rgba(246,143,44,.25); border-color: rgba(246,143,44,.5); color: #F68F2C; }
 
       #rm-app .rm-measure-display { padding: 14px; border-radius: 10px; }
       #rm-app .rm-measure-value,
@@ -594,26 +616,41 @@
       #rm-app .rm-mobile-nav {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-top: 10px;
-        padding: 6px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        background: var(--surface);
+        gap: 0;
+        margin-top: 0;
+        padding: 0;
+        border: 0;
+        border-top: 1px solid rgba(48,48,48,.12);
+        border-radius: 0;
+        background: #fff;
+        box-shadow: 0 -1px 0 rgba(48,48,48,.08);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       #rm-app .rm-mobile-tab {
         display: grid;
         place-items: center;
-        min-height: 44px;
+        gap: 2px;
+        min-height: 52px;
         border: 0;
-        border-radius: 8px;
+        border-radius: 0;
         background: transparent;
-        color: var(--text-2);
-        font-size: 13px;
-        font-weight: 700;
+        color: var(--text-3);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .02em;
         cursor: pointer;
+        padding: 6px 0;
+        transition: color 120ms;
+        text-transform: uppercase;
       }
-      #rm-app .rm-mobile-tab.rm-active { background: var(--text); color: #fff; }
+      #rm-app .rm-mobile-tab::before {
+        content: attr(data-icon);
+        font-size: 20px;
+        line-height: 1;
+        display: block;
+      }
+      #rm-app .rm-mobile-tab.rm-active { color: #F68F2C; }
+      #rm-app .rm-mobile-tab.rm-active::before { transform: scale(1.1); }
     }
   </style>
 
@@ -851,9 +888,9 @@
 
   <!-- Mobile nav -->
   <nav class="rm-mobile-nav">
-    <button class="rm-mobile-tab rm-active" type="button" data-tab="agents">Agentes</button>
-    <button class="rm-mobile-tab"           type="button" data-tab="measure">Medir</button>
-    <button class="rm-mobile-tab"           type="button" data-tab="result">Guardar</button>
+    <button class="rm-mobile-tab rm-active" type="button" data-tab="agents"  data-icon="👥">Agentes</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="measure" data-icon="📐">Medir</button>
+    <button class="rm-mobile-tab"           type="button" data-tab="result"  data-icon="💾">Guardar</button>
   </nav>
 
   <div id="rmToast" class="rm-toast"></div>
@@ -917,7 +954,8 @@
       sortAlpha:      false,
       productos:      [],
       pendingProduct: null,
-      lastMeasureCm:  null
+      lastMeasureCm:  null,
+      clientPage:     0
     };
 
     const app = document.getElementById("rm-app");
@@ -1140,6 +1178,8 @@
         return c;
       }).filter(c => c.agent || c.name || c.address);
     }
+    function isMobile() { return window.matchMedia("(max-width: 760px)").matches; }
+
     function renderClients() {
       const query = normalizeHeader(els.clientSearch.value);
       let list = state.clients.filter(c => {
@@ -1154,9 +1194,20 @@
         });
       }
       els.clientBadge.textContent = state.clients.length ? state.clients.length + " agentes" : "Sin datos";
-      if (!list.length) { els.clientList.innerHTML = '<p class="rm-help">No hay resultados.</p>'; return; }
+      if (!list.length) {
+        els.clientList.innerHTML = '<p class="rm-help">No hay resultados.</p>';
+        renderPagination(0, 0, 0);
+        return;
+      }
+
+      const pageSize = isMobile() ? 8 : list.length;
+      const totalPages = Math.ceil(list.length / pageSize);
+      if (state.clientPage >= totalPages) state.clientPage = Math.max(0, totalPages - 1);
+      const start = state.clientPage * pageSize;
+      const page  = isMobile() ? list.slice(start, start + pageSize) : list;
+
       els.clientList.innerHTML = "";
-      list.forEach(c => {
+      page.forEach(c => {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "rm-client-item" + (state.selectedClient?.agent === c.agent ? " rm-selected" : "");
@@ -1168,6 +1219,25 @@
         btn.addEventListener("click", () => selectClient(c));
         els.clientList.appendChild(btn);
       });
+
+      renderPagination(state.clientPage, totalPages, list.length);
+    }
+
+    function renderPagination(page, totalPages, total) {
+      let pag = app.querySelector("#rmPagination");
+      if (!isMobile() || totalPages <= 1) { if (pag) pag.remove(); return; }
+      if (!pag) {
+        pag = document.createElement("div");
+        pag.id = "rmPagination";
+        pag.className = "rm-pagination";
+        els.clientList.parentNode.insertBefore(pag, els.clientList.nextSibling);
+      }
+      pag.innerHTML =
+        '<button class="rm-page-btn" id="rmPagePrev" type="button" ' + (page === 0 ? "disabled" : "") + '>‹</button>' +
+        '<span class="rm-page-info">' + (page + 1) + ' / ' + totalPages + ' · ' + total + ' agentes</span>' +
+        '<button class="rm-page-btn" id="rmPageNext" type="button" ' + (page >= totalPages - 1 ? "disabled" : "") + '>›</button>';
+      pag.querySelector("#rmPagePrev").addEventListener("click", () => { state.clientPage--; renderClients(); });
+      pag.querySelector("#rmPageNext").addEventListener("click", () => { state.clientPage++; renderClients(); });
     }
     function selectClient(c) {
       state.selectedClient = c;
@@ -1800,10 +1870,11 @@
     ["dragleave","drop"].forEach(n => els.dropZone.addEventListener(n, e => { e.preventDefault(); els.dropZone.classList.remove("rm-drag"); }));
     els.dropZone.addEventListener("drop", e => handleFile(e.dataTransfer.files[0]));
 
-    els.clientSearch.addEventListener("input", renderClients);
+    els.clientSearch.addEventListener("input", () => { state.clientPage = 0; renderClients(); });
     els.reloadAgents.addEventListener("click", loadClientsFromSheet);
     els.sortToggle.addEventListener("click", () => {
       state.sortAlpha = !state.sortAlpha;
+      state.clientPage = 0;
       els.sortToggle.classList.toggle("rm-active", state.sortAlpha);
       els.sortToggle.textContent = state.sortAlpha ? "A→Z ✓" : "A→Z";
       renderClients();
