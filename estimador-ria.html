@@ -289,6 +289,11 @@
     #rm-app .rm-agent-link-trello { background: var(--accent-bg); color: #1d4ed8; border: 1px solid var(--accent-border); }
     #rm-app .rm-agent-link-nourl  { background: var(--amber-bg); color: var(--amber); border: 1px solid #fde68a; }
 
+    /* ── SORT BUTTON ── */
+    #rm-app .rm-sort-btn { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text-2); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 120ms, border-color 120ms, color 120ms; letter-spacing: .02em; white-space: nowrap; }
+    #rm-app .rm-sort-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
+    #rm-app .rm-sort-btn.rm-active { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
     /* ── CLIENT LIST ── */
     #rm-app .rm-client-list { display: grid; gap: 5px; max-height: 180px; overflow-y: auto; padding-right: 2px; }
     #rm-app .rm-client-item { display: grid; gap: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 8px 10px; cursor: pointer; text-align: left; transition: border-color 100ms, background 100ms; }
@@ -628,7 +633,10 @@
 
         <!-- Agentes -->
         <section class="rm-section">
-          <span class="rm-title">Agentes RIA</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span class="rm-title">Agentes RIA</span>
+            <button id="rmSortToggle" class="rm-sort-btn" type="button" title="Ordenar alfabéticamente">A→Z</button>
+          </div>
           <input id="rmClientSearch" class="rm-input" type="search" placeholder="Buscar agente, ciudad…">
           <div id="rmClientList" class="rm-client-list">
             <p class="rm-help">Cargando desde Google Sheets…</p>
@@ -848,6 +856,7 @@
       measurement:    null,
       errorPct:       12,
       saveState:      "idle",
+      sortAlpha:      false,
       productos:      [],
       pendingProduct: null,
       lastMeasureCm:  null
@@ -859,6 +868,7 @@
       upload: el("#rmUpload"), dropZone: el("#rmDropZone"),
       clientSearch: el("#rmClientSearch"), clientList: el("#rmClientList"),
       clientBadge: el("#rmClientBadge"), reloadAgents: el("#rmReloadAgents"),
+      sortToggle: el("#rmSortToggle"),
       agentCard: el("#rmAgentCard"), agentName: el("#rmAgentName"),
       agentAddress: el("#rmAgentAddress"), agentPhone: el("#rmAgentPhone"),
       agentLinks: el("#rmAgentLinks"),
@@ -1065,10 +1075,17 @@
     }
     function renderClients() {
       const query = normalizeHeader(els.clientSearch.value);
-      const list  = state.clients.filter(c => {
+      let list = state.clients.filter(c => {
         const hay = normalizeHeader([c.agent, c.name, c.city, c.province, c.branding].join(" "));
         return !query || hay.includes(query);
       });
+      if (state.sortAlpha) {
+        list = list.slice().sort((a, b) => {
+          const ka = normalizeHeader(a.agent || a.name || "");
+          const kb = normalizeHeader(b.agent || b.name || "");
+          return ka.localeCompare(kb, "es", { numeric: true, sensitivity: "base" });
+        });
+      }
       els.clientBadge.textContent = state.clients.length ? state.clients.length + " agentes" : "Sin datos";
       if (!list.length) { els.clientList.innerHTML = '<p class="rm-help">No hay resultados.</p>'; return; }
       els.clientList.innerHTML = "";
@@ -1597,6 +1614,12 @@
 
     els.clientSearch.addEventListener("input", renderClients);
     els.reloadAgents.addEventListener("click", loadClientsFromSheet);
+    els.sortToggle.addEventListener("click", () => {
+      state.sortAlpha = !state.sortAlpha;
+      els.sortToggle.classList.toggle("rm-active", state.sortAlpha);
+      els.sortToggle.textContent = state.sortAlpha ? "A→Z ✓" : "A→Z";
+      renderClients();
+    });
     els.mobileTabs.forEach(b => b.addEventListener("click", () => setMobileTab(b.dataset.tab)));
 
     els.modeRef.addEventListener("click",           () => setMode("ref"));
