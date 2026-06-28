@@ -296,6 +296,7 @@
     #rm-app .rm-client-item.rm-selected { border-color: var(--accent); background: var(--accent-bg); }
     #rm-app .rm-client-main { color: var(--text); font-size: 13px; font-weight: 700; }
     #rm-app .rm-client-meta { color: var(--text-2); font-size: 12px; line-height: 1.35; }
+    #rm-app .rm-client-sheet { display: inline-block; margin-top: 2px; padding: 1px 6px; border-radius: 4px; background: var(--accent-bg); color: var(--accent); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
 
     /* ── CANVAS ── */
     #rm-app .rm-center {
@@ -813,9 +814,9 @@
     "use strict";
 
     const config = {
-      spreadsheetId:    "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
-      spreadsheetSheet: "agentes ria 2026",
-      n8nWebhookSave:   "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements"
+      spreadsheetId:     "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+      spreadsheetSheets: ["Agentes RIA", "AGENTES RIA 2025", "AGENTES RIA 2026"],
+      n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements"
     };
 
     const MAG_SIZE = 120;
@@ -1078,7 +1079,8 @@
         btn.innerHTML =
           '<span class="rm-client-main">' + esc([c.agent, c.name].filter(Boolean).join(" · ")) + '</span>' +
           '<span class="rm-client-meta">' + esc(c.city || c.fullAddress || "Sin dirección") + '</span>' +
-          (c.branding ? '<span class="rm-client-meta">' + esc(c.branding) + '</span>' : "");
+          (c.branding ? '<span class="rm-client-meta">' + esc(c.branding) + '</span>' : "") +
+          (c.sheet    ? '<span class="rm-client-sheet">' + esc(c.sheet)   + '</span>' : "");
         btn.addEventListener("click", () => selectClient(c));
         els.clientList.appendChild(btn);
       });
@@ -1110,33 +1112,46 @@
         els.agentLinks.appendChild(s);
       }
     }
+    function loadOneSheet(sheetName) {
+      return new Promise(resolve => {
+        const cbName = "rmCb_" + sheetName.replace(/\W/g, "_") + "_" + Date.now();
+        const script = document.createElement("script");
+        const params = new URLSearchParams({ tqx: "out:json;responseHandler:" + cbName, sheet: sheetName, tq: "select *" });
+        window[cbName] = response => {
+          try {
+            if (!response || response.status === "error") { resolve([]); return; }
+            const clients = mapSheetClients(response.table || {}).map(c => ({ ...c, sheet: sheetName }));
+            resolve(clients);
+          } catch { resolve([]); }
+          finally { delete window[cbName]; script.remove(); }
+        };
+        script.onerror = () => { delete window[cbName]; script.remove(); resolve([]); };
+        script.src = "https://docs.google.com/spreadsheets/d/" + encodeURIComponent(config.spreadsheetId) + "/gviz/tq?" + params;
+        document.body.appendChild(script);
+      });
+    }
+
     function loadClientsFromSheet() {
-      const cbName = "rmCb_" + Date.now();
-      const script = document.createElement("script");
-      const params = new URLSearchParams({ tqx: "out:json;responseHandler:" + cbName, sheet: config.spreadsheetSheet, tq: "select *" });
       els.clientBadge.textContent = "Cargando…";
       els.clientList.innerHTML    = '<p class="rm-help">Conectando con Google Sheets…</p>';
       els.reloadAgents.disabled   = true;
-      window[cbName] = response => {
-        try {
-          if (!response || response.status === "error") throw new Error();
-          state.clients = mapSheetClients(response.table || {});
-          state.selectedClient = null;
-          els.agentCard.classList.remove("rm-visible");
-          renderClients();
-          if (state.clients.length) showToast(state.clients.length + " agentes cargados.");
-        } catch {
-          els.clientBadge.textContent = "Error";
-          els.clientList.innerHTML    = '<p class="rm-help">No se pudieron cargar los agentes.</p>';
-        } finally { els.reloadAgents.disabled = false; delete window[cbName]; script.remove(); }
-      };
-      script.onerror = () => {
-        els.clientBadge.textContent = "Error";
-        els.clientList.innerHTML    = '<p class="rm-help">Sin conexión con Sheets.</p>';
-        els.reloadAgents.disabled   = false; delete window[cbName]; script.remove();
-      };
-      script.src = "https://docs.google.com/spreadsheets/d/" + encodeURIComponent(config.spreadsheetId) + "/gviz/tq?" + params;
-      document.body.appendChild(script);
+      Promise.all(config.spreadsheetSheets.map(loadOneSheet)).then(results => {
+        // Merge, deduplicate by agent id+name, later sheets win on duplicates
+        const seen = new Map();
+        results.forEach(sheet => {
+          sheet.forEach(c => {
+            const key = (c.agent || "") + "|" + (c.name || "");
+            seen.set(key, c);
+          });
+        });
+        state.clients = Array.from(seen.values()).filter(c => c.agent || c.name || c.address);
+        state.selectedClient = null;
+        els.agentCard.classList.remove("rm-visible");
+        els.reloadAgents.disabled = false;
+        renderClients();
+        if (state.clients.length) showToast(state.clients.length + " agentes cargados (" + config.spreadsheetSheets.length + " hojas).");
+        else { els.clientBadge.textContent = "Sin datos"; els.clientList.innerHTML = '<p class="rm-help">No se encontraron agentes.</p>'; }
+      });
     }
 
     /* ─── MEDICIÓN ─── */
