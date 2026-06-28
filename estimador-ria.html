@@ -3,23 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Estimador de Fachadas — RIA Money Transfer</title>
+  <title>Estimador de Fachadas · Huexs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 <div id="rm-app" data-mobile-tab="agents">
   <style>
     :root {
-      --bg: #f1f5f9;
+      --bg: #f8f7f3;
       --surface: #ffffff;
-      --surface-2: #f8fafc;
-      --border: #e2e8f0;
-      --border-strong: #cbd5e1;
-      --text: #0f172a;
-      --text-2: #64748b;
-      --text-3: #94a3b8;
-      --accent: #2563eb;
-      --accent-bg: #eff6ff;
-      --accent-border: #bfdbfe;
+      --surface-2: #f3f2ed;
+      --border: rgba(48,48,48,.1);
+      --border-strong: rgba(48,48,48,.2);
+      --text: #303030;
+      --text-2: #7A7A7A;
+      --text-3: #a8a8a8;
+      --accent: #F68F2C;
+      --accent-bg: rgba(246,143,44,.08);
+      --accent-border: rgba(246,143,44,.28);
       --teal: #0d9488;
       --teal-bg: #f0fdfa;
       --teal-border: #99f6e4;
@@ -27,7 +30,7 @@
       --amber-bg: #fffbeb;
       --green: #15803d;
       --red: #dc2626;
-      --canvas-bg: #0f172a;
+      --canvas-bg: #191919;
     }
 
     body { margin: 0; }
@@ -41,7 +44,7 @@
       padding: 14px;
       background: var(--bg);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 14px;
       line-height: 1.5;
     }
@@ -56,7 +59,7 @@
       justify-content: space-between;
       gap: 12px;
       max-width: 1600px;
-      margin: 0 auto 12px;
+      margin: 0 auto;
     }
     #rm-app .rm-brand { display: flex; align-items: center; gap: 12px; }
     #rm-app .rm-brand-mark {
@@ -228,7 +231,7 @@
     #rm-app .rm-input:focus,
     #rm-app .rm-select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+      box-shadow: 0 0 0 3px rgba(246, 143, 44, .15);
     }
     #rm-app .rm-input[readonly] { background: var(--surface-2); color: var(--text-2); cursor: default; }
 
@@ -272,8 +275,8 @@
     }
     #rm-app .rm-btn:hover:not(:disabled) { background: var(--border); }
     #rm-app .rm-btn:disabled { cursor: not-allowed; opacity: .4; }
-    #rm-app .rm-btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
-    #rm-app .rm-btn-primary:hover:not(:disabled) { background: #1e293b; border-color: #1e293b; }
+    #rm-app .rm-btn-primary { background: linear-gradient(180deg,#F68F2C,#DD7D24); color: #fff; border-color: #DD7D24; }
+    #rm-app .rm-btn-primary:hover:not(:disabled) { background: linear-gradient(180deg,#F9A050,#F68F2C); border-color: #F68F2C; }
     #rm-app .rm-btn-success { background: var(--green); color: #fff; border-color: var(--green); }
     #rm-app .rm-btn-success:hover:not(:disabled) { background: #166534; border-color: #166534; }
     #rm-app .rm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -306,6 +309,20 @@
     #rm-app .rm-sort-btn:hover { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
     #rm-app .rm-sort-btn.rm-active { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
 
+    /* ── APPBAR DARK ── */
+    #rm-app .rm-appbar-wrap {
+      background: #191919;
+      margin: -14px -14px 12px;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    #rm-app .rm-appbar {
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+    #rm-app .rm-brand-name { color: #f4ede3 !important; }
+    #rm-app .rm-brand-sub  { color: rgba(244,237,227,.55) !important; }
+
     /* ── CLIENT LIST ── */
     #rm-app .rm-client-list { display: grid; gap: 5px; max-height: 180px; overflow-y: auto; padding-right: 2px; }
     #rm-app .rm-client-item { display: grid; gap: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 8px 10px; cursor: pointer; text-align: left; transition: border-color 100ms, background 100ms; }
@@ -313,7 +330,7 @@
     #rm-app .rm-client-item.rm-selected { border-color: var(--accent); background: var(--accent-bg); }
     #rm-app .rm-client-main { color: var(--text); font-size: 13px; font-weight: 700; }
     #rm-app .rm-client-meta { color: var(--text-2); font-size: 12px; line-height: 1.35; }
-    #rm-app .rm-client-sheet { display: inline-block; margin-top: 2px; padding: 1px 6px; border-radius: 4px; background: var(--accent-bg); color: var(--accent); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+    #rm-app .rm-client-sheet { display: inline-block; margin-top: 2px; padding: 1px 6px; border-radius: 4px; background: rgba(246,143,44,.1); color: #DD7D24; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
 
     /* ── CANVAS ── */
     #rm-app .rm-center {
@@ -601,14 +618,15 @@
   </style>
 
   <!-- APPBAR -->
+  <div class="rm-appbar-wrap">
   <header class="rm-appbar">
     <div class="rm-brand">
       <div class="rm-brand-mark">
-        <img class="rm-logo" src="https://rotulamax.com/wp-content/uploads/2023/09/Recurso-7.png" alt="Rotulamax">
+        <img class="rm-logo" src="https://huexs.com/wp-content/uploads/2026/03/Logo-huexs-WHITE-MAIL-1.png" alt="Huexs">
       </div>
       <div>
-        <h1 class="rm-brand-name">Estimador de fachadas</h1>
-        <p class="rm-brand-sub">Medidas preliminares · RIA Money Transfer</p>
+        <h1 class="rm-brand-name">Estimador de Fachadas</h1>
+        <p class="rm-brand-sub">Herramienta interna · Huexs</p>
       </div>
     </div>
     <div class="rm-live-summary">
@@ -617,6 +635,7 @@
       <span id="rmTopResult" class="rm-chip"><span class="rm-chip-dot"></span>Sin medida</span>
     </div>
   </header>
+  </div>
 
   <div class="rm-shell">
 
@@ -1523,7 +1542,7 @@
       ctx.font = `bold ${fs}px Arial,sans-serif`;
       ctx.textAlign = "right"; ctx.textBaseline = "bottom";
       ctx.fillStyle = "rgba(255,255,255,.7)";
-      ctx.fillText("Rotulamax · Estimador RIA", can.width - 10*s, can.height - 8*s);
+      ctx.fillText("Huexs · Estimador RIA", can.width - 10*s, can.height - 8*s);
 
       return can.toDataURL("image/jpeg", 0.82);
     }
