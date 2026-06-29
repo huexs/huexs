@@ -1497,13 +1497,19 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            agentId:   c.agent  || "",
-            agentName: c.name   || "",
-            address:   c.fullAddress || "",
-            phone:     c.phone  || "",
-            city:      c.city   || "",
-            province:  c.province || "",
-            sheet:     c.sheet  || ""
+            agent_id:   c.agent  || "",
+            agentId:    c.agent  || "",
+            name:       c.name   || "",
+            agentName:  c.name   || "",
+            address:    c.address || c.fullAddress || "",
+            city:       c.city   || "",
+            province:   c.province || "",
+            postal_code: c.postalCode || "",
+            phone:      c.phone  || "",
+            category:   c.branding || "",
+            driveUrl:   c.driveUrl  || "",
+            trelloUrl:  c.trelloUrl || "",
+            sheet_name: c.sheet  || "AGENTES RIA 2026"
           })
         });
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -2070,6 +2076,7 @@
       }
 
       const payload = {
+        agent_id:     state.selectedClient.agent,
         agentId:      state.selectedClient.agent,
         agentName:    state.selectedClient.name,
         agentCity:    state.selectedClient.city,
