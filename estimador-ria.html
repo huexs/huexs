@@ -955,7 +955,8 @@
 
     const config = {
       spreadsheetId:     "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
-      spreadsheetSheets: ["Agentes RIA", "AGENTES RIA 2025", "AGENTES RIA 2026"],
+      spreadsheetGid:    "1287637480",
+      spreadsheetSheets: ["AGENTES RIA 2026"],
       n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements",
       // n8n: crea carpeta Drive + tarjeta Trello para el agente y escribe URLs en Sheets
       n8nWebhookCreate:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent"
@@ -1530,7 +1531,7 @@
       return new Promise(resolve => {
         const cbName = "rmCb_" + sheetName.replace(/\W/g, "_") + "_" + Date.now();
         const script = document.createElement("script");
-        const params = new URLSearchParams({ tqx: "out:json;responseHandler:" + cbName, sheet: sheetName, tq: "select *", _: Date.now() });
+        const params = new URLSearchParams({ tqx: "out:json;responseHandler:" + cbName, gid: config.spreadsheetGid, tq: "select *", _: Date.now() });
         window[cbName] = response => {
           try {
             if (!response || response.status === "error") { resolve([]); return; }
