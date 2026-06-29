@@ -250,7 +250,7 @@
     }
     #rm-app .rm-file-zone:hover,
     #rm-app .rm-file-zone.rm-drag { border-color: var(--accent); background: var(--accent-bg); }
-    #rm-app .rm-file-zone input { position: absolute; width: 1px; height: 1px; clip: rect(0,0,0,0); overflow: hidden; }
+    #rm-app .rm-file-zone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; }
     #rm-app .rm-file-copy { display: grid; gap: 3px; padding: 10px; font-size: 12px; }
     #rm-app .rm-file-main { color: var(--text); font-size: 13px; font-weight: 700; }
 
@@ -693,6 +693,87 @@
       #rm-app .rm-mobile-tab.rm-active { color: #F68F2C; }
       #rm-app .rm-mobile-tab.rm-active::before { transform: scale(1.1); }
     }
+
+    /* ── GUIDE BAR ── */
+    #rm-app .rm-guide-bar {
+      display: none;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 16px;
+      min-height: 52px;
+    }
+    #rm-app .rm-guide-bar::-webkit-scrollbar { display: none; }
+    #rm-app .rm-guide-bar.rm-guide-active { display: flex; }
+    #rm-app .rm-guide-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      white-space: nowrap;
+      font-size: 13px;
+      color: var(--text-3);
+      flex-shrink: 0;
+      border-radius: 8px;
+      transition: background 150ms, color 150ms;
+    }
+    #rm-app .rm-guide-step.rm-guide-done { color: var(--teal); }
+    #rm-app .rm-guide-step.rm-guide-current { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+    #rm-app .rm-guide-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      color: var(--text-3);
+      transition: background 150ms, color 150ms;
+    }
+    #rm-app .rm-guide-step.rm-guide-done .rm-guide-step-num { background: var(--teal-bg); color: var(--teal); }
+    #rm-app .rm-guide-step.rm-guide-current .rm-guide-step-num {
+      background: var(--accent);
+      color: #fff;
+      animation: rmGuidePulse 1.4s ease-in-out infinite;
+    }
+    @keyframes rmGuidePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(246,143,44,.5); }
+      50% { box-shadow: 0 0 0 5px rgba(246,143,44,0); }
+    }
+    #rm-app .rm-guide-sep { color: var(--border-strong); font-size: 14px; flex-shrink: 0; }
+    #rm-app .rm-guide-hint {
+      display: none;
+      font-size: 11px;
+      color: var(--text-2);
+      padding: 4px 16px 8px;
+      background: var(--accent-bg);
+      border-bottom: 1px solid var(--accent-border);
+    }
+    #rm-app .rm-guide-hint.rm-guide-active { display: block; }
+    #rm-app .rm-guide-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 120ms, color 120ms, background 120ms;
+      flex-shrink: 0;
+    }
+    #rm-app .rm-guide-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    #rm-app .rm-guide-btn.rm-guide-btn-on { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); font-weight: 600; }
   </style>
 
   <!-- APPBAR -->
@@ -711,9 +792,24 @@
       <span id="rmTopClient" class="rm-chip"><span class="rm-chip-dot"></span>Sin agente</span>
       <span id="rmTopScale"  class="rm-chip"><span class="rm-chip-dot"></span>Sin escala</span>
       <span id="rmTopResult" class="rm-chip"><span class="rm-chip-dot"></span>Sin medida</span>
+      <button id="rmGuideToggle" class="rm-guide-btn" type="button" title="Guía paso a paso">🧭 Guía</button>
     </div>
   </header>
   </div>
+
+  <!-- GUIDE BAR -->
+  <div id="rmGuideBar" class="rm-guide-bar">
+    <div class="rm-guide-step" id="rmGS1"><span class="rm-guide-step-num" id="rmGN1">1</span>Cargar agentes</div>
+    <span class="rm-guide-sep">›</span>
+    <div class="rm-guide-step" id="rmGS2"><span class="rm-guide-step-num" id="rmGN2">2</span>Seleccionar agente</div>
+    <span class="rm-guide-sep">›</span>
+    <div class="rm-guide-step" id="rmGS3"><span class="rm-guide-step-num" id="rmGN3">3</span>Subir foto</div>
+    <span class="rm-guide-sep">›</span>
+    <div class="rm-guide-step" id="rmGS4"><span class="rm-guide-step-num" id="rmGN4">4</span>Medir</div>
+    <span class="rm-guide-sep">›</span>
+    <div class="rm-guide-step" id="rmGS5"><span class="rm-guide-step-num" id="rmGN5">5</span>Guardar</div>
+  </div>
+  <div id="rmGuideHint" class="rm-guide-hint"></div>
 
   <div class="rm-shell">
 
@@ -2251,6 +2347,146 @@
 
     els.overlay.addEventListener("mouseleave", hideMagnifier);
     window.addEventListener("resize", () => { if (state.imageSource) render(); });
+
+    /* ─── GUÍA PASO A PASO ─── */
+    (function () {
+      const LS_KEY = "rmGuideSession";
+      const STEPS = [
+        { id: 1, label: "Cargar agentes",    hint: "Espera a que cargue la lista de agentes desde Google Sheets." },
+        { id: 2, label: "Seleccionar agente", hint: "Busca y selecciona el agente en el panel izquierdo (pestaña Agentes en móvil)." },
+        { id: 3, label: "Subir foto",         hint: "Sube una foto de la fachada del local. Toca la zona de subida o usa la cámara." },
+        { id: 4, label: "Medir",              hint: "Calibra la escala con un elemento de referencia y añade los productos a medir." },
+        { id: 5, label: "Guardar",            hint: "Pulsa el botón Guardar para enviar las mediciones a Sheets y Trello." }
+      ];
+
+      let guideActive = false;
+
+      const guideToggle = el("#rmGuideToggle");
+      const guideBar    = el("#rmGuideBar");
+      const guideHint   = el("#rmGuideHint");
+
+      function currentStep() {
+        if (!state.clients || !state.clients.length) return 1;
+        if (!state.selectedClient)  return 2;
+        if (!state.imageSource)     return 3;
+        if (!state.productos || !state.productos.length) return 4;
+        if (state.saveState !== "ok") return 5;
+        return 6; /* all done */
+      }
+
+      function saveSession() {
+        try {
+          const data = {
+            agentId:   state.selectedClient ? state.selectedClient.agent : null,
+            agentName: state.selectedClient ? state.selectedClient.name  : null,
+            productos: state.productos || []
+          };
+          localStorage.setItem(LS_KEY, JSON.stringify(data));
+        } catch (_) {}
+      }
+
+      function loadSession() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (_) { return null; }
+      }
+
+      function clearSession() {
+        try { localStorage.removeItem(LS_KEY); } catch (_) {}
+      }
+
+      function renderGuide() {
+        if (!guideActive) return;
+        const step = currentStep();
+        for (let i = 1; i <= 5; i++) {
+          const gs  = el("#rmGS" + i);
+          const gn  = el("#rmGN" + i);
+          gs.className  = "rm-guide-step" + (i < step ? " rm-guide-done" : i === step ? " rm-guide-current" : "");
+          gn.textContent = i < step ? "✓" : String(i);
+        }
+        if (step <= 5) {
+          guideHint.textContent = STEPS[step - 1].hint;
+          guideHint.classList.add("rm-guide-active");
+        } else {
+          guideHint.textContent = "✅ ¡Todo guardado! Puedes cerrar la guía.";
+          guideHint.classList.add("rm-guide-active");
+        }
+      }
+
+      function toggleGuide() {
+        guideActive = !guideActive;
+        guideBar.classList.toggle("rm-guide-active", guideActive);
+        guideToggle.classList.toggle("rm-guide-btn-on", guideActive);
+        if (guideActive) renderGuide();
+        else {
+          guideHint.classList.remove("rm-guide-active");
+        }
+      }
+
+      guideToggle.addEventListener("click", toggleGuide);
+
+      /* Hook into state changes to auto-save and refresh guide */
+      const origSelectClient = window.__rmSelectClient;
+
+      function onGuideStateChange() {
+        saveSession();
+        if (guideActive) renderGuide();
+      }
+
+      /* Patch the functions that change relevant state */
+      const _origSetSelectedClient = window._rmSetSelectedClient;
+
+      /* MutationObserver-based hooks on key DOM nodes */
+      const agentNameEl = el("#rmAgentName");
+      if (agentNameEl) {
+        new MutationObserver(onGuideStateChange).observe(agentNameEl, { childList: true, characterData: true, subtree: true });
+      }
+      const imageBadgeEl = el("#rmImageBadge");
+      if (imageBadgeEl) {
+        new MutationObserver(onGuideStateChange).observe(imageBadgeEl, { childList: true, characterData: true, subtree: true });
+      }
+      const productosListEl = el("#rmProductosList");
+      if (productosListEl) {
+        new MutationObserver(onGuideStateChange).observe(productosListEl, { childList: true, subtree: true });
+      }
+      const saveStatusEl = el("#rmSaveStatus");
+      if (saveStatusEl) {
+        new MutationObserver(() => {
+          if (state.saveState === "ok") clearSession();
+          else saveSession();
+          if (guideActive) renderGuide();
+        }).observe(saveStatusEl, { childList: true, characterData: true, subtree: true, attributes: true });
+      }
+      const clientBadgeEl = el("#rmClientBadge");
+      if (clientBadgeEl) {
+        new MutationObserver(onGuideStateChange).observe(clientBadgeEl, { childList: true, characterData: true, subtree: true });
+      }
+
+      /* Restore session on load */
+      const saved = loadSession();
+      if (saved && (saved.agentId || saved.productos && saved.productos.length)) {
+        showToast("Sesión anterior guardada — selecciona el agente para continuar.");
+        if (saved.agentId) {
+          const tryRestore = setInterval(() => {
+            if (state.clients && state.clients.length) {
+              clearInterval(tryRestore);
+              const match = state.clients.find(c => c.agent === saved.agentId);
+              if (match) {
+                state.selectedClient = match;
+                updatePanel();
+              }
+              if (saved.productos && saved.productos.length && (!state.productos || !state.productos.length)) {
+                state.productos = saved.productos;
+                renderProductosList();
+                updateSaveButton();
+              }
+            }
+          }, 400);
+        }
+      }
+    })();
 
     /* ─── INIT ─── */
     populateRefSelects();
