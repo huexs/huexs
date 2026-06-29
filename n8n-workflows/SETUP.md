@@ -1,166 +1,165 @@
 # n8n Workflows RIA — Guía de Setup
 
-## Workflows incluidos
+## Estado actual (junio 2026)
+
+| Workflow | ID | Estado | Trigger |
+|----------|----|--------|---------|
+| W1 — Nuevo Agente | `xtqsHGzK6z15YfN5` | ✅ Activo | Google Sheets polling 1 min |
+| W2 — Guardar Mediciones | `hFWwy6YHp8iq3RIg` | ✅ Activo | POST `/webhook/ria/measurements` |
+| W3 — Crear Recursos Manual | `eVB52gyJcYQ1SqZj` | ✅ Activo | POST `/webhook/ria/create-agent` |
+
+**Instancia n8n:** `https://n8n-n8n.te2fhz.easypanel.host`
+
+---
+
+## Qué hace cada workflow
 
 | Archivo | Trigger | Qué hace |
 |---------|---------|----------|
-| `W1-nuevo-agente.json` | Nueva fila en Google Sheets | Drive + Trello + Google Contacts + escribe URLs en Sheets |
-| `W2-guardar-mediciones.json` | POST `/ria/measurements` | Guarda medidas en Sheets, comenta en Trello, sube imagen a Drive |
-| `W3-crear-recursos-manual.json` | POST `/ria/create-agent` | Crea Drive/Trello/Contacts on-demand desde el botón de la herramienta |
+| `W1-nuevo-agente.json` | Nueva fila en Google Sheets | Crea carpeta Drive (+ 6 subcarpetas) + tarjeta Trello + Google Contact + escribe URLs en Sheets |
+| `W2-guardar-mediciones.json` | POST `/ria/measurements` | Guarda medidas en Sheets, comenta en Trello con resumen, sube imagen anotada a Drive/Fotografías |
+| `W3-crear-recursos-manual.json` | POST `/ria/create-agent` | Crea Drive/Trello/Contact on-demand desde el botón de la herramienta (idempotente: no duplica si ya existen) |
 
 ---
 
-## Paso 1 — Columnas nuevas en Google Sheets
+## IDs de recursos reales
 
-Añadir al final de cada hoja (`AGENTES RIA 2026`, `AGENTES RIA 2025`), **sin tocar las columnas existentes**:
+### Google Sheets
+- **Spreadsheet ID:** `1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss`
+- **Sheet name:** `AGENTES RIA 2026`
+- **Sheet GID:** `1287637480`
 
-| Columna | Nombre | Descripción |
-|---------|--------|-------------|
-| I (o la siguiente libre) | `Drive URL` | URL de la carpeta de Drive del agente |
-| J | `Trello URL` | URL de la tarjeta de Trello |
-| K | `Mediciones` | Resumen legible de las medidas |
-| L | `Mediciones JSON` | JSON completo de todos los productos medidos |
-| M | `Escala px/cm` | Escala de la medición |
-| N | `Referencia usada` | Elemento de referencia usado para calibrar |
-| O | `Fecha medición` | ISO timestamp de la medición |
+### Columnas del Spreadsheet
 
-> **Importante:** Los nombres de columna deben ser exactamente los indicados arriba, n8n los usa para hacer match.
+**Columnas originales (NO modificar):**
+| Col | Nombre exacto |
+|-----|--------------|
+| A | Número de agente |
+| B | Nombre de Contacto |
+| C | Dirección |
+| D | Ciudad |
+| E | Provincia |
+| F | Código postal |
+| G | Teléfono |
+| H | Branding |
 
----
+**Columnas añadidas para la automatización:**
+| Col | Nombre exacto | Qué guarda |
+|-----|--------------|------------|
+| O | URL Carpeta Drive | URL de la carpeta Drive del agente |
+| P | URL Trello | URL de la tarjeta Trello |
+| Q | Mediciones | Resumen legible (ej: "Vinilo fachada: 120 x 80 cm") |
+| R | Mediciones JSON | JSON completo de todos los productos medidos |
+| S | Escala px/cm | Escala de calibración usada |
+| T | Referencia usada | Elemento de referencia para calibrar |
+| U | Fecha medición | ISO timestamp de la medición |
 
-## Paso 2 — Credenciales en n8n
-
-Crear estas credenciales en **Settings → Credentials** de n8n:
-
-### Google Sheets + Drive (misma credencial OAuth2)
-- Tipo: `Google OAuth2`
-- Scopes necesarios:
-  - `https://www.googleapis.com/auth/spreadsheets`
-  - `https://www.googleapis.com/auth/drive`
-- Nombre sugerido: `Google — Huexs`
-
-### Google People API (para Contacts)
-- Tipo: `Google OAuth2`  
-- Scopes necesarios:
-  - `https://www.googleapis.com/auth/contacts`
-- Nota: puede ser la misma credencial si se añade el scope
+> **Importante:** Los nombres de columna deben ser exactamente los indicados. n8n los usa para hacer match por nombre.
 
 ### Trello
-- Tipo: `Trello API`
-- API Key + Token desde: https://trello.com/app-key
-- Board: `Ria Money Transfer AGENTES` (`lSevGfHk`)
+- **Board ID:** `lSevGfHk` — "Ria Money Transfer AGENTES"
+- **Lista "Contactar" ID:** `6577274e636e7cc8419d0d4a`
+
+### Google Drive
+- **Carpeta raíz agentes:** `1JvhNaT1YTKCra-Nu9grJjeiN9RczAJGz`
+- **Subcarpetas por agente:** 01 Fotografías / 02 Diseños / 03 Presupuesto / 04 Producción / 05 Instalación / 06 Facturación
 
 ---
 
-## Paso 3 — Importar workflows
+## Credenciales configuradas en n8n
 
-1. En n8n: **Workflows → Add Workflow → Import from file**
-2. Importar en este orden: W1 → W2 → W3
-3. En cada workflow, buscar todos los nodos con `REPLACE_*` y sustituir:
+| Credencial | Tipo n8n | ID | Cuenta |
+|------------|----------|----|--------|
+| Google Sheets Trigger — Huexs | `googleSheetsTriggerOAuth2Api` | `B8Oo1U1KfF3e4NNv` | huexss@gmail.com |
+| Google Sheets — Huexs | `googleSheetsOAuth2Api` | `B8Oo1U1KfF3e4NNv` | huexss@gmail.com |
+| Google Drive — Huexs | `googleDriveOAuth2Api` | `B8Oo1U1KfF3e4NNv` | huexss@gmail.com |
+| Google Contacts — Huexs | `googleContactsOAuth2Api` | `nqbkR2cOGYotmr9Z` | huexss@gmail.com |
+| Trello — Huexs | `trelloApi` | ver Settings → Credentials | — |
+
+---
+
+## Reinstalar desde cero
+
+### Paso 1 — Credenciales
+Crear en **Settings → Credentials**:
+
+**Google OAuth2 (Sheets + Drive):**
+- Tipo: `Google OAuth2`
+- Scopes: `spreadsheets`, `drive`
+- Nombre: `Google Sheets — Huexs`
+
+**Google OAuth2 (Contacts):**
+- Tipo: `Google OAuth2`
+- Scope: `contacts`
+- Nombre: `Google Contacts — Huexs`
+
+**Trello:**
+- Tipo: `Trello API`
+- API Key + Token desde: https://trello.com/app-key
+
+### Paso 2 — Importar workflows
+1. **Workflows → Add Workflow → Import from file**
+2. Importar en orden: W1 → W2 → W3
+3. En cada workflow, sustituir todos los `REPLACE_*`:
 
 | Placeholder | Valor real |
 |-------------|-----------|
-| `REPLACE_GOOGLE_CREDENTIAL_ID` | ID de la credencial Google creada en Paso 2 |
+| `REPLACE_GOOGLE_CREDENTIAL_ID` | ID de la credencial Google Sheets/Drive |
 | `REPLACE_TRELLO_CREDENTIAL_ID` | ID de la credencial Trello |
-| `REPLACE_GOOGLE_PEOPLE_CREDENTIAL_ID` | ID credencial Google con scope contacts |
-| `REPLACE_PARENT_FOLDER_ID` | ID de la carpeta Drive donde se crearán los agentes |
+| `REPLACE_GOOGLE_PEOPLE_CREDENTIAL_ID` | ID de la credencial Google Contacts |
+| `REPLACE_PARENT_FOLDER_ID` | `1JvhNaT1YTKCra-Nu9grJjeiN9RczAJGz` |
 | `REPLACE_INSTANCE_ID` | ID de tu instancia n8n |
 
-### ¿Cuál es el PARENT_FOLDER_ID?
-La carpeta raíz donde deben crearse todas las subcarpetas de agentes.
-Puedes usar la carpeta template como referencia: `1JvhNaT1YTKCra-Nu9grJjeiN9RczAJGz`
-o crear una carpeta nueva llamada `Agentes RIA` y copiar su ID desde la URL de Drive.
+### Paso 3 — Activar
+1. Activar W1 (toggle ON) — el trigger de Sheets empieza el polling
+2. Activar W2 — el webhook `/ria/measurements` queda vivo
+3. Activar W3 — el webhook `/ria/create-agent` queda vivo
 
 ---
 
-## Paso 4 — Nombres de columnas del Spreadsheet
+## Webhooks (W2 y W3)
 
-El workflow W1 mapea estas columnas (ajustar si difieren en tu Spreadsheet):
-
-```
-A → ID Agente     (ej: ES16756)
-B → Nombre
-C → Dirección
-D → Ciudad
-E → Provincia
-F → CP
-G → Teléfono
-H → Categoría
-```
-
-Si los nombres de cabecera son diferentes, editar el nodo **"Normalizar datos agente"** en W1 y ajustar los fallbacks `$json['NombreColumna']`.
-
----
-
-## Paso 5 — Activar W1 (trigger automático)
-
-- Abrir W1 en n8n
-- El trigger `Google Sheets — Nueva fila` hace polling cada **1 minuto**
-- En la primera ejecución, n8n registra el estado actual; solo filas **nuevas** dispararán el flujo
-- Activar el workflow con el toggle
-
----
-
-## Paso 6 — Webhooks (W2 y W3)
-
-Los webhooks ya están configurados en la herramienta `estimador-ria.html`:
+Los webhooks están configurados en `estimador-ria.html`:
 ```
 POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements   → W2
 POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent   → W3
 ```
-
-Solo hay que **activar** W2 y W3 en n8n para que los webhooks queden vivos.
 
 ---
 
 ## Flujo completo
 
 ```
-Gmail (Michelle)
+Gmail (Michelle) recibe solicitud de nuevo agente
     ↓
-Copiar datos al Spreadsheet
+Michelle copia datos al Spreadsheet (nueva fila)
     ↓
 W1 detecta nueva fila (polling 1 min)
     ↓
-┌─────────────────────────────────┐
-│ Crear carpeta Drive             │
-│   01 Fotografías                │
-│   02 Diseños                    │
-│   03 Presupuesto                │
-│   04 Producción                 │
-│   05 Instalación                │
-│   06 Facturación                │
-└─────────────────────────────────┘
+¿Ya tiene URL Carpeta Drive y URL Trello? → Si sí, termina (no duplica)
     ↓
-Crear tarjeta Trello (lista: Contactar)
-con datos completos del agente
-    ↓
+Crear carpeta Drive con 6 subcarpetas
+Crear tarjeta Trello en lista "Contactar"
 Crear contacto en Google Contacts
+Escribir URL Carpeta Drive + URL Trello en la fila del Spreadsheet
     ↓
-Escribir Drive URL + Trello URL en Sheets
+─── MÁS TARDE — Técnico visita el agente ───
     ↓
-─────────────── MÁS TARDE ───────────────
-    ↓
-Técnico abre estimador-ria.html
-Busca el agente, toma foto, mide
+Técnico abre estimador-ria.html (huexs.com/ria)
+Busca el agente → toma foto → calibra → mide productos
 Pulsa "Guardar"
     ↓
-W2 recibe mediciones
-Actualiza Sheets (columnas M-O)
-Comenta en Trello + añade label "Tenemos las medides"
-Sube imagen anotada a Drive/Fotografías
+W2: actualiza Sheets (Mediciones, Fecha...) + comenta Trello + sube imagen a Drive/Fotografías
     ↓
-─────────────── MANUAL ──────────────────
-Si el agente ya existe en Sheets pero no
-tiene Drive/Trello, el técnico pulsa
-"＋ Crear carpeta Drive y tarjeta Trello"
+─── SI el agente no tiene Drive/Trello ───
+Técnico pulsa botón naranja "Crear carpeta Drive y tarjeta Trello"
     ↓
-W3 crea solo lo que falta y devuelve URLs
+W3: crea lo que falte y devuelve URLs al estimador
 ```
 
 ---
 
-## Labels Trello disponibles
+## Labels Trello
 
 | Color | Nombre | Cuándo |
 |-------|--------|--------|
@@ -177,7 +176,7 @@ W3 crea solo lo que falta y devuelve URLs
 
 ## Fases futuras (no implementadas)
 
-- **F2:** Subida de fotos desde la herramienta → W2 ya sube la imagen anotada, falta UI de subida libre
-- **F3:** Generación automática de presupuesto → requiere plantilla Google Docs/Slides
-- **F4:** Sincronización bidireccional Trello ↔ Sheets (webhook Trello → n8n → actualizar columna estado)
+- **F2:** Subida de fotos libres desde la herramienta (W2 ya sube la imagen anotada; falta UI de subida libre)
+- **F3:** Generación automática de presupuesto (requiere plantilla Google Docs/Slides)
+- **F4:** Sincronización bidireccional Trello ↔ Sheets
 - **F5:** Mockup automático con foto del local
