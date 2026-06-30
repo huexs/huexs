@@ -1738,7 +1738,8 @@
           estado:     getCellValue(row, headerMap, ["Estado"]),
           driveUrl:   getCellValue(row, headerMap, ["URL Carpeta Drive"]),
           trelloUrl:  getCellValue(row, headerMap, ["URL Trello"]),
-          trelloId:   getCellValue(row, headerMap, ["ID Trello Card"])
+          trelloId:   getCellValue(row, headerMap, ["ID Trello Card"]),
+          fechaAlta:  getCellValue(row, headerMap, ["Fecha Alta"])
         };
         c.fullAddress = clientFullAddress(c);
         return c;
@@ -1759,7 +1760,11 @@
           return ka.localeCompare(kb, "es", { numeric: true, sensitivity: "base" });
         });
       } else if (state.sortOrder === "recent") {
-        list = list.slice().sort((a, b) => (b.rowIndex ?? 0) - (a.rowIndex ?? 0));
+        list = list.slice().sort((a, b) => {
+          const da = a.fechaAlta ? new Date(a.fechaAlta).getTime() : (a.rowIndex ?? 0);
+          const db = b.fechaAlta ? new Date(b.fechaAlta).getTime() : (b.rowIndex ?? 0);
+          return db - da;
+        });
       }
       // "default" = orden original del Sheets (más antiguos primero)
       els.clientBadge.textContent = state.clients.length ? state.clients.length + " agentes" : "Sin datos";
