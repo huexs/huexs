@@ -137,6 +137,18 @@
               "name": "productos_resumen",
               "value": "={{ ($json.body.productos || []).map(p => p.label + ': ' + (p.altoCm ? p.anchoCm.toFixed(1) + ' x ' + p.altoCm.toFixed(1) : p.anchoCm.toFixed(1) + ' cm ancho')).join(' | ') }}",
               "type": "string"
+            },
+            {
+              "id": "11",
+              "name": "coste_estimado_imprenta",
+              "value": "={{ $json.body.costeEstimadoImprenta || null }}",
+              "type": "number"
+            },
+            {
+              "id": "12",
+              "name": "valoracion_huexs_estimada",
+              "value": "={{ $json.body.valoracionHuexsEstimada || null }}",
+              "type": "number"
             }
           ]
         },
@@ -221,7 +233,9 @@
             "Mostrador": "={{ $('Agrupar productos por tipo').item.json.byTipo.mostrador }}",
             "Lona Exterior": "={{ $('Agrupar productos por tipo').item.json.byTipo.lona_exterior }}",
             "Caja de Luz LED": "={{ $('Agrupar productos por tipo').item.json.byTipo.led_caja }}",
-            "Otro elemento": "={{ $('Agrupar productos por tipo').item.json.byTipo.otro }}"
+            "Otro elemento": "={{ $('Agrupar productos por tipo').item.json.byTipo.otro }}",
+            "Coste Imprenta (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.coste_estimado_imprenta || '' }}",
+            "Valoración Huexs (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.valoracion_huexs_estimada || '' }}"
           },
           "matchingColumns": [
             "Número de agente"
@@ -360,6 +374,24 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Coste Imprenta (sin IVA)",
+              "displayName": "Coste Imprenta (sin IVA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Valoración Huexs (sin IVA)",
+              "displayName": "Valoración Huexs (sin IVA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
               "canBeUsedToMatch": false
             }
           ]

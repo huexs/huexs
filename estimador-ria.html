@@ -531,6 +531,12 @@
     #rm-app .rm-producto-del { flex-shrink: 0; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 15px; cursor: pointer; padding: 0; line-height: 1; transition: background 120ms, color 120ms; }
     #rm-app .rm-producto-del:hover { background: #fee2e2; color: var(--red); }
     #rm-app .rm-productos-empty { color: var(--text-3); font-size: 13px; text-align: center; padding: 12px 0; }
+    #rm-app .rm-producto-cost { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 3px; font-size: 11px; color: var(--text-2); }
+    #rm-app .rm-producto-cost span[title="Coste imprenta"] { color: #f97316; }
+    #rm-app .rm-producto-cost span[title="Precio venta sin IVA"] { color: #14b8a6; }
+    #rm-app .rm-producto-cost span[title="Margen"] { color: #22c55e; }
+    #rm-app .rm-productos-total { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; border-top: 1px solid var(--border); margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+    #rm-app .rm-productos-total span:first-child { flex: 1; color: var(--text); }
     #rm-app .rm-btn-add { border-style: dashed; border-color: var(--teal-border); color: var(--teal); background: transparent; font-weight: 600; }
 
     /* ── PREVIEW ── */
@@ -1119,6 +1125,20 @@
       "#f97316","#84cc16","#ef4444","#06b6d4"
     ];
 
+    // Precios de referencia — se sobreescriben con los de la hoja PRECIOS RIA si está disponible
+    // Estructura: { costeM2: €/m² imprenta, precioM2: €/m² Huexs sin IVA, iva: % }
+    const PRECIOS_DEFAULT = {
+      rotulo_standard:       { costeM2: 0, precioM2: 0, iva: 21 },
+      rotulo_panaflex:       { costeM2: 0, precioM2: 0, iva: 21 },
+      vinilo_cristal:        { costeM2: 0, precioM2: 0, iva: 21 },
+      vinilo_microperforado: { costeM2: 0, precioM2: 0, iva: 21 },
+      forex:                 { costeM2: 0, precioM2: 0, iva: 21 },
+      mostrador:             { costeM2: 0, precioM2: 0, iva: 21 },
+      lona_exterior:         { costeM2: 0, precioM2: 0, iva: 21 },
+      led_caja:              { costeM2: 0, precioM2: 0, iva: 21 },
+      otro:                  { costeM2: 0, precioM2: 0, iva: 21 },
+    };
+
     const TIPO_META = {
       rotulo_standard:       { icon: "R", label: "Rotulo Standard" },
       rotulo_panaflex:       { icon: "P", label: "Rotulo Panaflex" },
@@ -1132,6 +1152,8 @@
     };
 
     const state = {
+      precios:        { ...PRECIOS_DEFAULT },
+      preciosCargados: false,
       mode:           "ref",
       imageDataUrl:   "",
       imageSource:    "",
@@ -1721,6 +1743,42 @@
       });
     }
 
+    /* ─── PRECIOS RIA ─── */
+    function loadPrecios() {
+      const cbName = "rmCbPrecios_" + Date.now();
+      const script = document.createElement("script");
+      const params = new URLSearchParams({ tqx: "out:json;responseHandler:" + cbName, tq: "select *", sheet: "PRECIOS RIA", _: Date.now() });
+      window[cbName] = response => {
+        try {
+          if (!response || response.status === "error" || !response.table) return;
+          const cols = response.table.cols || [];
+          const rows = response.table.rows || [];
+          const hdr  = cols.map(c => (c.label || "").trim().toLowerCase());
+          const iKey   = hdr.indexOf("tipo");
+          const iCoste = hdr.findIndex(h => h.startsWith("coste"));
+          const iPrecio= hdr.findIndex(h => h.startsWith("precio huexs") && !h.includes("iva"));
+          const iIva   = hdr.indexOf("iva %");
+          if (iKey === -1) return;
+          const precios = { ...PRECIOS_DEFAULT };
+          rows.forEach(r => {
+            const cv = v => (r.c[v] && r.c[v].v != null ? r.c[v].v : null);
+            const tipo = (cv(iKey) || "").trim();
+            if (!tipo || !precios[tipo]) return;
+            if (iCoste  >= 0 && cv(iCoste)  != null) precios[tipo].costeM2  = parseFloat(cv(iCoste));
+            if (iPrecio >= 0 && cv(iPrecio) != null) precios[tipo].precioM2 = parseFloat(cv(iPrecio));
+            if (iIva    >= 0 && cv(iIva)    != null) precios[tipo].iva      = parseFloat(cv(iIva));
+          });
+          state.precios = precios;
+          state.preciosCargados = true;
+          renderProductosList();
+        } catch {}
+        finally { delete window[cbName]; script.remove(); }
+      };
+      script.onerror = () => { delete window[cbName]; script.remove(); };
+      script.src = "https://docs.google.com/spreadsheets/d/" + encodeURIComponent(config.spreadsheetId) + "/gviz/tq?" + params;
+      document.body.appendChild(script);
+    }
+
     /* ─── SISTEMA DE REFERENCIAS ─── */
     function getRefById(id) {
       return BUILTIN_REFS.find(r => r.id === id) || customRefs.find(r => r.id === id) || null;
@@ -2041,17 +2099,42 @@
       return PRODUCT_COLORS[state.productos.length % PRODUCT_COLORS.length];
     }
 
+    function calcProductoCost(p) {
+      if (p.altoCm == null) return null;
+      const m2    = (p.anchoCm * p.altoCm) / 10000;
+      const prec  = state.precios[p.tipo] || {};
+      const coste = prec.costeM2  ? prec.costeM2  * m2 : null;
+      const venta = prec.precioM2 ? prec.precioM2 * m2 : null;
+      const iva   = prec.iva      != null ? prec.iva : 21;
+      return { m2, coste, venta, ventaConIva: venta != null ? venta * (1 + iva / 100) : null, margen: coste != null && venta != null ? venta - coste : null };
+    }
+
+    function fmtEur(v) { return v != null ? v.toFixed(2).replace(".", ",") + " €" : "—"; }
+
     function renderProductosList() {
       if (!state.productos.length) {
         els.productosList.innerHTML = '<div class="rm-productos-empty">Sin productos añadidos</div>';
         return;
       }
       els.productosList.innerHTML = "";
+      let totalCoste = 0, totalVenta = 0, totalVentaIva = 0, hasCoste = false;
       state.productos.forEach((p, i) => {
         const meta   = TIPO_META[p.tipo] || { icon: "?", label: p.tipo };
         const dimStr = p.altoCm != null
-          ? fmtCmRaw(p.anchoCm) + " × " + fmtCmRaw(p.altoCm)
+          ? fmtCmRaw(p.anchoCm) + " × " + fmtCmRaw(p.altoCm) + " (" + ((p.anchoCm * p.altoCm / 10000).toFixed(3)) + " m²)"
           : fmtCmRaw(p.anchoCm) + " (solo ancho)";
+        const cost = calcProductoCost(p);
+        let costHtml = "";
+        if (cost && state.preciosCargados && (cost.coste || cost.venta)) {
+          hasCoste = true;
+          if (cost.coste != null) totalCoste += cost.coste;
+          if (cost.venta != null) { totalVenta += cost.venta; totalVentaIva += cost.ventaConIva; }
+          costHtml = '<div class="rm-producto-cost">'
+            + (cost.coste != null ? '<span title="Coste imprenta">🏭 ' + fmtEur(cost.coste) + '</span>' : '')
+            + (cost.venta != null ? '<span title="Precio venta sin IVA">💶 ' + fmtEur(cost.venta) + '</span>' : '')
+            + (cost.margen != null ? '<span title="Margen">▲ ' + fmtEur(cost.margen) + '</span>' : '')
+            + '</div>';
+        }
         const item = document.createElement("div");
         item.className = "rm-producto-item";
         item.innerHTML =
@@ -2059,10 +2142,21 @@
           '<span class="rm-producto-info">' +
             '<div class="rm-producto-tipo">' + esc(meta.label) + '</div>' +
             '<div class="rm-producto-dims">' + esc(dimStr) + '</div>' +
+            costHtml +
           '</span>' +
           '<button class="rm-producto-del" type="button" data-idx="' + i + '">×</button>';
         els.productosList.appendChild(item);
       });
+      if (hasCoste && state.productos.length > 1) {
+        const total = document.createElement("div");
+        total.className = "rm-productos-total";
+        total.innerHTML =
+          '<span>Total estimado</span>' +
+          '<span title="Coste imprenta total">🏭 ' + fmtEur(totalCoste) + '</span>' +
+          '<span title="Precio venta sin IVA">💶 ' + fmtEur(totalVenta) + '</span>' +
+          '<span title="Precio venta con IVA">📄 ' + fmtEur(totalVentaIva) + '</span>';
+        els.productosList.appendChild(total);
+      }
     }
 
     function updateAddMeasureUI() {
@@ -2256,7 +2350,16 @@
           altoCm:  p.altoCm != null ? parseFloat(p.altoCm.toFixed(1)) : null
         })),
         imagenAnotadaBase64: imagenBase64,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        ...(() => {
+          let costeTotal = 0, ventaTotal = 0, tienePrecios = false;
+          state.productos.forEach(p => {
+            const c = calcProductoCost(p);
+            if (c && c.coste != null) { costeTotal += c.coste; tienePrecios = true; }
+            if (c && c.venta != null) ventaTotal += c.venta;
+          });
+          return tienePrecios ? { costeEstimadoImprenta: parseFloat(costeTotal.toFixed(2)), valoracionHuexsEstimada: parseFloat(ventaTotal.toFixed(2)) } : {};
+        })()
       };
 
       setSaveState("saving", "Enviando a n8n…");
@@ -2612,6 +2715,7 @@
     updateSaveButton();
     renderProductosList();
     loadClientsFromSheet();
+    loadPrecios();
 
   })();
   </script>
