@@ -531,6 +531,7 @@
     #rm-app .rm-producto-del { flex-shrink: 0; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 15px; cursor: pointer; padding: 0; line-height: 1; transition: background 120ms, color 120ms; }
     #rm-app .rm-producto-del:hover { background: #fee2e2; color: var(--red); }
     #rm-app .rm-productos-empty { color: var(--text-3); font-size: 13px; text-align: center; padding: 12px 0; }
+    #rm-app .rm-btn-add { border-style: dashed; border-color: var(--teal-border); color: var(--teal); background: transparent; font-weight: 600; }
 
     /* ── PREVIEW ── */
     #rm-app .rm-preview-img { display: block; width: 100%; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
@@ -1033,7 +1034,7 @@
               <button id="rmAddAlto"  class="rm-btn" type="button" disabled>Añadir alto</button>
             </div>
             <button id="rmAddSoloAncho" class="rm-btn" type="button" style="display:none">Guardar solo ancho</button>
-            <button id="rmAddNextProduct" class="rm-btn" type="button" style="display:none">＋ Medir otro producto</button>
+            <button id="rmAddNextProduct" class="rm-btn rm-btn-add" type="button" style="display:none">＋ Añadir otro producto</button>
           </div>
 
           <!-- Products list -->
@@ -1147,6 +1148,7 @@
       productos:      [],
       pendingProduct: null,
       lastMeasureCm:  null,
+      addingProduct:  false,
       clientPage:     0
     };
 
@@ -2094,19 +2096,27 @@
         els.addSoloAncho.style.display = "none";
         els.productoTipo.disabled      = false;
 
+      } else if (hasProducts && !state.addingProduct) {
+        // Estado: producto(s) añadidos, esperando que el usuario pulse "+" para el siguiente
+        els.pendingInfo.style.display  = "none";
+        els.addAncho.textContent       = "Añadir como ancho";
+        els.addAncho.disabled          = true;
+        els.addAlto.disabled           = true;
+        els.addSoloAncho.style.display = "none";
+        els.productoTipo.disabled      = false;
       } else {
-        // Estado: escala ok, sin medida activa — listo para medir siguiente
+        // Estado: escala ok, midiendo el siguiente producto (primer producto o tras pulsar "+")
         els.pendingInfo.style.display   = "flex";
         els.pendingInfoText.textContent = hasProducts
           ? "Producto " + (state.productos.length + 1) + " — mide el ancho en el canvas"
           : "Escala calibrada — marca el ancho del elemento";
         els.addAncho.textContent       = "Añadir como ancho";
-        els.addAncho.disabled          = true;   // se activa al marcar medida
+        els.addAncho.disabled          = true;
         els.addAlto.disabled           = true;
         els.addSoloAncho.style.display = "none";
         els.productoTipo.disabled      = false;
       }
-      els.addNextProduct.style.display = (state.productos.length > 0 && !state.pendingProduct && state.lastMeasureCm === null) ? "block" : "none";
+      els.addNextProduct.style.display = (hasProducts && !state.pendingProduct && state.lastMeasureCm === null && !state.addingProduct) ? "block" : "none";
     }
 
     function addComoAncho() {
@@ -2148,6 +2158,7 @@
       state.pendingProduct = null;
       state.measurement    = null;
       state.lastMeasureCm  = null;
+      state.addingProduct  = false;
 
       renderProductosList(); updateAddMeasureUI(); updateSaveButton(); updatePanel(); updateGuidance(); render();
       autoUpdatePreview();
@@ -2159,6 +2170,7 @@
       const meta = TIPO_META[prod.tipo] || { label: prod.tipo };
       state.productos.push({ tipo: prod.tipo, label: prod.label, color: prod.color, anchoCm: prod.anchoCm, altoCm: null });
       showToast(meta.label + " (solo ancho): " + fmtCmRaw(prod.anchoCm));
+      state.addingProduct = false;
       state.pendingProduct = null;
       renderProductosList(); updateAddMeasureUI(); updateSaveButton(); updatePanel(); updateGuidance();
       autoUpdatePreview();
@@ -2298,7 +2310,7 @@
       state.points = []; state.lines = [];
       state.pxPerCm = null; state.reference = null;
       state.measurement = null; state.lastMeasureCm = null;
-      state.pendingProduct = null;
+      state.pendingProduct = null; state.addingProduct = false;
       updatePanel(); updateGuidance(); render();
     }
 
@@ -2306,7 +2318,7 @@
       state.points = []; state.lines = [];
       state.pxPerCm = null; state.reference = null;
       state.measurement = null; state.lastMeasureCm = null;
-      state.pendingProduct = null;
+      state.pendingProduct = null; state.addingProduct = false;
       state.productos = [];
       state.saveState = "idle";
       state.imageSource = "";
@@ -2375,9 +2387,10 @@
     els.addNextProduct.addEventListener("click", () => {
       state.measurement = null;
       state.lastMeasureCm = null;
+      state.addingProduct = true;
       setMode("measure");
       updateAddMeasureUI();
-      showToast("Marca los extremos del siguiente elemento.");
+      showToast("Mide el ancho del siguiente elemento en el canvas.");
     });
     el("#rmNewPhoto").addEventListener("click", () => {
       if (state.productos.length || state.imageSource) {

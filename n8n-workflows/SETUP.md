@@ -55,6 +55,22 @@
 | U | Fecha medición | ISO timestamp de la medición |
 | V | Última foto Drive | URL de la última imagen anotada subida por W2 (base del viewer) |
 
+**Columnas por tipo de producto (escritas por W2, una por tipo medido):**
+| Col | Nombre exacto | Tipo |
+|-----|--------------|------|
+| W | Rotulo Standard | Ej: "120.0 × 80.0 cm (0.096 m²)" |
+| X | Rotulo Panaflex | Igual |
+| Y | Vinilo Cristal | Igual |
+| Z | Vinilo Microperforado | Igual |
+| AA | Forex | Igual |
+| AB | Mostrador | Igual |
+| AC | Lona Exterior | Igual |
+| AD | Caja de Luz LED | Igual |
+| AE | Otro elemento | Igual |
+
+> Para referencias de coste por m², crear una hoja aparte "PRECIOS RIA" con columnas: Tipo | €/m² | Notas.
+> Las columnas W–AE se rellenan automáticamente con cada guardado (W2). Si el tipo no se midió, queda vacío.
+
 > **Importante:** Los nombres de columna deben ser exactamente los indicados. n8n los usa para hacer match por nombre.
 
 ### Trello

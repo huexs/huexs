@@ -6,7 +6,10 @@
       "name": "Webhook — POST /ria/measurements",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "httpMethod": "POST",
         "path": "ria/measurements",
@@ -20,22 +23,35 @@
       "name": "Validar payload",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "id": "a",
               "leftValue": "={{ $json.body.agent_id || $json.body.agentId }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             },
             {
               "id": "b",
               "leftValue": "={{ $json.body.productos }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             }
           ],
           "combinator": "and"
@@ -48,21 +64,74 @@
       "name": "Normalizar medición",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [680, 200],
+      "position": [
+        680,
+        200
+      ],
       "parameters": {
         "mode": "manual",
         "assignments": {
           "assignments": [
-            { "id": "1",  "name": "agent_id",          "value": "={{ $json.body.agent_id || $json.body.agentId }}", "type": "string" },
-            { "id": "2",  "name": "agent_name",         "value": "={{ $json.body.agent_name || $json.body.agentName || '' }}", "type": "string" },
-            { "id": "3",  "name": "trello_card_id",     "value": "={{ $json.body.trello_card_id || $json.body.trelloCardId || '' }}", "type": "string" },
-            { "id": "4",  "name": "scale_px_cm",        "value": "={{ $json.body.scale_px_cm || $json.body.pxPerCm || 0 }}", "type": "number" },
-            { "id": "5",  "name": "ref_label",          "value": "={{ $json.body.ref_label || $json.body.refLabel || '' }}", "type": "string" },
-            { "id": "6",  "name": "productos",          "value": "={{ JSON.stringify($json.body.productos || []) }}", "type": "string" },
-            { "id": "7",  "name": "productos_arr",      "value": "={{ $json.body.productos || [] }}", "type": "array" },
-            { "id": "8",  "name": "imagen_base64",      "value": "={{ $json.body.imagen_base64 || '' }}", "type": "string" },
-            { "id": "9",  "name": "timestamp",          "value": "={{ $json.body.timestamp || new Date().toISOString() }}", "type": "string" },
-            { "id": "10", "name": "sheet_name",         "value": "={{ $json.body.sheet_name || 'AGENTES RIA 2026' }}", "type": "string" },
+            {
+              "id": "1",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id || $json.body.agentId }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "agent_name",
+              "value": "={{ $json.body.agent_name || $json.body.agentName || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "trello_card_id",
+              "value": "={{ $json.body.trello_card_id || $json.body.trelloCardId || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "scale_px_cm",
+              "value": "={{ $json.body.scale_px_cm || $json.body.pxPerCm || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "ref_label",
+              "value": "={{ $json.body.ref_label || $json.body.refLabel || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "productos",
+              "value": "={{ JSON.stringify($json.body.productos || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "productos_arr",
+              "value": "={{ $json.body.productos || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "8",
+              "name": "imagen_base64",
+              "value": "={{ $json.body.imagen_base64 || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "9",
+              "name": "timestamp",
+              "value": "={{ $json.body.timestamp || new Date().toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "10",
+              "name": "sheet_name",
+              "value": "={{ $json.body.sheet_name || 'AGENTES RIA 2026' }}",
+              "type": "string"
+            },
             {
               "id": "11",
               "name": "productos_resumen",
@@ -79,7 +148,10 @@
       "name": "Sheets — Buscar fila del agente",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [900, 200],
+      "position": [
+        900,
+        200
+      ],
       "parameters": {
         "operation": "read",
         "documentId": {
@@ -116,7 +188,10 @@
       "name": "Sheets — Guardar mediciones",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1120, 200],
+      "position": [
+        1120,
+        200
+      ],
       "parameters": {
         "operation": "update",
         "documentId": {
@@ -133,20 +208,160 @@
           "mappingMode": "defineBelow",
           "value": {
             "Número de agente": "={{ $('Normalizar medición').item.json.agent_id }}",
-            "Mediciones":       "={{ $('Normalizar medición').item.json.productos_resumen }}",
-            "Mediciones JSON":  "={{ $('Normalizar medición').item.json.productos }}",
-            "Escala px/cm":    "={{ $('Normalizar medición').item.json.scale_px_cm }}",
-            "Referencia usada":"={{ $('Normalizar medición').item.json.ref_label }}",
-            "Fecha medición":  "={{ $('Normalizar medición').item.json.timestamp }}"
+            "Mediciones": "={{ $('Normalizar medición').item.json.productos_resumen }}",
+            "Mediciones JSON": "={{ $('Normalizar medición').item.json.productos }}",
+            "Escala px/cm": "={{ $('Normalizar medición').item.json.scale_px_cm }}",
+            "Referencia usada": "={{ $('Normalizar medición').item.json.ref_label }}",
+            "Fecha medición": "={{ $('Normalizar medición').item.json.timestamp }}",
+            "Rotulo Standard": "={{ $('Agrupar productos por tipo').item.json.byTipo.rotulo_standard }}",
+            "Rotulo Panaflex": "={{ $('Agrupar productos por tipo').item.json.byTipo.rotulo_panaflex }}",
+            "Vinilo Cristal": "={{ $('Agrupar productos por tipo').item.json.byTipo.vinilo_cristal }}",
+            "Vinilo Microperforado": "={{ $('Agrupar productos por tipo').item.json.byTipo.vinilo_microperforado }}",
+            "Forex": "={{ $('Agrupar productos por tipo').item.json.byTipo.forex }}",
+            "Mostrador": "={{ $('Agrupar productos por tipo').item.json.byTipo.mostrador }}",
+            "Lona Exterior": "={{ $('Agrupar productos por tipo').item.json.byTipo.lona_exterior }}",
+            "Caja de Luz LED": "={{ $('Agrupar productos por tipo').item.json.byTipo.led_caja }}",
+            "Otro elemento": "={{ $('Agrupar productos por tipo').item.json.byTipo.otro }}"
           },
-          "matchingColumns": ["Número de agente"],
+          "matchingColumns": [
+            "Número de agente"
+          ],
           "schema": [
-            { "id": "Número de agente", "displayName": "Número de agente", "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "Mediciones",       "displayName": "Mediciones",       "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Mediciones JSON",  "displayName": "Mediciones JSON",  "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Escala px/cm",    "displayName": "Escala px/cm",    "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
-            { "id": "Referencia usada", "displayName": "Referencia usada", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Fecha medición",   "displayName": "Fecha medición",   "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+            {
+              "id": "Número de agente",
+              "displayName": "Número de agente",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mediciones",
+              "displayName": "Mediciones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Mediciones JSON",
+              "displayName": "Mediciones JSON",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Escala px/cm",
+              "displayName": "Escala px/cm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Referencia usada",
+              "displayName": "Referencia usada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Fecha medición",
+              "displayName": "Fecha medición",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Rotulo Standard",
+              "displayName": "Rotulo Standard",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Rotulo Panaflex",
+              "displayName": "Rotulo Panaflex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Vinilo Cristal",
+              "displayName": "Vinilo Cristal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Vinilo Microperforado",
+              "displayName": "Vinilo Microperforado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Forex",
+              "displayName": "Forex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Mostrador",
+              "displayName": "Mostrador",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Lona Exterior",
+              "displayName": "Lona Exterior",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Caja de Luz LED",
+              "displayName": "Caja de Luz LED",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Otro elemento",
+              "displayName": "Otro elemento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
           ]
         },
         "options": {}
@@ -163,16 +378,26 @@
       "name": "¿Tiene tarjeta Trello?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 200],
+      "position": [
+        1340,
+        200
+      ],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "id": "a",
               "leftValue": "={{ $('Normalizar medición').item.json.trello_card_id }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             }
           ],
           "combinator": "and"
@@ -185,7 +410,10 @@
       "name": "Trello — Comentar medición",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
-      "position": [1560, 120],
+      "position": [
+        1560,
+        120
+      ],
       "parameters": {
         "resource": "cardComment",
         "operation": "create",
@@ -204,7 +432,10 @@
       "name": "Trello — Label Tenemos las medides",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
-      "position": [1780, 120],
+      "position": [
+        1780,
+        120
+      ],
       "parameters": {
         "resource": "card",
         "operation": "addLabel",
@@ -223,22 +454,35 @@
       "name": "Drive — ¿Hay imagen para subir?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1560, 320],
+      "position": [
+        1560,
+        320
+      ],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "id": "a",
               "leftValue": "={{ $('Normalizar medición').item.json.imagen_base64 }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             },
             {
               "id": "b",
               "leftValue": "={{ $('Sheets — Buscar fila del agente').item.json['URL Carpeta Drive'] }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             }
           ],
           "combinator": "and"
@@ -251,7 +495,10 @@
       "name": "Extraer folder ID del agente",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [1780, 280],
+      "position": [
+        1780,
+        280
+      ],
       "parameters": {
         "mode": "manual",
         "assignments": {
@@ -284,12 +531,23 @@
       "name": "Drive — Buscar subcarpeta Fotografías",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [2000, 280],
+      "position": [
+        2000,
+        280
+      ],
       "parameters": {
         "operation": "filesList",
         "filter": {
-          "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
-          "folderId": { "__rl": true, "value": "={{ $json.agent_drive_folder_id }}", "mode": "id" },
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "MyDrive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "={{ $json.agent_drive_folder_id }}",
+            "mode": "id"
+          },
           "whatToSearch": "folders",
           "queryFilters": {
             "conditions": [
@@ -317,7 +575,10 @@
       "name": "Extraer ID carpeta Fotografías",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [2220, 280],
+      "position": [
+        2220,
+        280
+      ],
       "parameters": {
         "mode": "manual",
         "assignments": {
@@ -350,7 +611,10 @@
       "name": "Decodificar imagen base64",
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
-      "position": [2440, 280],
+      "position": [
+        2440,
+        280
+      ],
       "parameters": {
         "operation": "binaryData",
         "sourceProperty": "imagen_base64",
@@ -366,11 +630,18 @@
       "name": "Drive — Guardar en carpeta Fotografías",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [2660, 280],
+      "position": [
+        2660,
+        280
+      ],
       "parameters": {
         "operation": "upload",
         "name": "={{ $('Extraer ID carpeta Fotografías').item.json.file_name }}",
-        "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "MyDrive"
+        },
         "folderId": {
           "__rl": true,
           "value": "={{ $('Extraer ID carpeta Fotografías').item.json.fotos_folder_id }}",
@@ -392,7 +663,10 @@
       "name": "Sheets — Guardar URL foto",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [2880, 280],
+      "position": [
+        2880,
+        280
+      ],
       "parameters": {
         "operation": "update",
         "documentId": {
@@ -411,10 +685,28 @@
             "Número de agente": "={{ $('Normalizar medición').item.json.agent_id }}",
             "Última foto Drive": "={{ $json.webViewLink }}"
           },
-          "matchingColumns": ["Número de agente"],
+          "matchingColumns": [
+            "Número de agente"
+          ],
           "schema": [
-            { "id": "Número de agente", "displayName": "Número de agente", "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "Última foto Drive", "displayName": "Última foto Drive", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+            {
+              "id": "Número de agente",
+              "displayName": "Número de agente",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Última foto Drive",
+              "displayName": "Última foto Drive",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
           ]
         },
         "options": {}
@@ -431,11 +723,16 @@
       "name": "Responder 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [3100, 200],
+      "position": [
+        3100,
+        200
+      ],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ status: 'ok', agent_id: $('Normalizar medición').item.json.agent_id, saved: true, foto_url: $('Drive — Guardar en carpeta Fotografías').item ? $('Drive — Guardar en carpeta Fotografías').item.json.webViewLink : null }) }}",
-        "options": { "responseCode": 200 }
+        "options": {
+          "responseCode": 200
+        }
       }
     },
     {
@@ -443,71 +740,228 @@
       "name": "Responder 400 Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [680, 420],
+      "position": [
+        680,
+        420
+      ],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={ \"status\": \"error\", \"message\": \"Payload inválido: se requiere agent_id y productos\" }",
-        "options": { "responseCode": 400 }
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "group-by-tipo-001",
+      "name": "Agrupar productos por tipo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const normalizado = $input.first().json;\nconst productosArr = normalizado.productos_arr || [];\n\nconst TIPOS = [\n  ['rotulo_standard',       'Rotulo Standard'],\n  ['rotulo_panaflex',       'Rotulo Panaflex'],\n  ['vinilo_cristal',        'Vinilo Cristal'],\n  ['vinilo_microperforado', 'Vinilo Microperforado'],\n  ['forex',                 'Forex'],\n  ['mostrador',             'Mostrador'],\n  ['lona_exterior',         'Lona Exterior'],\n  ['led_caja',              'Caja de Luz LED'],\n  ['otro',                  'Otro elemento']\n];\n\nconst byTipo = {};\nfor (const [tipo] of TIPOS) {\n  const prods = productosArr.filter(p => p.tipo === tipo);\n  byTipo[tipo] = prods.length === 0 ? '' : prods.map(p => {\n    const a = parseFloat(p.anchoCm).toFixed(1);\n    if (p.altoCm != null) {\n      const h = parseFloat(p.altoCm).toFixed(1);\n      const m2 = (parseFloat(a) * parseFloat(h) / 10000).toFixed(3);\n      return `${a} × ${h} cm (${m2} m²)`;\n    }\n    return `${a} cm (solo ancho)`;\n  }).join(' | ');\n}\n\nreturn [{ json: { ...normalizado, byTipo } }];"
       }
     }
   ],
   "connections": {
     "Webhook — POST /ria/measurements": {
-      "main": [[{ "node": "Validar payload", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Validar payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validar payload": {
       "main": [
-        [{ "node": "Normalizar medición", "type": "main", "index": 0 }],
-        [{ "node": "Responder 400 Error", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Normalizar medición",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 400 Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Normalizar medición": {
-      "main": [[{ "node": "Sheets — Buscar fila del agente", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Agrupar productos por tipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Sheets — Buscar fila del agente": {
-      "main": [[{ "node": "Sheets — Guardar mediciones", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Sheets — Guardar mediciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Sheets — Guardar mediciones": {
-      "main": [[
-        { "node": "¿Tiene tarjeta Trello?", "type": "main", "index": 0 },
-        { "node": "Drive — ¿Hay imagen para subir?", "type": "main", "index": 0 }
-      ]]
+      "main": [
+        [
+          {
+            "node": "¿Tiene tarjeta Trello?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Drive — ¿Hay imagen para subir?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "¿Tiene tarjeta Trello?": {
       "main": [
-        [{ "node": "Trello — Comentar medición", "type": "main", "index": 0 }],
-        [{ "node": "Responder 200 OK", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Trello — Comentar medición",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Trello — Comentar medición": {
-      "main": [[{ "node": "Trello — Label Tenemos las medides", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Trello — Label Tenemos las medides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Trello — Label Tenemos las medides": {
-      "main": [[{ "node": "Responder 200 OK", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Drive — ¿Hay imagen para subir?": {
       "main": [
-        [{ "node": "Extraer folder ID del agente", "type": "main", "index": 0 }],
+        [
+          {
+            "node": "Extraer folder ID del agente",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Extraer folder ID del agente": {
-      "main": [[{ "node": "Drive — Buscar subcarpeta Fotografías", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Drive — Buscar subcarpeta Fotografías",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Drive — Buscar subcarpeta Fotografías": {
-      "main": [[{ "node": "Extraer ID carpeta Fotografías", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Extraer ID carpeta Fotografías",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Extraer ID carpeta Fotografías": {
-      "main": [[{ "node": "Decodificar imagen base64", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Decodificar imagen base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Decodificar imagen base64": {
-      "main": [[{ "node": "Drive — Guardar en carpeta Fotografías", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Drive — Guardar en carpeta Fotografías",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Drive — Guardar en carpeta Fotografías": {
-      "main": [[{ "node": "Sheets — Guardar URL foto", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Sheets — Guardar URL foto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Sheets — Guardar URL foto": {
-      "main": [[{ "node": "Responder 200 OK", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar productos por tipo": {
+      "main": [
+        [
+          {
+            "node": "Sheets — Buscar fila del agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -517,9 +971,16 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "meta": { "templateCredsSetupCompleted": false },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
   "pinData": {},
   "versionId": "2",
   "triggerCount": 1,
-  "tags": [{ "name": "RIA", "createdAt": "2026-06-28" }]
+  "tags": [
+    {
+      "name": "RIA",
+      "createdAt": "2026-06-28"
+    }
+  ]
 }
