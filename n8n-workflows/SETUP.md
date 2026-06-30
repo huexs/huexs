@@ -66,9 +66,9 @@
 | Z | Vinilo Microperforado | Igual |
 | AA | Forex | Igual |
 | AB | Mostrador | Igual |
-| AC | Lona Exterior | Igual |
-| AD | Caja de Luz LED | Igual |
-| AE | Otro elemento | Igual |
+| AC | Toldo | Igual |
+| AD | Placa Metacrilato | Igual |
+| AE | Banderola Montaje | Igual |
 
 > Para referencias de coste por m², crear una hoja aparte "PRECIOS RIA" con columnas: Tipo | €/m² | Notas.
 > Las columnas W–AE se rellenan automáticamente con cada guardado (W2). Si el tipo no se midió, queda vacío.

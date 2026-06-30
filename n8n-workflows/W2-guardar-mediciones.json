@@ -231,9 +231,9 @@
             "Vinilo Microperforado": "={{ $('Agrupar productos por tipo').item.json.byTipo.vinilo_microperforado }}",
             "Forex": "={{ $('Agrupar productos por tipo').item.json.byTipo.forex }}",
             "Mostrador": "={{ $('Agrupar productos por tipo').item.json.byTipo.mostrador }}",
-            "Lona Exterior": "={{ $('Agrupar productos por tipo').item.json.byTipo.lona_exterior }}",
-            "Caja de Luz LED": "={{ $('Agrupar productos por tipo').item.json.byTipo.led_caja }}",
-            "Otro elemento": "={{ $('Agrupar productos por tipo').item.json.byTipo.otro }}",
+            "Toldo": "={{ $('Agrupar productos por tipo').item.json.byTipo.toldo }}",
+            "Placa Metacrilato": "={{ $('Agrupar productos por tipo').item.json.byTipo.placa_metacrilato }}",
+            "Banderola Montaje": "={{ $('Agrupar productos por tipo').item.json.byTipo.montaje_banderola }}",
             "Coste Imprenta (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.coste_estimado_imprenta || '' }}",
             "Valoración Huexs (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.valoracion_huexs_estimada || '' }}"
           },
@@ -794,7 +794,7 @@
         320
       ],
       "parameters": {
-        "jsCode": "const normalizado = $input.first().json;\nconst productosArr = normalizado.productos_arr || [];\n\nconst TIPOS = [\n  ['rotulo_standard',       'Rotulo Standard'],\n  ['rotulo_panaflex',       'Rotulo Panaflex'],\n  ['vinilo_cristal',        'Vinilo Cristal'],\n  ['vinilo_microperforado', 'Vinilo Microperforado'],\n  ['forex',                 'Forex'],\n  ['mostrador',             'Mostrador'],\n  ['lona_exterior',         'Lona Exterior'],\n  ['led_caja',              'Caja de Luz LED'],\n  ['otro',                  'Otro elemento']\n];\n\nconst byTipo = {};\nfor (const [tipo] of TIPOS) {\n  const prods = productosArr.filter(p => p.tipo === tipo);\n  byTipo[tipo] = prods.length === 0 ? '' : prods.map(p => {\n    const a = parseFloat(p.anchoCm).toFixed(1);\n    if (p.altoCm != null) {\n      const h = parseFloat(p.altoCm).toFixed(1);\n      const m2 = (parseFloat(a) * parseFloat(h) / 10000).toFixed(3);\n      return `${a} × ${h} cm (${m2} m²)`;\n    }\n    return `${a} cm (solo ancho)`;\n  }).join(' | ');\n}\n\nreturn [{ json: { ...normalizado, byTipo } }];"
+        "jsCode": "const normalizado = $input.first().json;\nconst productosArr = normalizado.productos_arr || [];\n\nconst TIPOS = [\n  ['rotulo_standard',       'Rotulo Standard'],\n  ['rotulo_panaflex',       'Rotulo Panaflex'],\n  ['vinilo_cristal',        'Vinilo Cristal'],\n  ['vinilo_microperforado', 'Vinilo Microperforado'],\n  ['forex',                 'Forex'],\n  ['mostrador',             'Mostrador'],\n  ['toldo',                 'Toldo'],\n  ['placa_metacrilato',     'Placa Metacrilato'],\n  ['montaje_banderola',     'Banderola Montaje']\n];\n\nconst byTipo = {};\nfor (const [tipo] of TIPOS) {\n  const prods = productosArr.filter(p => p.tipo === tipo);\n  byTipo[tipo] = prods.length === 0 ? '' : prods.map(p => {\n    const a = parseFloat(p.anchoCm).toFixed(1);\n    if (p.altoCm != null) {\n      const h = parseFloat(p.altoCm).toFixed(1);\n      const m2 = (parseFloat(a) * parseFloat(h) / 10000).toFixed(3);\n      return `${a} × ${h} cm (${m2} m²)`;\n    }\n    return `${a} cm (solo ancho)`;\n  }).join(' | ');\n}\n\nreturn [{ json: { ...normalizado, byTipo } }];"
       }
     }
   ],
