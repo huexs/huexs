@@ -1,0 +1,77 @@
+{
+  "name": "RIA W5 — Trello Status (Webhook → lista de la tarjeta)",
+  "nodes": [
+    {
+      "id": "webhook-trello-status",
+      "name": "Webhook — POST /ria/trello-status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ria/trello-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "ria-trello-status"
+    },
+    {
+      "id": "get-trello-card",
+      "name": "Trello — Obtener tarjeta",
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "parameters": {
+        "resource": "card",
+        "operation": "get",
+        "id": "={{ $json.body.cardId }}"
+      },
+      "credentials": {
+        "trelloApi": { "id": "REPLACE_TRELLO_CREDENTIAL_ID", "name": "Trello — Huexs" }
+      }
+    },
+    {
+      "id": "get-trello-list",
+      "name": "Trello — Obtener lista",
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "parameters": {
+        "resource": "list",
+        "operation": "get",
+        "id": "={{ $json.idList }}"
+      },
+      "credentials": {
+        "trelloApi": { "id": "REPLACE_TRELLO_CREDENTIAL_ID", "name": "Trello — Huexs" }
+      }
+    },
+    {
+      "id": "respond-list-name",
+      "name": "Responder con nombre de lista",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ listName: $json.name }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — POST /ria/trello-status": { "main": [[{ "node": "Trello — Obtener tarjeta", "type": "main", "index": 0 }]] },
+    "Trello — Obtener tarjeta":           { "main": [[{ "node": "Trello — Obtener lista",   "type": "main", "index": 0 }]] },
+    "Trello — Obtener lista":             { "main": [[{ "node": "Responder con nombre de lista", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "instanceId": "REPLACE_INSTANCE_ID"
+  }
+}

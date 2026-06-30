@@ -847,6 +847,20 @@
     #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 16px; font-weight: 700; }
     #rm-app .rm-placeholder span:not(.rm-badge) { color: #94a3b8; font-size: 13px; }
 
+    /* ── TRELLO STATUS BADGE ── */
+    #rm-app .rm-trello-status {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+      white-space: nowrap;
+    }
+    #rm-app .rm-trello-status:empty { display: none; }
+
     /* ── MODE TOGGLE (📷 / 📋) ── */
     #rm-app .rm-mode-toggle { display: flex; gap: 4px; margin-right: 4px; }
     #rm-app .rm-mode-toggle-btn {
@@ -1255,7 +1269,8 @@
       n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements",
       // n8n: crea carpeta Drive + tarjeta Trello para el agente y escribe URLs en Sheets
       n8nWebhookCreate:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent",
-      n8nWebhookPhotos:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/upload-photos"
+      n8nWebhookPhotos:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/upload-photos",
+      n8nWebhookTrelloStatus: "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/trello-status"
     };
 
     const MAG_SIZE = 120;
@@ -1807,16 +1822,18 @@
       els.agentLinks.appendChild(driveBtn);
 
       const trelloBtn = document.createElement("a");
+      trelloBtn.id = "rmTrelloLink";
       trelloBtn.className   = "rm-agent-link " + (c.trelloUrl ? "rm-agent-link-trello" : "rm-agent-link-nourl");
       trelloBtn.textContent = c.trelloUrl ? "Trello" : "Sin tarjeta";
       if (c.trelloUrl) { trelloBtn.href = c.trelloUrl; trelloBtn.target = "_blank"; }
       els.agentLinks.appendChild(trelloBtn);
 
-      if (c.estado) {
-        const s = document.createElement("span");
-        s.className = "rm-agent-link rm-agent-link-nourl"; s.textContent = c.estado;
-        els.agentLinks.appendChild(s);
-      }
+      // Estado Trello — se carga async si hay trelloId
+      const trelloStatusEl = document.createElement("span");
+      trelloStatusEl.id = "rmTrelloStatus";
+      trelloStatusEl.className = "rm-trello-status";
+      els.agentLinks.appendChild(trelloStatusEl);
+      if (c.trelloId) fetchTrelloStatus(c.trelloId);
 
       // Mostrar botón de creación solo si falta Drive o Trello
       const needsCreate = !c.driveUrl || !c.trelloUrl;
@@ -1828,6 +1845,26 @@
       els.createResources.disabled = false;
       const helpEl = document.getElementById("rmCreateResourcesHelp");
       if (helpEl) helpEl.style.display = needsCreate ? "" : "none";
+    }
+
+    /* ─── ESTADO TRELLO ─── */
+    async function fetchTrelloStatus(cardId) {
+      const el = document.getElementById("rmTrelloStatus");
+      if (!el) return;
+      el.textContent = "…";
+      try {
+        const res = await fetch(config.n8nWebhookTrelloStatus, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cardId })
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const listName = data.listName || data.list_name || data.name || "";
+        el.textContent = listName || "";
+      } catch {
+        el.textContent = "";
+      }
     }
 
     /* ─── CREAR RECURSOS EN N8N ─── */
