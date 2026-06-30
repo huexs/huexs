@@ -805,7 +805,8 @@
     }
     #rm-app .rm-placeholder-upload:hover { border-color: var(--accent); background: var(--accent-bg); }
     #rm-app .rm-placeholder-upload input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; }
-    #rm-app .rm-placeholder-icon { font-size: 40px; line-height: 1; }
+    #rm-app .rm-placeholder-icon { line-height: 1; color: #64748b; }
+    #rm-app .rm-icon-sep { width: 1px; height: 18px; background: #334155; margin: 0 2px; align-self: center; }
     #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 16px; font-weight: 700; }
     #rm-app .rm-placeholder span:not(.rm-badge) { color: #94a3b8; font-size: 13px; }
   </style>
@@ -898,9 +899,16 @@
         <div id="rmCanvasNote" class="rm-canvas-note">Sube una imagen para empezar</div>
 
         <!-- Icon buttons -->
-        <button id="rmUndo"  class="rm-icon-btn" type="button" title="Deshacer">↩</button>
-        <button id="rmClear" class="rm-icon-btn" type="button" title="Limpiar todo">✕</button>
-        <button id="rmNewPhoto" class="rm-icon-btn" type="button" title="Nueva foto / Limpiar todo" style="font-size:18px">🔄</button>
+        <button id="rmUndo"  class="rm-icon-btn" type="button" title="Deshacer último punto o línea (↩)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6H10a4 4 0 0 1 0 8H6"/><polyline points="3 3 3 6 6 6"/></svg>
+        </button>
+        <button id="rmClear" class="rm-icon-btn" type="button" title="Borrar todas las líneas de medición (mantiene la foto)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>
+        </button>
+        <div class="rm-icon-sep"></div>
+        <button id="rmNewPhoto" class="rm-icon-btn" type="button" title="Nueva foto — limpia todo y empieza desde cero">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="10" rx="2"/><circle cx="8" cy="9" r="2.5"/><path d="M5 4l1.5-2h3L11 4"/></svg>
+        </button>
       </div>
 
       <!-- Hidden for JS compat -->
@@ -923,7 +931,7 @@
         <div id="rmPlaceholder" class="rm-placeholder">
           <label id="rmDropZone" class="rm-placeholder-upload" for="rmUpload">
             <input id="rmUpload" type="file" accept="image/*">
-            <span class="rm-placeholder-icon">📷</span>
+            <span class="rm-placeholder-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="22" height="15" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M7.5 6l1.8-3h5.4L16.5 6"/></svg></span>
             <strong>Subir foto de fachada</strong>
             <span>Toca aquí o arrastra la imagen</span>
           </label>
