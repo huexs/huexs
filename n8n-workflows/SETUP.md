@@ -7,6 +7,7 @@
 | W1 — Nuevo Agente | `xtqsHGzK6z15YfN5` | ✅ Activo | Google Sheets polling 1 min |
 | W2 — Guardar Mediciones | `hFWwy6YHp8iq3RIg` | ✅ Activo | POST `/webhook/ria/measurements` |
 | W3 — Crear Recursos Manual | `eVB52gyJcYQ1SqZj` | ✅ Activo | POST `/webhook/ria/create-agent` |
+| W4 — Subir Fotos | *(pendiente activar)* | ⏳ Pendiente | POST `/webhook/ria/upload-photos` |
 
 **Instancia n8n:** `https://n8n-n8n.te2fhz.easypanel.host`
 
@@ -19,6 +20,7 @@
 | `W1-nuevo-agente.json` | Nueva fila en Google Sheets | Crea carpeta Drive (+ 6 subcarpetas) + tarjeta Trello + Google Contact + escribe URLs en Sheets |
 | `W2-guardar-mediciones.json` | POST `/ria/measurements` | Guarda medidas en Sheets, comenta en Trello con resumen, sube imagen anotada a Drive/Fotografías |
 | `W3-crear-recursos-manual.json` | POST `/ria/create-agent` | Crea Drive/Trello/Contact on-demand desde el botón de la herramienta (idempotente: no duplica si ya existen) |
+| `W4-subir-fotos.json` | POST `/ria/upload-photos` | Sube una foto (base64) a la subcarpeta 01 Fotografías del agente en Drive |
 
 ---
 
@@ -138,8 +140,9 @@ Crear en **Settings → Credentials**:
 
 Los webhooks están configurados en `estimador-ria.html`:
 ```
-POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements   → W2
-POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent   → W3
+POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements    → W2
+POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent    → W3
+POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/upload-photos   → W4
 ```
 
 ---

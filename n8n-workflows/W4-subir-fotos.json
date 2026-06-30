@@ -1,0 +1,203 @@
+{
+  "name": "RIA W4 — Subir Fotos (Webhook → Drive/Fotografías)",
+  "nodes": [
+    {
+      "id": "webhook-photos",
+      "name": "Webhook — POST /ria/upload-photos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ria/upload-photos",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "ria-upload-photos"
+    },
+    {
+      "id": "normalize-photo",
+      "name": "Normalizar input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "1", "name": "agent_id",   "value": "={{ $json.body.agent_id || $json.body.agentId || '' }}", "type": "string" },
+            { "id": "2", "name": "agentName",  "value": "={{ $json.body.agentName || '' }}", "type": "string" },
+            { "id": "3", "name": "driveUrl",   "value": "={{ $json.body.driveUrl || '' }}", "type": "string" },
+            { "id": "4", "name": "foto_base64","value": "={{ $json.body.foto_base64 || '' }}", "type": "string" },
+            { "id": "5", "name": "filename",   "value": "={{ $json.body.filename || 'foto.jpg' }}", "type": "string" },
+            { "id": "6", "name": "timestamp",  "value": "={{ $json.body.timestamp || $now.toISO() }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "extract-folder-id",
+      "name": "Extraer ID carpeta Drive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "jsCode": "const n = $input.first().json;\nconst driveUrl = n.driveUrl || '';\n// Extract folder ID from Drive URL: folders/FOLDER_ID or id=FOLDER_ID\nlet folderId = '';\nconst m = driveUrl.match(/folders\\/([\\w-]+)/) || driveUrl.match(/id=([\\w-]+)/);\nif (m) folderId = m[1];\nreturn [{ json: { ...n, rootFolderId: folderId } }];"
+      }
+    },
+    {
+      "id": "list-subfolders",
+      "name": "Listar subcarpetas del agente",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [900, 300],
+      "parameters": {
+        "operation": "fileSearch",
+        "queryString": "='{{ $json.rootFolderId }}' in parents and mimeType='application/vnd.google-apps.folder' and name='01 Fotografías' and trashed=false",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "REPLACE_GOOGLE_CREDENTIAL_ID", "name": "Google Drive — Huexs" }
+      }
+    },
+    {
+      "id": "check-subfolder",
+      "name": "¿Existe subcarpeta Fotografías?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "use-existing-subfolder",
+      "name": "Usar subcarpeta existente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 200],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "1", "name": "fotografiasFolderId", "value": "={{ $json.id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "create-subfolder",
+      "name": "Crear subcarpeta Fotografías",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1340, 400],
+      "parameters": {
+        "operation": "createFolder",
+        "name": "01 Fotografías",
+        "driveId": { "__rl": true, "value": "My Drive", "mode": "list" },
+        "folderId": { "__rl": true, "value": "={{ $('Extraer ID carpeta Drive').first().json.rootFolderId }}", "mode": "id" },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "REPLACE_GOOGLE_CREDENTIAL_ID", "name": "Google Drive — Huexs" }
+      }
+    },
+    {
+      "id": "merge-folder-id",
+      "name": "Unir resultado carpeta",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1560, 300],
+      "parameters": { "mode": "chooseBranch", "chooseBranch": { "branch": 0 } }
+    },
+    {
+      "id": "convert-base64",
+      "name": "Convertir base64 a binario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300],
+      "parameters": {
+        "jsCode": "const n = $input.first().json;\nconst raw = (n.foto_base64 || '').replace(/^data:image\\/\\w+;base64,/, '');\nconst buf = Buffer.from(raw, 'base64');\nconst filename = n.filename || 'foto.jpg';\nconst ext = filename.split('.').pop().toLowerCase();\nconst mime = ext === 'png' ? 'image/png' : 'image/jpeg';\nreturn [{ json: { ...n }, binary: { data: { data: raw, mimeType: mime, fileName: filename } } }];"
+      }
+    },
+    {
+      "id": "upload-to-drive",
+      "name": "Subir foto a Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [2000, 300],
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $json.filename }}",
+        "driveId": { "__rl": true, "value": "My Drive", "mode": "list" },
+        "folderId": { "__rl": true, "value": "={{ $json.fotografiasFolderId || $('Crear subcarpeta Fotografías').first().json.id }}", "mode": "id" },
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "REPLACE_GOOGLE_CREDENTIAL_ID", "name": "Google Drive — Huexs" }
+      }
+    },
+    {
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2220, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"driveFileId\": \"{{ $json.id }}\", \"driveWebViewLink\": \"{{ $json.webViewLink }}\" }",
+        "options": { "responseCode": 200 }
+      }
+    },
+    {
+      "id": "respond-error",
+      "name": "Responder Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2220, 460],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"error\": \"No se pudo subir la foto\" }",
+        "options": { "responseCode": 500 }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — POST /ria/upload-photos": { "main": [[{ "node": "Normalizar input", "type": "main", "index": 0 }]] },
+    "Normalizar input": { "main": [[{ "node": "Extraer ID carpeta Drive", "type": "main", "index": 0 }]] },
+    "Extraer ID carpeta Drive": { "main": [[{ "node": "Listar subcarpetas del agente", "type": "main", "index": 0 }]] },
+    "Listar subcarpetas del agente": { "main": [[{ "node": "¿Existe subcarpeta Fotografías?", "type": "main", "index": 0 }]] },
+    "¿Existe subcarpeta Fotografías?": {
+      "main": [
+        [{ "node": "Usar subcarpeta existente",    "type": "main", "index": 0 }],
+        [{ "node": "Crear subcarpeta Fotografías", "type": "main", "index": 0 }]
+      ]
+    },
+    "Usar subcarpeta existente": { "main": [[{ "node": "Unir resultado carpeta", "type": "main", "index": 0 }]] },
+    "Crear subcarpeta Fotografías": { "main": [[{ "node": "Unir resultado carpeta", "type": "main", "index": 1 }]] },
+    "Unir resultado carpeta": { "main": [[{ "node": "Convertir base64 a binario", "type": "main", "index": 0 }]] },
+    "Convertir base64 a binario": { "main": [[{ "node": "Subir foto a Drive", "type": "main", "index": 0 }]] },
+    "Subir foto a Drive": { "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "instanceId": "REPLACE_INSTANCE_ID"
+  }
+}

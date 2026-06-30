@@ -7,6 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Estimador RIA">
+  <meta name="theme-color" content="#191919">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Estimador%20de%20Fachadas%20%C2%B7%20Huexs%22%2C%22short_name%22%3A%22Estimador%20RIA%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8f7f3%22%2C%22theme_color%22%3A%22%23191919%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fhuexs.com%2Fwp-content%2Fuploads%2F2026%2F03%2FLogo-huexs-WHITE-MAIL-1.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
 </head>
 <body>
 <div id="rm-app" data-mobile-tab="agents">
@@ -816,6 +823,87 @@
     #rm-app .rm-icon-sep { width: 1px; height: 18px; background: #334155; margin: 0 2px; align-self: center; }
     #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 16px; font-weight: 700; }
     #rm-app .rm-placeholder span:not(.rm-badge) { color: #94a3b8; font-size: 13px; }
+
+    /* ── MODE TOGGLE (📷 / 📋) ── */
+    #rm-app .rm-mode-toggle { display: flex; gap: 4px; margin-right: 4px; }
+    #rm-app .rm-mode-toggle-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: transparent; color: var(--text-2);
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 120ms;
+    }
+    #rm-app .rm-mode-toggle-btn.rm-active {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+
+    /* ── MANUAL PANEL ── */
+    #rmManualPanel {
+      display: none; flex-direction: column; gap: 0;
+      height: 100%; overflow-y: auto; padding: 16px;
+      background: var(--canvas-bg); color: #e2e8f0;
+    }
+    #rmManualPanel.rm-visible { display: flex; }
+    #rm-app .rm-manual-title { font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+    #rm-app .rm-manual-row {
+      display: grid; grid-template-columns: 1fr 90px 90px 28px; gap: 6px; align-items: center; margin-bottom: 8px;
+    }
+    #rm-app .rm-manual-row select,
+    #rm-app .rm-manual-row input {
+      background: #252525; border: 1px solid #334155; border-radius: 6px;
+      color: #e2e8f0; padding: 5px 8px; font-size: 13px; width: 100%;
+    }
+    #rm-app .rm-manual-row input[type="number"] { -moz-appearance: textfield; }
+    #rm-app .rm-manual-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    #rm-app .rm-manual-cost {
+      grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap;
+      font-size: 11px; color: #94a3b8; padding-left: 2px; margin-top: -4px; margin-bottom: 4px;
+    }
+    #rm-app .rm-manual-del {
+      background: none; border: none; color: #475569; cursor: pointer; padding: 4px;
+      border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    #rm-app .rm-manual-del:hover { color: var(--red); background: rgba(220,38,38,.1); }
+    #rm-app .rm-manual-add {
+      display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+      border: 1.5px dashed #334155; border-radius: 8px; background: none;
+      color: #0d9488; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px;
+      transition: border-color 120ms, background 120ms;
+    }
+    #rm-app .rm-manual-add:hover { border-color: #0d9488; background: rgba(13,148,136,.08); }
+    #rm-app .rm-manual-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 2px; border-top: 1px solid #334155; margin-top: 8px;
+      font-size: 13px; font-weight: 700; color: #e2e8f0;
+    }
+
+    /* ── PHOTO UPLOAD SECTION ── */
+    #rm-app .rm-photo-section { margin-top: 6px; }
+    #rm-app .rm-photo-section .rm-step-head { margin-bottom: 8px; }
+    #rm-app .rm-photo-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    #rm-app .rm-photo-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 10px 8px; border: 1.5px dashed var(--border-strong); border-radius: 10px;
+      background: var(--surface-2); color: var(--text-2); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: border-color 150ms, background 150ms;
+    }
+    #rm-app .rm-photo-btn:hover { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+    #rm-app .rm-photo-btn svg { flex-shrink: 0; }
+    #rm-app .rm-photo-thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    #rm-app .rm-photo-thumb {
+      position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
+      border: 1.5px solid var(--border);
+    }
+    #rm-app .rm-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #rm-app .rm-photo-thumb-del {
+      position: absolute; top: 2px; right: 2px;
+      background: rgba(0,0,0,.6); border: none; border-radius: 50%;
+      color: #fff; width: 18px; height: 18px; font-size: 10px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    #rm-app .rm-photo-status { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    #rm-app .rm-photo-uploading { color: var(--amber); }
+    #rm-app .rm-photo-done { color: var(--green); }
   </style>
 
   <!-- APPBAR -->
@@ -897,6 +985,11 @@
     <main class="rm-panel rm-center rm-workbench">
 
       <div class="rm-canvas-top">
+        <!-- Mode toggle: photo vs manual -->
+        <div class="rm-mode-toggle">
+          <button id="rmModePhoto"  class="rm-mode-toggle-btn rm-active" type="button">📷 Con foto</button>
+          <button id="rmModeManual" class="rm-mode-toggle-btn" type="button">📋 Manual</button>
+        </div>
         <!-- Segmented control -->
         <div class="rm-seg">
           <button id="rmModeRef" class="rm-seg-btn rm-active" type="button">Referencia</button>
@@ -943,6 +1036,16 @@
             <span>Toca aquí o arrastra la imagen</span>
           </label>
           <span id="rmImageBadge" class="rm-badge rm-badge-warn" style="margin-top:8px">Sin imagen</span>
+        </div>
+      </div>
+
+      <!-- MANUAL MODE PANEL -->
+      <div id="rmManualPanel">
+        <div class="rm-manual-title">Medición manual</div>
+        <div id="rmManualRows"></div>
+        <button id="rmManualAddRow" class="rm-manual-add" type="button">＋ Añadir producto</button>
+        <div id="rmManualTotal" class="rm-manual-total" style="display:none">
+          <span>Total estimado</span><span id="rmManualTotalVal">—</span>
         </div>
       </div>
 
@@ -1068,6 +1171,32 @@
           <p class="rm-help" id="rmSaveHint">Selecciona un agente para poder guardar.</p>
         </section>
 
+        <!-- PASO 04: Fotos -->
+        <section class="rm-section rm-photo-section">
+          <div class="rm-step-head">
+            <span class="rm-step-num">04</span>
+            <span class="rm-step-title">Fotos del local</span>
+          </div>
+          <p class="rm-help">Sube fotos a Drive/Fotografías del agente.</p>
+          <div class="rm-photo-row">
+            <label class="rm-photo-btn" for="rmPhotoCamera">
+              <input id="rmPhotoCamera" type="file" accept="image/*" capture="environment" multiple style="display:none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="22" height="15" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M7.5 6l1.8-3h5.4L16.5 6"/></svg>
+              Cámara
+            </label>
+            <label class="rm-photo-btn" for="rmPhotoGallery">
+              <input id="rmPhotoGallery" type="file" accept="image/*" multiple style="display:none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M2 15l6-6 4 4 3-3 7 6"/><circle cx="16" cy="8" r="1.5"/></svg>
+              Galería
+            </label>
+          </div>
+          <div id="rmPhotoThumbs" class="rm-photo-thumbs"></div>
+          <div id="rmPhotoStatus" class="rm-photo-status"></div>
+          <button id="rmUploadPhotos" class="rm-btn rm-btn-primary" type="button" style="display:none">
+            Subir fotos a Drive
+          </button>
+        </section>
+
         <!-- Hidden elements for JS compatibility -->
         <button id="rmCopy"       style="display:none" type="button">Copiar resultado</button>
         <button id="rmGenPreview" style="display:none" type="button">Generar</button>
@@ -1096,7 +1225,8 @@
       spreadsheetSheets: ["AGENTES RIA 2026"],
       n8nWebhookSave:    "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements",
       // n8n: crea carpeta Drive + tarjeta Trello para el agente y escribe URLs en Sheets
-      n8nWebhookCreate:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent"
+      n8nWebhookCreate:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent",
+      n8nWebhookPhotos:  "https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/upload-photos"
     };
 
     const MAG_SIZE = 120;
@@ -1171,7 +1301,11 @@
       pendingProduct: null,
       lastMeasureCm:  null,
       addingProduct:  false,
-      clientPage:     0
+      clientPage:     0,
+      manualMode:     false,
+      manualProductos: [],
+      pendingPhotos:  [],
+      uploadingPhotos: false
     };
 
     const app = document.getElementById("rm-app");
@@ -1219,7 +1353,13 @@
       newRefPhotoPreview: el("#rmNewRefPhotoPreview"),
       saveRef: el("#rmSaveRef"), cancelRef: el("#rmCancelRef"),
       createResources: el("#rmCreateResources"),
-      touchMagWrap: el("#rmTouchMagWrap"), touchMag: el("#rmTouchMag"), touchMagLabel: el("#rmTouchMagLabel")
+      touchMagWrap: el("#rmTouchMagWrap"), touchMag: el("#rmTouchMag"), touchMagLabel: el("#rmTouchMagLabel"),
+      modePhoto: el("#rmModePhoto"), modeManual: el("#rmModeManual"),
+      manualPanel: el("#rmManualPanel"), manualRows: el("#rmManualRows"),
+      manualAddRow: el("#rmManualAddRow"), manualTotal: el("#rmManualTotal"), manualTotalVal: el("#rmManualTotalVal"),
+      photoCamera: el("#rmPhotoCamera"), photoGallery: el("#rmPhotoGallery"),
+      photoThumbs: el("#rmPhotoThumbs"), photoStatus: el("#rmPhotoStatus"),
+      uploadPhotos: el("#rmUploadPhotos")
     };
 
     let newRefPhotoDataUrl = null;
@@ -1744,6 +1884,163 @@
     }
 
     /* ─── PRECIOS RIA ─── */
+    /* ─── MANUAL MODE ─── */
+    function setAppMode(manual) {
+      state.manualMode = manual;
+      els.modePhoto.classList.toggle("rm-active", !manual);
+      els.modeManual.classList.toggle("rm-active", manual);
+      // photo mode elements
+      els.stage.style.display = manual ? "none" : "";
+      const canvasBottom = app.querySelector(".rm-canvas-bottom");
+      if (canvasBottom) canvasBottom.style.display = manual ? "none" : "";
+      const mobileTools = app.querySelector(".rm-mobile-tools");
+      if (mobileTools) mobileTools.style.display = manual ? "none" : "";
+      // ref segmented control — hide in manual mode (no photo = no calibration)
+      const rmSeg = app.querySelector(".rm-seg");
+      if (rmSeg) rmSeg.style.display = manual ? "none" : "";
+      els.canvasNote.style.display = manual ? "none" : "";
+      els.manualPanel.classList.toggle("rm-visible", manual);
+      // In manual mode, hide ref (step 01) and products (step 02) sections in right panel
+      // The manual panel in the center replaces those steps
+      app.querySelectorAll(".rm-results .rm-section").forEach((s, i) => {
+        if (i < 2) s.style.display = manual ? "none" : "";
+      });
+      if (manual && state.manualProductos.length === 0) addManualRow();
+      renderManualRows();
+      updateSaveButton();
+    }
+
+    const TIPO_OPTIONS = Object.entries(TIPO_META).map(([v, m]) => `<option value="${v}">${m.label}</option>`).join("");
+
+    function addManualRow() {
+      state.manualProductos.push({ tipo: "rotulo_standard", anchoCm: "", altoCm: "" });
+      renderManualRows();
+    }
+
+    function removeManualRow(i) {
+      state.manualProductos.splice(i, 1);
+      renderManualRows();
+      updateSaveButton();
+    }
+
+    function renderManualRows() {
+      if (!els.manualRows) return;
+      els.manualRows.innerHTML = "";
+      state.manualProductos.forEach((p, i) => {
+        const cost = calcProductoCost(p);
+        const costHtml = cost && cost.coste != null && cost.coste > 0
+          ? `<div class="rm-manual-cost"><span>🏭 ${fmtEur(cost.coste)}</span><span>💶 ${fmtEur(cost.venta)}</span><span>▲ ${fmtEur(cost.margen)}</span></div>`
+          : (p.anchoCm && p.altoCm ? `<div class="rm-manual-cost"><span>📐 ${((parseFloat(p.anchoCm)||0)*(parseFloat(p.altoCm)||0)/10000).toFixed(3)} m²</span></div>` : "");
+        const row = document.createElement("div");
+        row.innerHTML = `
+          <div class="rm-manual-row">
+            <select data-idx="${i}" data-field="tipo">${TIPO_OPTIONS.replace(`value="${p.tipo}"`, `value="${p.tipo}" selected`)}</select>
+            <input type="number" inputmode="decimal" placeholder="ancho cm" value="${p.anchoCm}" data-idx="${i}" data-field="anchoCm" min="0" step="0.5">
+            <input type="number" inputmode="decimal" placeholder="alto cm" value="${p.altoCm}" data-idx="${i}" data-field="altoCm" min="0" step="0.5">
+            <button class="rm-manual-del" data-del="${i}" type="button" title="Eliminar">×</button>
+          </div>
+          ${costHtml}
+        `;
+        els.manualRows.appendChild(row);
+      });
+      // total
+      const hasData = state.manualProductos.some(p => p.anchoCm && p.altoCm);
+      els.manualTotal.style.display = hasData && state.manualProductos.length > 1 ? "flex" : "none";
+      if (hasData) {
+        let costeT = 0, ventaT = 0;
+        state.manualProductos.forEach(p => { const c = calcProductoCost(p); if (c && c.coste != null) { costeT += c.coste; ventaT += c.venta; } });
+        if (costeT > 0) els.manualTotalVal.textContent = `🏭 ${fmtEur(costeT)}  💶 ${fmtEur(ventaT)}`;
+        else els.manualTotalVal.textContent = `${state.manualProductos.reduce((s,p) => s + (parseFloat(p.anchoCm)||0)*(parseFloat(p.altoCm)||0)/10000, 0).toFixed(3)} m²`;
+      }
+    }
+
+    /* ─── PHOTO UPLOAD ─── */
+    function compressImage(file, maxPx, quality) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+            const w = Math.round(img.width * scale);
+            const h = Math.round(img.height * scale);
+            const c = document.createElement("canvas");
+            c.width = w; c.height = h;
+            c.getContext("2d").drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL("image/jpeg", quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addPhotos(files) {
+      const arr = Array.from(files);
+      for (const f of arr) {
+        const dataUrl = await compressImage(f, 1600, 0.82);
+        state.pendingPhotos.push({ name: f.name.replace(/[^a-zA-Z0-9._-]/g, "_"), dataUrl });
+      }
+      renderPhotoThumbs();
+      updateUploadPhotosBtn();
+    }
+
+    function renderPhotoThumbs() {
+      els.photoThumbs.innerHTML = "";
+      state.pendingPhotos.forEach((ph, i) => {
+        const div = document.createElement("div");
+        div.className = "rm-photo-thumb";
+        div.innerHTML = `<img src="${ph.dataUrl}" alt=""><button class="rm-photo-thumb-del" data-pi="${i}" type="button">×</button>`;
+        els.photoThumbs.appendChild(div);
+      });
+    }
+
+    function updateUploadPhotosBtn() {
+      els.uploadPhotos.style.display = state.pendingPhotos.length > 0 ? "block" : "none";
+    }
+
+    async function uploadPhotos() {
+      if (!state.selectedClient) { showToast("Selecciona un agente primero."); return; }
+      if (state.pendingPhotos.length === 0) return;
+      if (state.uploadingPhotos) return;
+      state.uploadingPhotos = true;
+      els.uploadPhotos.disabled = true;
+      const agent = state.selectedClient;
+      let ok = 0, fail = 0;
+      for (let i = 0; i < state.pendingPhotos.length; i++) {
+        const ph = state.pendingPhotos[i];
+        els.photoStatus.className = "rm-photo-status rm-photo-uploading";
+        els.photoStatus.textContent = `Subiendo ${i+1}/${state.pendingPhotos.length}…`;
+        try {
+          const res = await fetch(config.n8nWebhookPhotos, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              agent_id: agent.agent,
+              agentName: agent.name,
+              driveUrl: agent.driveUrl || "",
+              foto_base64: ph.dataUrl,
+              filename: ph.name,
+              timestamp: new Date().toISOString()
+            })
+          });
+          if (res.ok) ok++; else fail++;
+        } catch { fail++; }
+      }
+      state.uploadingPhotos = false;
+      els.uploadPhotos.disabled = false;
+      if (fail === 0) {
+        els.photoStatus.className = "rm-photo-status rm-photo-done";
+        els.photoStatus.textContent = `✓ ${ok} foto${ok > 1 ? "s" : ""} subida${ok > 1 ? "s" : ""} correctamente`;
+        state.pendingPhotos = [];
+        renderPhotoThumbs();
+        updateUploadPhotosBtn();
+      } else {
+        els.photoStatus.className = "rm-photo-status";
+        els.photoStatus.textContent = `⚠ ${ok} subidas, ${fail} fallidas — inténtalo de nuevo`;
+      }
+    }
+
     function loadPrecios() {
       const cbName = "rmCbPrecios_" + Date.now();
       const script = document.createElement("script");
@@ -2302,11 +2599,14 @@
     }
 
     function updateSaveButton() {
-      const canSave = !!state.selectedClient && state.productos.length > 0;
+      const hasProducts = state.manualMode
+        ? state.manualProductos.some(p => p.anchoCm)
+        : state.productos.length > 0;
+      const canSave = !!state.selectedClient && hasProducts;
       els.save.disabled = !canSave;
       els.saveHint.textContent = !state.selectedClient
         ? "Selecciona un agente para poder guardar."
-        : state.productos.length === 0
+        : !hasProducts
           ? "Añade al menos un producto medido."
           : "Guardará en Sheets, Drive y Trello.";
     }
@@ -2320,6 +2620,56 @@
     /* ─── GUARDAR ─── */
     async function saveMeasurement() {
       if (!state.selectedClient) { showToast("Selecciona un agente primero."); return; }
+
+      // Manual mode: use manualProductos instead
+      if (state.manualMode) {
+        const prods = state.manualProductos.filter(p => p.anchoCm);
+        if (!prods.length) { showToast("Añade al menos un producto con medidas."); return; }
+        setSaveState("saving", "Enviando a n8n…");
+        els.save.disabled = true;
+        const payload = {
+          agent_id:  state.selectedClient.agent,
+          agentId:   state.selectedClient.agent,
+          agentName: state.selectedClient.name,
+          agentCity: state.selectedClient.city,
+          trelloCardId: state.selectedClient.trelloId || null,
+          driveFolderId: state.selectedClient.driveUrl || null,
+          modoManual: true,
+          productos: prods.map(p => ({
+            tipo:    p.tipo,
+            label:   (TIPO_META[p.tipo] || {}).label || p.tipo,
+            anchoCm: parseFloat(parseFloat(p.anchoCm).toFixed(1)),
+            altoCm:  p.altoCm ? parseFloat(parseFloat(p.altoCm).toFixed(1)) : null
+          })),
+          timestamp: new Date().toISOString(),
+          ...(() => {
+            let costeTotal = 0, ventaTotal = 0, tienePrecios = false;
+            prods.forEach(p => {
+              const c = calcProductoCost({ tipo: p.tipo, anchoCm: parseFloat(p.anchoCm), altoCm: p.altoCm ? parseFloat(p.altoCm) : null });
+              if (c && c.coste != null) { costeTotal += c.coste; tienePrecios = true; }
+              if (c && c.venta != null) ventaTotal += c.venta;
+            });
+            return tienePrecios ? { costeEstimadoImprenta: parseFloat(costeTotal.toFixed(2)), valoracionHuexsEstimada: parseFloat(ventaTotal.toFixed(2)) } : {};
+          })()
+        };
+        try {
+          const res = await fetch(config.n8nWebhookSave, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          if (!res.ok) throw new Error(res.status);
+          setSaveState("saved", "Guardado · Sheets + Trello actualizados");
+          showToast("Guardado para " + (state.selectedClient.agent || state.selectedClient.name));
+          els.save.textContent = "✓ Guardado";
+          els.save.style.background = "#15803d"; els.save.style.color = "#fff"; els.save.style.borderColor = "#15803d";
+          setTimeout(() => { els.save.textContent = "Guardar en Sheets + Trello"; els.save.style.background = ""; els.save.style.color = ""; els.save.style.borderColor = ""; }, 3000);
+          state.manualProductos = []; addManualRow(); renderManualRows();
+        } catch (err) {
+          setSaveState("error", "Error — reintenta");
+          showToast("No se pudo guardar. Revisa n8n.");
+        } finally {
+          els.save.disabled = false;
+        }
+        return;
+      }
+
       if (!state.productos.length) { showToast("Añade al menos un producto."); return; }
       if (state.pendingProduct) addSoloAncho();
 
@@ -2472,6 +2822,47 @@
       renderClients();
     });
     els.mobileTabs.forEach(b => b.addEventListener("click", () => setMobileTab(b.dataset.tab)));
+
+    /* Mode toggle photo/manual */
+    els.modePhoto.addEventListener("click",  () => { if (state.manualMode)  setAppMode(false); });
+    els.modeManual.addEventListener("click", () => { if (!state.manualMode) setAppMode(true); });
+
+    /* Manual rows delegation */
+    els.manualRows.addEventListener("input", e => {
+      const t = e.target;
+      const idx = parseInt(t.dataset.idx, 10);
+      if (!Number.isFinite(idx)) return;
+      const field = t.dataset.field;
+      if (field) state.manualProductos[idx][field] = t.value;
+      renderManualRows();
+      updateSaveButton();
+    });
+    els.manualRows.addEventListener("change", e => {
+      const t = e.target;
+      const idx = parseInt(t.dataset.idx, 10);
+      if (!Number.isFinite(idx)) return;
+      const field = t.dataset.field;
+      if (field) state.manualProductos[idx][field] = t.value;
+      renderManualRows();
+    });
+    els.manualRows.addEventListener("click", e => {
+      const btn = e.target.closest("[data-del]");
+      if (btn) { removeManualRow(parseInt(btn.dataset.del, 10)); }
+    });
+    els.manualAddRow.addEventListener("click", () => { addManualRow(); updateSaveButton(); });
+
+    /* Photo upload */
+    els.photoCamera.addEventListener("change",  e => addPhotos(e.target.files));
+    els.photoGallery.addEventListener("change", e => addPhotos(e.target.files));
+    els.photoThumbs.addEventListener("click", e => {
+      const btn = e.target.closest("[data-pi]");
+      if (!btn) return;
+      const i = parseInt(btn.dataset.pi, 10);
+      state.pendingPhotos.splice(i, 1);
+      renderPhotoThumbs();
+      updateUploadPhotosBtn();
+    });
+    els.uploadPhotos.addEventListener("click", uploadPhotos);
 
     els.modeRef.addEventListener("click",           () => setMode("ref"));
     els.modeMeasure.addEventListener("click",        () => setMode("measure"));
@@ -2716,6 +3107,10 @@
     renderProductosList();
     loadClientsFromSheet();
     loadPrecios();
+
+    /* PWA: prompt-to-install on supported browsers */
+    let _pwaInstallPrompt = null;
+    window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); _pwaInstallPrompt = e; });
 
   })();
   </script>
