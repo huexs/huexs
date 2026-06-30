@@ -992,7 +992,7 @@
         <section class="rm-section">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <span class="rm-title">Agentes RIA</span>
-            <button id="rmSortToggle" class="rm-sort-btn" type="button" title="Ordenar alfabéticamente">A→Z</button>
+            <button id="rmSortToggle" class="rm-sort-btn" type="button" title="Cambiar orden">A→Z</button>
           </div>
           <input id="rmClientSearch" class="rm-input" type="search" placeholder="Buscar agente, ciudad…">
           <div id="rmClientList" class="rm-client-list">
@@ -1341,6 +1341,7 @@
       errorPct:       12,
       saveState:      "idle",
       sortAlpha:      false,
+      sortOrder:      "default",
       productos:      [],
       pendingProduct: null,
       lastMeasureCm:  null,
@@ -1723,8 +1724,9 @@
       const headers = (table.cols || []).map(c => c.label || "");
       const headerMap = {};
       headers.forEach((h, i) => { headerMap[normalizeHeader(h)] = i; });
-      return (table.rows || []).map(row => {
+      return (table.rows || []).map((row, rowIndex) => {
         const c = {
+          rowIndex,
           agent:      getCellValue(row, headerMap, ["Número de agente","Numero de agente"]),
           name:       getCellValue(row, headerMap, ["Nombre de Contacto","Nombre","Contacto"]),
           address:    getCellValue(row, headerMap, ["Dirección","Direccion"]),
@@ -1750,13 +1752,16 @@
         const hay = normalizeHeader([c.agent, c.name, c.city, c.province, c.branding].join(" "));
         return !query || hay.includes(query);
       });
-      if (state.sortAlpha) {
+      if (state.sortOrder === "az") {
         list = list.slice().sort((a, b) => {
           const ka = normalizeHeader(a.agent || a.name || "");
           const kb = normalizeHeader(b.agent || b.name || "");
           return ka.localeCompare(kb, "es", { numeric: true, sensitivity: "base" });
         });
+      } else if (state.sortOrder === "recent") {
+        list = list.slice().sort((a, b) => (b.rowIndex ?? 0) - (a.rowIndex ?? 0));
       }
+      // "default" = orden original del Sheets (más antiguos primero)
       els.clientBadge.textContent = state.clients.length ? state.clients.length + " agentes" : "Sin datos";
       if (!list.length) {
         els.clientList.innerHTML = '<p class="rm-help">No hay resultados.</p>';
@@ -2882,10 +2887,14 @@
     els.clientSearch.addEventListener("input", () => { state.clientPage = 0; renderClients(); });
     els.reloadAgents.addEventListener("click", loadClientsFromSheet);
     els.sortToggle.addEventListener("click", () => {
-      state.sortAlpha = !state.sortAlpha;
+      const modes = ["default", "az", "recent"];
+      const labels = { default: "A→Z", az: "A→Z ✓", recent: "Recientes ✓" };
+      const next = modes[(modes.indexOf(state.sortOrder) + 1) % modes.length];
+      state.sortOrder = next;
+      state.sortAlpha = next === "az";
       state.clientPage = 0;
-      els.sortToggle.classList.toggle("rm-active", state.sortAlpha);
-      els.sortToggle.textContent = state.sortAlpha ? "A→Z ✓" : "A→Z";
+      els.sortToggle.classList.toggle("rm-active", next !== "default");
+      els.sortToggle.textContent = labels[next];
       renderClients();
     });
     els.mobileTabs.forEach(b => b.addEventListener("click", () => setMobileTab(b.dataset.tab)));
