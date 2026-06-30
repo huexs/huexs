@@ -641,11 +641,34 @@
       #rm-app .rm-section { padding: 12px; }
       #rm-app .rm-controls .rm-side-body {
         display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
       }
-      #rm-app .rm-controls .rm-section:nth-child(3) { min-height: 0; }
+      #rm-app .rm-controls .rm-section:nth-child(3) { min-height: 0; overflow: hidden; }
       #rm-app .rm-controls .rm-section:nth-child(n+4) { display: none; }
       #rm-app .rm-client-list { max-height: none; min-height: 0; flex: 1; }
+
+      /* Agent selected: collapse list, show card at bottom */
+      #rm-app.rm-has-agent .rm-controls .rm-side-body {
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+      #rm-app.rm-has-agent .rm-controls .rm-section:nth-child(2) {
+        min-height: 0;
+        max-height: 160px;
+      }
+      #rm-app.rm-has-agent .rm-client-list {
+        max-height: 80px;
+        min-height: 0;
+        overflow-y: auto;
+      }
+      #rm-app.rm-has-agent .rm-controls .rm-section:nth-child(3) {
+        flex-shrink: 0;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 0 0 12px 12px;
+        overflow: visible;
+      }
+      #rm-app .rm-agent-card { display: none !important; }
+      #rm-app.rm-has-agent .rm-agent-card { display: flex !important; }
       #rm-app .rm-pagination { margin-top: 6px; }
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
@@ -2580,6 +2603,7 @@
 
     /* ─── PANEL UPDATE ─── */
     function updatePanel() {
+      app.classList.toggle("rm-has-agent", !!state.selectedClient);
       els.topClient.innerHTML = '<span class="rm-chip-dot"></span>' +
         esc(state.selectedClient ? (state.selectedClient.agent || state.selectedClient.name || "Agente") : "Sin agente");
       els.topScale.innerHTML  = '<span class="rm-chip-dot"></span>' +
