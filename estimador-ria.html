@@ -1236,7 +1236,26 @@
       ctx.stroke();
       ctx.restore();
     }
-    function hideMagnifier() { els.magnifier.style.display = "none"; }
+    function hideMagnifier() { detachDocMagTracker(); els.magnifier.style.display = "none"; }
+
+    /* Keeps magnifier clamped to image edge when cursor leaves the overlay */
+    let _docMagListener = null;
+    function attachDocMagTracker() {
+      if (_docMagListener) return;
+      _docMagListener = function(e) {
+        if (!state.imageSource) return;
+        if (state.mode !== "ref" && state.mode !== "measure") return;
+        const r = els.overlay.getBoundingClientRect();
+        const cx = Math.max(r.left, Math.min(r.right,  e.clientX));
+        const cy = Math.max(r.top,  Math.min(r.bottom, e.clientY));
+        const pt = { x: cx - r.left, y: cy - r.top };
+        showMagnifier(pt.x, pt.y, false);
+      };
+      document.addEventListener("mousemove", _docMagListener);
+    }
+    function detachDocMagTracker() {
+      if (_docMagListener) { document.removeEventListener("mousemove", _docMagListener); _docMagListener = null; }
+    }
 
     /* ─── LUPA TÁCTIL ─── */
     const TOUCH_MAG_SIZE = 180;
@@ -2346,7 +2365,16 @@
       if (state.mode === "ref" || state.mode === "measure") showMagnifier(pt.x, pt.y, false);
     });
 
-    els.overlay.addEventListener("mouseleave", hideMagnifier);
+    els.overlay.addEventListener("mouseleave", () => {
+      if (state.imageSource && (state.mode === "ref" || state.mode === "measure")) {
+        attachDocMagTracker();
+      } else {
+        hideMagnifier();
+      }
+    });
+    els.overlay.addEventListener("mouseenter", () => {
+      detachDocMagTracker();
+    });
     window.addEventListener("resize", () => { if (state.imageSource) render(); });
 
     /* ─── GUÍA PASO A PASO ─── */
