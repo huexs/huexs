@@ -25,7 +25,7 @@ Herramienta interna para técnicos de Huexs que trabajan instalando señalética
 - **Sheet GID:** `1287637480`
 - **Sheet name:** `AGENTES RIA 2026`
 - **Columnas existentes originales:** Número de agente (A), Nombre de Contacto (B), Dirección (C), Ciudad (D), Provincia (E), Código postal (F), Teléfono (G), Branding (H)
-- **Columnas añadidas (al final):** URL Carpeta Drive (O), URL Trello (P), Mediciones, Mediciones JSON, Escala px/cm, Referencia usada, Fecha medición
+- **Columnas añadidas (al final):** URL Carpeta Drive (O), URL Trello (P), Mediciones, Mediciones JSON, Escala px/cm, Referencia usada, Fecha medición, Última foto Drive
 
 ### n8n
 - **Base URL:** `https://n8n-n8n.te2fhz.easypanel.host`

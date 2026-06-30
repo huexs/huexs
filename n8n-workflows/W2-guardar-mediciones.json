@@ -1,5 +1,5 @@
 {
-  "name": "RIA W2 — Guardar Mediciones (Webhook → Sheets + Trello)",
+  "name": "RIA W2 — Guardar Mediciones (Webhook → Sheets + Trello + Drive)",
   "nodes": [
     {
       "id": "webhook-mediciones",
@@ -53,16 +53,16 @@
         "mode": "manual",
         "assignments": {
           "assignments": [
-            { "id": "1",  "name": "agent_id",     "value": "={{ $json.body.agent_id || $json.body.agentId }}", "type": "string" },
-            { "id": "2",  "name": "agent_name",   "value": "={{ $json.body.agent_name || $json.body.agentName || '' }}", "type": "string" },
-            { "id": "3",  "name": "trello_card_id","value": "={{ $json.body.trello_card_id || $json.body.trelloCardId || '' }}", "type": "string" },
-            { "id": "4",  "name": "scale_px_cm",  "value": "={{ $json.body.scale_px_cm || $json.body.pxPerCm || 0 }}", "type": "number" },
-            { "id": "5",  "name": "ref_label",    "value": "={{ $json.body.ref_label || $json.body.refLabel || '' }}", "type": "string" },
-            { "id": "6",  "name": "productos",    "value": "={{ JSON.stringify($json.body.productos || []) }}", "type": "string" },
-            { "id": "7",  "name": "productos_arr","value": "={{ $json.body.productos || [] }}", "type": "array" },
-            { "id": "8",  "name": "imagen_base64","value": "={{ $json.body.imagen_base64 || '' }}", "type": "string" },
-            { "id": "9",  "name": "timestamp",    "value": "={{ $json.body.timestamp || new Date().toISOString() }}", "type": "string" },
-            { "id": "10", "name": "sheet_name",   "value": "={{ $json.body.sheet_name || 'AGENTES RIA 2026' }}", "type": "string" },
+            { "id": "1",  "name": "agent_id",          "value": "={{ $json.body.agent_id || $json.body.agentId }}", "type": "string" },
+            { "id": "2",  "name": "agent_name",         "value": "={{ $json.body.agent_name || $json.body.agentName || '' }}", "type": "string" },
+            { "id": "3",  "name": "trello_card_id",     "value": "={{ $json.body.trello_card_id || $json.body.trelloCardId || '' }}", "type": "string" },
+            { "id": "4",  "name": "scale_px_cm",        "value": "={{ $json.body.scale_px_cm || $json.body.pxPerCm || 0 }}", "type": "number" },
+            { "id": "5",  "name": "ref_label",          "value": "={{ $json.body.ref_label || $json.body.refLabel || '' }}", "type": "string" },
+            { "id": "6",  "name": "productos",          "value": "={{ JSON.stringify($json.body.productos || []) }}", "type": "string" },
+            { "id": "7",  "name": "productos_arr",      "value": "={{ $json.body.productos || [] }}", "type": "array" },
+            { "id": "8",  "name": "imagen_base64",      "value": "={{ $json.body.imagen_base64 || '' }}", "type": "string" },
+            { "id": "9",  "name": "timestamp",          "value": "={{ $json.body.timestamp || new Date().toISOString() }}", "type": "string" },
+            { "id": "10", "name": "sheet_name",         "value": "={{ $json.body.sheet_name || 'AGENTES RIA 2026' }}", "type": "string" },
             {
               "id": "11",
               "name": "productos_resumen",
@@ -95,7 +95,7 @@
         "filtersUI": {
           "values": [
             {
-              "lookupColumn": "ID Agente",
+              "lookupColumn": "Número de agente",
               "lookupValue": "={{ $json.agent_id }}"
             }
           ]
@@ -132,21 +132,21 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "ID Agente": "={{ $('Normalizar medición').item.json.agent_id }}",
-            "Mediciones": "={{ $('Normalizar medición').item.json.productos_resumen }}",
-            "Mediciones JSON": "={{ $('Normalizar medición').item.json.productos }}",
-            "Escala px/cm": "={{ $('Normalizar medición').item.json.scale_px_cm }}",
-            "Referencia usada": "={{ $('Normalizar medición').item.json.ref_label }}",
-            "Fecha medición": "={{ $('Normalizar medición').item.json.timestamp }}"
+            "Número de agente": "={{ $('Normalizar medición').item.json.agent_id }}",
+            "Mediciones":       "={{ $('Normalizar medición').item.json.productos_resumen }}",
+            "Mediciones JSON":  "={{ $('Normalizar medición').item.json.productos }}",
+            "Escala px/cm":    "={{ $('Normalizar medición').item.json.scale_px_cm }}",
+            "Referencia usada":"={{ $('Normalizar medición').item.json.ref_label }}",
+            "Fecha medición":  "={{ $('Normalizar medición').item.json.timestamp }}"
           },
-          "matchingColumns": ["ID Agente"],
+          "matchingColumns": ["Número de agente"],
           "schema": [
-            { "id": "ID Agente",       "displayName": "ID Agente",       "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "Mediciones",      "displayName": "Mediciones",      "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Mediciones JSON", "displayName": "Mediciones JSON", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Escala px/cm",   "displayName": "Escala px/cm",   "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
-            { "id": "Referencia usada","displayName": "Referencia usada","required": false,"defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
-            { "id": "Fecha medición",  "displayName": "Fecha medición",  "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+            { "id": "Número de agente", "displayName": "Número de agente", "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Mediciones",       "displayName": "Mediciones",       "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Mediciones JSON",  "displayName": "Mediciones JSON",  "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Escala px/cm",    "displayName": "Escala px/cm",    "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Referencia usada", "displayName": "Referencia usada", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Fecha medición",   "displayName": "Fecha medición",   "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
           ]
         },
         "options": {}
@@ -219,11 +219,11 @@
       }
     },
     {
-      "id": "upload-image-to-drive",
-      "name": "Drive — Subir imagen anotada",
+      "id": "check-has-image",
+      "name": "Drive — ¿Hay imagen para subir?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1560, 300],
+      "position": [1560, 320],
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
@@ -231,6 +231,12 @@
             {
               "id": "a",
               "leftValue": "={{ $('Normalizar medición').item.json.imagen_base64 }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            },
+            {
+              "id": "b",
+              "leftValue": "={{ $('Sheets — Buscar fila del agente').item.json['URL Carpeta Drive'] }}",
               "rightValue": "",
               "operator": { "type": "string", "operation": "notEmpty" }
             }
@@ -241,16 +247,115 @@
       }
     },
     {
+      "id": "extract-drive-folder-id",
+      "name": "Extraer folder ID del agente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1780, 280],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "agent_drive_folder_id",
+              "value": "={{ $('Sheets — Buscar fila del agente').item.json['URL Carpeta Drive'].replace(/.*\\/folders\\//, '').split('?')[0].split('/')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "imagen_base64",
+              "value": "={{ $('Normalizar medición').item.json.imagen_base64 }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "file_name",
+              "value": "={{ 'medicion_' + $('Normalizar medición').item.json.agent_id + '_' + $('Normalizar medición').item.json.timestamp.slice(0,10) + '.jpg' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "list-drive-subfolders",
+      "name": "Drive — Buscar subcarpeta Fotografías",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [2000, 280],
+      "parameters": {
+        "operation": "filesList",
+        "filter": {
+          "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
+          "folderId": { "__rl": true, "value": "={{ $json.agent_drive_folder_id }}", "mode": "id" },
+          "whatToSearch": "folders",
+          "queryFilters": {
+            "conditions": [
+              {
+                "field": "name",
+                "operator": "contains",
+                "value": "Fotografías"
+              }
+            ]
+          }
+        },
+        "options": {
+          "fields": "id,name"
+        }
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Drive — Huexs"
+        }
+      }
+    },
+    {
+      "id": "extract-fotos-folder-id",
+      "name": "Extraer ID carpeta Fotografías",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2220, 280],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "fotos_folder_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "imagen_base64",
+              "value": "={{ $('Extraer folder ID del agente').item.json.imagen_base64 }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "file_name",
+              "value": "={{ $('Extraer folder ID del agente').item.json.file_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
       "id": "decode-image",
       "name": "Decodificar imagen base64",
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
-      "position": [1780, 260],
+      "position": [2440, 280],
       "parameters": {
         "operation": "binaryData",
         "sourceProperty": "imagen_base64",
         "options": {
-          "fileName": "={{ 'medicion_' + $('Normalizar medición').item.json.agent_id + '_' + $('Normalizar medición').item.json.timestamp.slice(0,10) + '.jpg' }}",
+          "fileName": "={{ $json.file_name }}",
           "mimeType": "image/jpeg",
           "encoding": "base64"
         }
@@ -261,17 +366,19 @@
       "name": "Drive — Guardar en carpeta Fotografías",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [2000, 260],
+      "position": [2660, 280],
       "parameters": {
         "operation": "upload",
-        "name": "={{ 'medicion_' + $('Normalizar medición').item.json.agent_id + '_' + $('Normalizar medición').item.json.timestamp.slice(0,10) + '.jpg' }}",
+        "name": "={{ $('Extraer ID carpeta Fotografías').item.json.file_name }}",
         "driveId": { "__rl": true, "mode": "list", "value": "MyDrive" },
         "folderId": {
           "__rl": true,
-          "value": "REPLACE_WITH_DYNAMIC_FOTOS_FOLDER_ID",
+          "value": "={{ $('Extraer ID carpeta Fotografías').item.json.fotos_folder_id }}",
           "mode": "id"
         },
-        "options": {}
+        "options": {
+          "fields": "id,name,webViewLink"
+        }
       },
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -281,14 +388,53 @@
       }
     },
     {
+      "id": "save-photo-url-to-sheets",
+      "name": "Sheets — Guardar URL foto",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2880, 280],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Normalizar medición').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Número de agente": "={{ $('Normalizar medición').item.json.agent_id }}",
+            "Última foto Drive": "={{ $json.webViewLink }}"
+          },
+          "matchingColumns": ["Número de agente"],
+          "schema": [
+            { "id": "Número de agente", "displayName": "Número de agente", "required": true,  "defaultMatch": true,  "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Última foto Drive", "displayName": "Última foto Drive", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets — Huexs"
+        }
+      }
+    },
+    {
       "id": "respond-ok",
       "name": "Responder 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [2220, 200],
+      "position": [3100, 200],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ \"status\": \"ok\", \"agent_id\": \"{{ $('Normalizar medición').item.json.agent_id }}\", \"saved\": true }",
+        "responseBody": "={{ JSON.stringify({ status: 'ok', agent_id: $('Normalizar medición').item.json.agent_id, saved: true, foto_url: $('Drive — Guardar en carpeta Fotografías').item ? $('Drive — Guardar en carpeta Fotografías').item.json.webViewLink : null }) }}",
         "options": { "responseCode": 200 }
       }
     },
@@ -324,7 +470,7 @@
     "Sheets — Guardar mediciones": {
       "main": [[
         { "node": "¿Tiene tarjeta Trello?", "type": "main", "index": 0 },
-        { "node": "Drive — Subir imagen anotada", "type": "main", "index": 0 }
+        { "node": "Drive — ¿Hay imagen para subir?", "type": "main", "index": 0 }
       ]]
     },
     "¿Tiene tarjeta Trello?": {
@@ -339,14 +485,29 @@
     "Trello — Label Tenemos las medides": {
       "main": [[{ "node": "Responder 200 OK", "type": "main", "index": 0 }]]
     },
-    "Drive — Subir imagen anotada": {
+    "Drive — ¿Hay imagen para subir?": {
       "main": [
-        [{ "node": "Decodificar imagen base64", "type": "main", "index": 0 }],
+        [{ "node": "Extraer folder ID del agente", "type": "main", "index": 0 }],
         []
       ]
     },
+    "Extraer folder ID del agente": {
+      "main": [[{ "node": "Drive — Buscar subcarpeta Fotografías", "type": "main", "index": 0 }]]
+    },
+    "Drive — Buscar subcarpeta Fotografías": {
+      "main": [[{ "node": "Extraer ID carpeta Fotografías", "type": "main", "index": 0 }]]
+    },
+    "Extraer ID carpeta Fotografías": {
+      "main": [[{ "node": "Decodificar imagen base64", "type": "main", "index": 0 }]]
+    },
     "Decodificar imagen base64": {
       "main": [[{ "node": "Drive — Guardar en carpeta Fotografías", "type": "main", "index": 0 }]]
+    },
+    "Drive — Guardar en carpeta Fotografías": {
+      "main": [[{ "node": "Sheets — Guardar URL foto", "type": "main", "index": 0 }]]
+    },
+    "Sheets — Guardar URL foto": {
+      "main": [[{ "node": "Responder 200 OK", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
@@ -358,7 +519,7 @@
   "staticData": null,
   "meta": { "templateCredsSetupCompleted": false },
   "pinData": {},
-  "versionId": "1",
+  "versionId": "2",
   "triggerCount": 1,
   "tags": [{ "name": "RIA", "createdAt": "2026-06-28" }]
 }

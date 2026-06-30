@@ -53,6 +53,7 @@
 | S | Escala px/cm | Escala de calibración usada |
 | T | Referencia usada | Elemento de referencia para calibrar |
 | U | Fecha medición | ISO timestamp de la medición |
+| V | Última foto Drive | URL de la última imagen anotada subida por W2 (base del viewer) |
 
 > **Importante:** Los nombres de columna deben ser exactamente los indicados. n8n los usa para hacer match por nombre.
 
