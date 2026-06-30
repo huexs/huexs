@@ -445,7 +445,7 @@
     #rm-app .rm-stage-inner.rm-ready { display: block; }
     #rm-app .rm-image { display: block; max-width: 100%; max-height: calc(100vh - 168px); width: auto; height: auto; object-fit: contain; pointer-events: none; }
     #rm-app .rm-overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; overflow: visible; }
-    #rm-app .rm-placeholder { display: grid; gap: 8px; place-items: center; max-width: 320px; padding: 24px; color: #64748b; text-align: center; }
+    #rm-app .rm-placeholder { display: grid; gap: 8px; place-items: center; max-width: 400px; padding: 32px 16px; color: #64748b; text-align: center; }
     #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 18px; }
 
     /* Magnifier — desktop (follows cursor) */
@@ -775,6 +775,29 @@
     }
     #rm-app .rm-guide-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
     #rm-app .rm-guide-btn.rm-guide-btn-on { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+
+    /* ── PLACEHOLDER UPLOAD ZONE ── */
+    #rm-app .rm-placeholder-upload {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 32px 24px;
+      border: 2px dashed var(--border-strong);
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+      transition: border-color 150ms, background 150ms;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
+    #rm-app .rm-placeholder-upload:hover { border-color: var(--accent); background: var(--accent-bg); }
+    #rm-app .rm-placeholder-upload input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; }
+    #rm-app .rm-placeholder-icon { font-size: 40px; line-height: 1; }
+    #rm-app .rm-placeholder strong { color: #e2e8f0; font-size: 16px; font-weight: 700; }
+    #rm-app .rm-placeholder span:not(.rm-badge) { color: #94a3b8; font-size: 13px; }
   </style>
 
   <!-- APPBAR -->
@@ -822,21 +845,6 @@
       </div>
       <div class="rm-side-body">
 
-        <!-- Subir imagen -->
-        <section class="rm-section">
-          <div class="rm-section-head">
-            <span class="rm-title">Imagen de fachada</span>
-            <span id="rmImageBadge" class="rm-badge rm-badge-warn">Sin imagen</span>
-          </div>
-          <label id="rmDropZone" class="rm-file-zone" for="rmUpload">
-            <input id="rmUpload" type="file" accept="image/*">
-            <span class="rm-file-copy">
-              <span class="rm-file-main">Subir foto</span>
-              <span>Arrastra o haz clic</span>
-            </span>
-          </label>
-        </section>
-
         <!-- Agentes -->
         <section class="rm-section">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -882,6 +890,7 @@
         <!-- Icon buttons -->
         <button id="rmUndo"  class="rm-icon-btn" type="button" title="Deshacer">↩</button>
         <button id="rmClear" class="rm-icon-btn" type="button" title="Limpiar todo">✕</button>
+        <button id="rmNewPhoto" class="rm-icon-btn" type="button" title="Nueva foto / Limpiar todo" style="font-size:18px">🔄</button>
       </div>
 
       <!-- Hidden for JS compat -->
@@ -902,8 +911,13 @@
           </div>
         </div>
         <div id="rmPlaceholder" class="rm-placeholder">
-          <strong>Estimador de rótulos RIA</strong>
-          <span>Selecciona un agente y sube la foto de la fachada para empezar a medir.</span>
+          <label id="rmDropZone" class="rm-placeholder-upload" for="rmUpload">
+            <input id="rmUpload" type="file" accept="image/*">
+            <span class="rm-placeholder-icon">📷</span>
+            <strong>Subir foto de fachada</strong>
+            <span>Toca aquí o arrastra la imagen</span>
+          </label>
+          <span id="rmImageBadge" class="rm-badge rm-badge-warn" style="margin-top:8px">Sin imagen</span>
         </div>
       </div>
 
@@ -1001,6 +1015,7 @@
               <button id="rmAddAlto"  class="rm-btn" type="button" disabled>Añadir alto</button>
             </div>
             <button id="rmAddSoloAncho" class="rm-btn" type="button" style="display:none">Guardar solo ancho</button>
+            <button id="rmAddNextProduct" class="rm-btn" type="button" style="display:none">＋ Medir otro producto</button>
           </div>
 
           <!-- Products list -->
@@ -1148,6 +1163,7 @@
       productoTipo: el("#rmProductoTipo"),
       addAncho: el("#rmAddAncho"), addAlto: el("#rmAddAlto"),
       addSoloAncho: el("#rmAddSoloAncho"),
+      addNextProduct: el("#rmAddNextProduct"),
       productosList: el("#rmProductosList"),
       genPreview: el("#rmGenPreview"), previewImg: el("#rmPreviewImg"),
       saveStatus: el("#rmSaveStatus"), saveText: el("#rmSaveText"),
@@ -2072,6 +2088,7 @@
         els.addSoloAncho.style.display = "none";
         els.productoTipo.disabled      = false;
       }
+      els.addNextProduct.style.display = (state.productos.length > 0 && !state.pendingProduct && state.lastMeasureCm === null) ? "block" : "none";
     }
 
     function addComoAncho() {
@@ -2235,6 +2252,7 @@
           els.save.style.color = "";
           els.save.style.borderColor = "";
         }, 3000);
+        setTimeout(resetWorkspace, 2500);
       } catch (err) {
         const code = err.message.match(/^\d+$/) ? err.message : "";
         setSaveState("error", code ? "Error " + code + " — reintenta" : "Error — reintenta");
@@ -2264,6 +2282,29 @@
       state.measurement = null; state.lastMeasureCm = null;
       state.pendingProduct = null;
       updatePanel(); updateGuidance(); render();
+    }
+
+    function resetWorkspace() {
+      state.points = []; state.lines = [];
+      state.pxPerCm = null; state.reference = null;
+      state.measurement = null; state.lastMeasureCm = null;
+      state.pendingProduct = null;
+      state.productos = [];
+      state.saveState = "idle";
+      state.imageSource = "";
+      state.imageDataUrl = "";
+      els.image.src = "";
+      els.stageInner.classList.remove("rm-ready");
+      els.placeholder.style.display = "";
+      els.imageBadge.textContent = "Sin imagen";
+      els.imageBadge.className   = "rm-badge rm-badge-warn";
+      setSaveState("idle", "Sin guardar");
+      renderProductosList();
+      updateAddMeasureUI();
+      updateSaveButton();
+      updatePanel();
+      updateGuidance();
+      render();
     }
 
     /* ─── COPY ─── */
@@ -2313,6 +2354,20 @@
     els.addAncho.addEventListener("click",     addComoAncho);
     els.addAlto.addEventListener("click",      addComoAlto);
     els.addSoloAncho.addEventListener("click", addSoloAncho);
+    els.addNextProduct.addEventListener("click", () => {
+      state.measurement = null;
+      state.lastMeasureCm = null;
+      setMode("measure");
+      updateAddMeasureUI();
+      showToast("Marca los extremos del siguiente elemento.");
+    });
+    el("#rmNewPhoto").addEventListener("click", () => {
+      if (state.productos.length || state.imageSource) {
+        if (confirm("¿Limpiar todo y empezar con nueva foto?")) resetWorkspace();
+      } else {
+        resetWorkspace();
+      }
+    });
 
     els.productosList.addEventListener("click", e => {
       const btn = e.target.closest(".rm-producto-del");
