@@ -8,6 +8,7 @@
 | W2 — Guardar Mediciones | `hFWwy6YHp8iq3RIg` | ✅ Activo | POST `/webhook/ria/measurements` |
 | W3 — Crear Recursos Manual | `eVB52gyJcYQ1SqZj` | ✅ Activo | POST `/webhook/ria/create-agent` |
 | W4 — Subir Fotos | *(pendiente activar)* | ⏳ Pendiente | POST `/webhook/ria/upload-photos` |
+| W5 — Trello Status | `7DkB140aeE7LHdBP` | ✅ Activo | POST `/webhook/ria/trello-status` |
 
 **Instancia n8n:** `https://n8n-n8n.te2fhz.easypanel.host`
 
@@ -143,6 +144,7 @@ Los webhooks están configurados en `estimador-ria.html`:
 POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/measurements    → W2
 POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/create-agent    → W3
 POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/upload-photos   → W4
+POST https://n8n-n8n.te2fhz.easypanel.host/webhook/ria/trello-status  → W5
 ```
 
 ---
