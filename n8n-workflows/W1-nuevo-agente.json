@@ -372,6 +372,16 @@
       }
     },
     {
+      "id": "clean-phone",
+      "name": "Limpiar teléfono",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 420],
+      "parameters": {
+        "jsCode": "const n = $input.first().json;\nconst raw = (n.phone || '').toString();\nconst digits = raw.replace(/\\D/g, '');\nconst phone9 = digits.length >= 9 ? digits.slice(-9) : digits;\nreturn [{ json: { ...n, phone: phone9 } }];"
+      }
+    },
+    {
       "id": "create-google-contact",
       "name": "Google Contacts — Crear contacto",
       "type": "n8n-nodes-base.httpRequest",
@@ -532,6 +542,9 @@
       "main": [[{ "node": "Trello — Crear tarjeta", "type": "main", "index": 0 }]]
     },
     "Trello — Crear tarjeta": {
+      "main": [[{ "node": "Limpiar teléfono", "type": "main", "index": 0 }]]
+    },
+    "Limpiar teléfono": {
       "main": [[{ "node": "Google Contacts — Crear contacto", "type": "main", "index": 0 }]]
     },
     "Google Contacts — Crear contacto": {
