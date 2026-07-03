@@ -1,6 +1,6 @@
 # n8n Workflows RIA — Guía de Setup
 
-## Estado actual (junio 2026)
+## Estado actual (julio 2026)
 
 | Workflow | ID | Estado | Trigger |
 |----------|----|--------|---------|
@@ -9,6 +9,7 @@
 | W3 — Crear Recursos Manual | `eVB52gyJcYQ1SqZj` | ✅ Activo | POST `/webhook/ria/create-agent` |
 | W4 — Subir Fotos | *(pendiente activar)* | ⏳ Pendiente | POST `/webhook/ria/upload-photos` |
 | W5 — Trello Status | `7DkB140aeE7LHdBP` | ✅ Activo | POST `/webhook/ria/trello-status` |
+| W6 — Rutas de Visita | *(ver n8n)* | ✅ Activo | Trello webhook — nueva tarjeta en Contactar |
 
 **Instancia n8n:** `https://n8n-n8n.te2fhz.easypanel.host`
 

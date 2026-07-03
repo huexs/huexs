@@ -1,0 +1,30 @@
+{
+  "_readme": "Este archivo documenta la estructura de W6. El workflow real vive en n8n (publicado). Board Trello ID real: 5f9a07d17750931c1aa33f7c (short-link: lSevGfHk). Lista Contactar ID: 6577274e636e7cc8419d0d4a.",
+  "name": "RIA W6 — Rutas de Visita (Trello Contactar → Email)",
+  "description": "Cuando se crea una tarjeta en la lista Contactar de Trello, espera 15 min, recoge TODAS las tarjetas de esa lista, cruza con Google Sheets para obtener direcciones, geocodifica, agrupa por proximidad geográfica (clustering haversine), calcula rutas optimizadas via Directions API y envía email con enlaces Google Maps y tiempo estimado.",
+  "trigger": "Trello Trigger — nueva tarjeta en lista Contactar (board ID: 5f9a07d17750931c1aa33f7c)",
+  "nodes_summary": [
+    "Trello Trigger → cardCreated, board 5f9a07d17750931c1aa33f7c",
+    "Wait — 15 minutos (debounce para batches de agentes)",
+    "HTTP Request — GET /1/lists/6577274e636e7cc8419d0d4a/cards (Trello API)",
+    "Code — Extraer agent_ids de nombres de tarjeta (split por espacio/guión)",
+    "Google Sheets — Leer AGENTE RIA 2026 (spreadsheet 1eyn80V0MSv2cPYYNC2OXkYtjR6tE1rNWe9Buv_gWBss)",
+    "Code — Cruzar Trello con Sheets, construir address string",
+    "Code — Geocodificar via Maps Geocoding API (this.helpers.httpRequest)",
+    "Code — Clustering haversine (radio 50km, max 10 agentes/cluster) + Directions API por cluster, origen/destino: Villarroel 29 Barcelona",
+    "Code — Formatear HTML del email con rutas, tiempos y enlaces Google Maps",
+    "Send Email — SMTP smtp.gmail.com:465 SSL, credencial Gmail SMTP — Huexs, to: huexss@gmail.com"
+  ],
+  "credentials": {
+    "trello": "Trello — Huexs",
+    "googleSheets": "Google Sheets — Huexs (B8Oo1U1KfF3e4NNv)",
+    "googleMapsApiKey": "en el código de los nodos Code (AIzaSyDjX_5LW9KGRTMZddRyNg8PJK_DDvl_Cmw)",
+    "smtp": "Gmail SMTP — Huexs (s9zkxqXUV32XX3NC)"
+  },
+  "home_address": "Villarroel 29, Barcelona 08011, España",
+  "cluster_config": {
+    "max_radius_km": 50,
+    "max_agents_per_cluster": 10
+  },
+  "tested": "2026-07-03 — email OK, 3 rutas generadas, SMTP 250 2.0.0 OK"
+}
