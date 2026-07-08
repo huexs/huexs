@@ -7,7 +7,7 @@
 | W1 — Nuevo Agente | `xtqsHGzK6z15YfN5` | ✅ Activo | Google Sheets polling 1 min |
 | W2 — Guardar Mediciones | `hFWwy6YHp8iq3RIg` | ✅ Activo | POST `/webhook/ria/measurements` |
 | W3 — Crear Recursos Manual | `eVB52gyJcYQ1SqZj` | ✅ Activo | POST `/webhook/ria/create-agent` |
-| W4 — Subir Fotos | *(pendiente activar)* | ⏳ Pendiente | POST `/webhook/ria/upload-photos` |
+| W4 — Subir Fotos | `oRxUAsCzqM9SPvjF` | ✅ Activo | POST `/webhook/ria/upload-photos` |
 | W5 — Trello Status | `7DkB140aeE7LHdBP` | ✅ Activo | POST `/webhook/ria/trello-status` |
 | W6 — Rutas de Visita | *(ver n8n)* | ✅ Activo | Trello webhook — nueva tarjeta en Contactar |
 
