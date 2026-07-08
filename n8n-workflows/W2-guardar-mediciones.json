@@ -235,7 +235,25 @@
             "Placa Metacrilato": "={{ $('Agrupar productos por tipo').item.json.byTipo.placa_metacrilato }}",
             "Banderola Montaje": "={{ $('Agrupar productos por tipo').item.json.byTipo.montaje_banderola }}",
             "Coste Imprenta (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.coste_estimado_imprenta || '' }}",
-            "Valoración Huexs (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.valoracion_huexs_estimada || '' }}"
+            "Valoración Huexs (sin IVA)": "={{ $('Agrupar productos por tipo').item.json.valoracion_huexs_estimada || '' }}",
+            "Rotulo Standard - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.rotulo_standard }}",
+            "Rotulo Standard - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.rotulo_standard }}",
+            "Rotulo Panaflex - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.rotulo_panaflex }}",
+            "Rotulo Panaflex - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.rotulo_panaflex }}",
+            "Vinilo Cristal - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.vinilo_cristal }}",
+            "Vinilo Cristal - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.vinilo_cristal }}",
+            "Vinilo Microperforado - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.vinilo_microperforado }}",
+            "Vinilo Microperforado - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.vinilo_microperforado }}",
+            "Forex - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.forex }}",
+            "Forex - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.forex }}",
+            "Mostrador - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.mostrador }}",
+            "Mostrador - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.mostrador }}",
+            "Toldo - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.toldo }}",
+            "Toldo - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.toldo }}",
+            "Placa Metacrilato - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.placa_metacrilato }}",
+            "Placa Metacrilato - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.placa_metacrilato }}",
+            "Banderola Montaje - Ancho (cm)": "={{ $('Agrupar productos por tipo').item.json.byAncho.montaje_banderola }}",
+            "Banderola Montaje - Alto (cm)": "={{ $('Agrupar productos por tipo').item.json.byAlto.montaje_banderola }}"
           },
           "matchingColumns": [
             "Número de agente"
@@ -350,8 +368,8 @@
               "canBeUsedToMatch": false
             },
             {
-              "id": "Lona Exterior",
-              "displayName": "Lona Exterior",
+              "id": "Toldo",
+              "displayName": "Toldo",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -359,8 +377,8 @@
               "canBeUsedToMatch": false
             },
             {
-              "id": "Caja de Luz LED",
-              "displayName": "Caja de Luz LED",
+              "id": "Placa Metacrilato",
+              "displayName": "Placa Metacrilato",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -368,8 +386,8 @@
               "canBeUsedToMatch": false
             },
             {
-              "id": "Otro elemento",
-              "displayName": "Otro elemento",
+              "id": "Banderola Montaje",
+              "displayName": "Banderola Montaje",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -393,7 +411,25 @@
               "display": true,
               "type": "number",
               "canBeUsedToMatch": false
-            }
+            },
+            { "id": "Rotulo Standard - Ancho (cm)",       "displayName": "Rotulo Standard - Ancho (cm)",       "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Rotulo Standard - Alto (cm)",        "displayName": "Rotulo Standard - Alto (cm)",        "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Rotulo Panaflex - Ancho (cm)",       "displayName": "Rotulo Panaflex - Ancho (cm)",       "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Rotulo Panaflex - Alto (cm)",        "displayName": "Rotulo Panaflex - Alto (cm)",        "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Vinilo Cristal - Ancho (cm)",        "displayName": "Vinilo Cristal - Ancho (cm)",        "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Vinilo Cristal - Alto (cm)",         "displayName": "Vinilo Cristal - Alto (cm)",         "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Vinilo Microperforado - Ancho (cm)", "displayName": "Vinilo Microperforado - Ancho (cm)", "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Vinilo Microperforado - Alto (cm)",  "displayName": "Vinilo Microperforado - Alto (cm)",  "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Forex - Ancho (cm)",                 "displayName": "Forex - Ancho (cm)",                 "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Forex - Alto (cm)",                  "displayName": "Forex - Alto (cm)",                  "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Mostrador - Ancho (cm)",             "displayName": "Mostrador - Ancho (cm)",             "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Mostrador - Alto (cm)",              "displayName": "Mostrador - Alto (cm)",              "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Toldo - Ancho (cm)",                 "displayName": "Toldo - Ancho (cm)",                 "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Toldo - Alto (cm)",                  "displayName": "Toldo - Alto (cm)",                  "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Placa Metacrilato - Ancho (cm)",     "displayName": "Placa Metacrilato - Ancho (cm)",     "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Placa Metacrilato - Alto (cm)",      "displayName": "Placa Metacrilato - Alto (cm)",      "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Banderola Montaje - Ancho (cm)",     "displayName": "Banderola Montaje - Ancho (cm)",     "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Banderola Montaje - Alto (cm)",      "displayName": "Banderola Montaje - Alto (cm)",      "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false }
           ]
         },
         "options": {}
@@ -794,7 +830,7 @@
         320
       ],
       "parameters": {
-        "jsCode": "const normalizado = $input.first().json;\nconst productosArr = normalizado.productos_arr || [];\n\nconst TIPOS = [\n  ['rotulo_standard',       'Rotulo Standard'],\n  ['rotulo_panaflex',       'Rotulo Panaflex'],\n  ['vinilo_cristal',        'Vinilo Cristal'],\n  ['vinilo_microperforado', 'Vinilo Microperforado'],\n  ['forex',                 'Forex'],\n  ['mostrador',             'Mostrador'],\n  ['toldo',                 'Toldo'],\n  ['placa_metacrilato',     'Placa Metacrilato'],\n  ['montaje_banderola',     'Banderola Montaje']\n];\n\nconst byTipo = {};\nfor (const [tipo] of TIPOS) {\n  const prods = productosArr.filter(p => p.tipo === tipo);\n  byTipo[tipo] = prods.length === 0 ? '' : prods.map(p => {\n    const a = parseFloat(p.anchoCm).toFixed(1);\n    if (p.altoCm != null) {\n      const h = parseFloat(p.altoCm).toFixed(1);\n      const m2 = (parseFloat(a) * parseFloat(h) / 10000).toFixed(3);\n      return `${a} × ${h} cm (${m2} m²)`;\n    }\n    return `${a} cm (solo ancho)`;\n  }).join(' | ');\n}\n\nreturn [{ json: { ...normalizado, byTipo } }];"
+        "jsCode": "const normalizado = $input.first().json;\nconst productosArr = normalizado.productos_arr || [];\n\nconst TIPOS = [\n  ['rotulo_standard',       'Rotulo Standard'],\n  ['rotulo_panaflex',       'Rotulo Panaflex'],\n  ['vinilo_cristal',        'Vinilo Cristal'],\n  ['vinilo_microperforado', 'Vinilo Microperforado'],\n  ['forex',                 'Forex'],\n  ['mostrador',             'Mostrador'],\n  ['toldo',                 'Toldo'],\n  ['placa_metacrilato',     'Placa Metacrilato'],\n  ['montaje_banderola',     'Banderola Montaje']\n];\n\nconst byTipo = {};\nconst byAncho = {};\nconst byAlto = {};\n\nfor (const [tipo] of TIPOS) {\n  const prods = productosArr.filter(p => p.tipo === tipo);\n  if (prods.length === 0) {\n    byTipo[tipo] = '';\n    byAncho[tipo] = '';\n    byAlto[tipo] = '';\n  } else {\n    byTipo[tipo] = prods.map(p => {\n      const a = parseFloat(p.anchoCm).toFixed(1);\n      if (p.altoCm != null) {\n        const h = parseFloat(p.altoCm).toFixed(1);\n        const m2 = (parseFloat(a) * parseFloat(h) / 10000).toFixed(3);\n        return `${a} × ${h} cm (${m2} m²)`;\n      }\n      return `${a} cm (solo ancho)`;\n    }).join(' | ');\n    byAncho[tipo] = prods[0].anchoCm != null ? parseFloat(prods[0].anchoCm) : '';\n    byAlto[tipo] = prods[0].altoCm != null ? parseFloat(prods[0].altoCm) : '';\n  }\n}\n\nreturn [{ json: { ...normalizado, byTipo, byAncho, byAlto } }];"
       }
     }
   ],
