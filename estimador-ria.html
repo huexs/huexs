@@ -630,7 +630,8 @@
       #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
       #rm-app .rm-chip { max-width: 140px; min-height: 28px; }
 
-      #rm-app .rm-shell { display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; }
+      #rm-app .rm-shell { display: grid; grid-template-rows: auto minmax(0,1fr); min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; gap: 6px; }
+      #rm-app .rm-mobile-steps { margin: -10px -10px 0; border-radius: 12px 12px 0 0; }
       #rm-app .rm-panel { display: none; height: 100%; max-height: 100%; border-radius: 12px; }
       #rm-app[data-mobile-tab="agents"]  .rm-controls  { display: flex; }
       #rm-app[data-mobile-tab="measure"] .rm-workbench { display: grid; }
@@ -647,29 +648,110 @@
       #rm-app .rm-controls .rm-section:nth-child(n+4) { display: none; }
       #rm-app .rm-client-list { max-height: none; min-height: 0; flex: 1; }
 
-      /* Agent selected: collapse list, show card at bottom */
-      #rm-app.rm-has-agent .rm-controls .rm-side-body {
-        grid-template-rows: auto minmax(0, 1fr) auto;
-      }
-      #rm-app.rm-has-agent .rm-controls .rm-section:nth-child(2) {
-        min-height: 0;
-        max-height: 160px;
-      }
-      #rm-app.rm-has-agent .rm-client-list {
-        max-height: 80px;
-        min-height: 0;
-        overflow-y: auto;
-      }
-      #rm-app.rm-has-agent .rm-controls .rm-section:nth-child(3) {
-        flex-shrink: 0;
-        border-top: 1px solid var(--border);
-        background: var(--surface);
-        border-radius: 0 0 12px 12px;
-        overflow: visible;
-      }
+      /* Agent card: bottom sheet on mobile — list stays visible */
       #rm-app .rm-agent-card { display: none !important; }
-      #rm-app.rm-has-agent .rm-agent-card { display: flex !important; }
+      #rm-app.rm-has-agent .rm-agent-card { display: none !important; }
       #rm-app .rm-pagination { margin-top: 6px; }
+
+      /* Bottom sheet */
+      #rm-agent-sheet {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: var(--surface);
+        border-top: 2px solid var(--border);
+        border-radius: 18px 18px 0 0;
+        box-shadow: 0 -4px 24px rgba(0,0,0,.18);
+        padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(100%);
+        transition: transform 280ms cubic-bezier(.32,1,.56,1);
+      }
+      #rm-agent-sheet.rm-open {
+        display: block;
+        transform: translateY(0);
+      }
+      #rm-agent-sheet-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 190;
+        background: rgba(0,0,0,.35);
+      }
+      #rm-agent-sheet-overlay.rm-open { display: block; }
+      #rm-agent-sheet .rm-sheet-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      #rm-agent-sheet .rm-sheet-close {
+        background: none;
+        border: none;
+        font-size: 22px;
+        line-height: 1;
+        color: var(--text-3);
+        cursor: pointer;
+        padding: 0 0 0 8px;
+        flex-shrink: 0;
+      }
+
+      /* Step-by-step mobile flow inside Medir tab */
+      #rm-app .rm-mobile-steps {
+        display: none;
+        align-items: center;
+        gap: 0;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 10px;
+        min-height: 44px;
+        overflow: hidden;
+      }
+      #rm-app[data-mobile-tab="measure"] .rm-mobile-steps { display: flex; }
+      .rm-mstep {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 8px;
+        min-height: 44px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      .rm-mstep-num {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--border);
+        color: var(--text-3);
+        font-size: 10px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+      .rm-mstep.rm-mstep-active { color: #F68F2C; }
+      .rm-mstep.rm-mstep-active .rm-mstep-num { background: #F68F2C; color: #fff; }
+      .rm-mstep.rm-mstep-done .rm-mstep-num { background: #14b8a6; color: #fff; }
+      .rm-mstep-sep { color: var(--border); font-size: 14px; flex-shrink: 0; }
+      /* Measure sub-step panels */
+      #rm-app .rm-mstep-panel { display: none; }
+      #rm-app[data-mstep="1"] .rm-mstep-panel[data-mstep="1"] { display: flex; flex-direction: column; height: 100%; }
+      #rm-app[data-mstep="2"] .rm-mstep-panel[data-mstep="2"] { display: flex; flex-direction: column; height: 100%; }
+      #rm-app[data-mstep="3"] .rm-mstep-panel[data-mstep="3"] { display: flex; flex-direction: column; height: 100%; }
+      /* On desktop, always show normal measure content */
+      @media (min-width: 761px) {
+        #rm-agent-sheet, #rm-agent-sheet-overlay { display: none !important; }
+        #rm-app .rm-mobile-steps { display: none !important; }
+        #rm-app .rm-mstep-panel { display: contents !important; }
+      }
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
       #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; }
@@ -701,6 +783,14 @@
       #rm-app .rm-measure-display { padding: 14px; border-radius: 10px; }
       #rm-app .rm-measure-value,
       #rm-app #rmResult { font-size: 36px; }
+
+      /* Step 1 (Foto): hide canvas top toolbar and mobile tools; show only upload area */
+      #rm-app[data-mstep="1"] .rm-canvas-top { display: none; }
+      #rm-app[data-mstep="1"] .rm-canvas-bottom { display: none; }
+      #rm-app[data-mstep="1"] .rm-mobile-tools { display: none; }
+      /* Step 2 (Medir): show tools, hide upload placeholder once image loaded */
+      #rm-app[data-mstep="2"] .rm-canvas-top { display: flex; }
+      /* Step 3: hide measure center — JS will switch to result tab */
 
       #rm-app .rm-mobile-nav {
         display: grid;
@@ -1018,6 +1108,17 @@
       </div>
     </aside>
 
+    <!-- Mobile: step indicator (shown inside Medir tab) -->
+    <div class="rm-mobile-steps">
+      <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Foto</div>
+      <span class="rm-mstep-sep">›</span>
+      <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Medir</div>
+      <span class="rm-mstep-sep">›</span>
+      <div class="rm-mstep" data-mstep="3"><span class="rm-mstep-num">3</span>Guardar</div>
+      <div style="flex:1"></div>
+      <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Siguiente →</button>
+    </div>
+
     <!-- CENTRO: Canvas -->
     <main class="rm-panel rm-center rm-workbench">
 
@@ -1255,6 +1356,26 @@
     <button class="rm-mobile-tab"           type="button" data-tab="measure" data-icon="⊕">Medir</button>
     <button class="rm-mobile-tab"           type="button" data-tab="result"  data-icon="↑">Guardar</button>
   </nav>
+
+  <!-- Mobile: agent bottom sheet -->
+  <div id="rm-agent-sheet-overlay"></div>
+  <div id="rm-agent-sheet">
+    <div class="rm-sheet-header">
+      <div>
+        <div id="rmSheetAgentName" class="rm-agent-name">—</div>
+        <div id="rmSheetAgentAddress" class="rm-agent-meta">—</div>
+        <div id="rmSheetAgentPhone" class="rm-agent-meta"></div>
+      </div>
+      <button id="rmSheetClose" class="rm-sheet-close" type="button" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="rmSheetAgentLinks" class="rm-agent-links"></div>
+    <button id="rmSheetCreateResources" class="rm-btn rm-btn-primary" type="button" style="display:none;margin-top:8px">
+      ＋ Crear carpeta Drive y tarjeta Trello
+    </button>
+    <button id="rmSheetGoMedir" class="rm-btn rm-btn-primary" type="button" style="margin-top:10px;width:100%">
+      Ir a medir →
+    </button>
+  </div>
 
   <div id="rmToast" class="rm-toast"></div>
 
@@ -1817,6 +1938,7 @@
       state.selectedClient = c;
       renderClients(); renderAgentCard(c); updateSaveButton();
       showToast("Agente: " + (c.agent || c.name)); updatePanel();
+      if (isMobile()) openAgentSheet(c);
     }
     function renderAgentCard(c) {
       els.agentCard.classList.add("rm-visible");
@@ -1860,8 +1982,7 @@
     /* ─── ESTADO TRELLO ─── */
     async function fetchTrelloStatus(cardId) {
       const el = document.getElementById("rmTrelloStatus");
-      if (!el) return;
-      el.textContent = "…";
+      if (el) el.textContent = "…";
       try {
         const res = await fetch(config.n8nWebhookTrelloStatus, {
           method: "POST",
@@ -1871,9 +1992,11 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         const listName = data.listName || data.list_name || data.name || "";
-        el.textContent = listName || "";
+        if (el) el.textContent = listName || "";
+        return listName;
       } catch {
-        el.textContent = "";
+        if (el) el.textContent = "";
+        return "";
       }
     }
 
@@ -3177,6 +3300,109 @@
         }
       }
     })();
+
+    /* ─── MOBILE: BOTTOM SHEET ─── */
+    const sheetEl      = document.getElementById("rm-agent-sheet");
+    const sheetOverlay = document.getElementById("rm-agent-sheet-overlay");
+
+    function openAgentSheet(c) {
+      document.getElementById("rmSheetAgentName").textContent    = [c.agent, c.name].filter(Boolean).join(" · ");
+      document.getElementById("rmSheetAgentAddress").textContent = c.fullAddress || "Sin dirección";
+      document.getElementById("rmSheetAgentPhone").textContent   = c.phone || "";
+
+      const linksEl = document.getElementById("rmSheetAgentLinks");
+      linksEl.innerHTML = "";
+      const driveA = document.createElement("a");
+      driveA.className   = "rm-agent-link " + (c.driveUrl ? "rm-agent-link-drive" : "rm-agent-link-nourl");
+      driveA.textContent = c.driveUrl ? "Drive" : "Sin carpeta";
+      if (c.driveUrl) { driveA.href = c.driveUrl; driveA.target = "_blank"; }
+      linksEl.appendChild(driveA);
+
+      const trelloA = document.createElement("a");
+      trelloA.className   = "rm-agent-link " + (c.trelloUrl ? "rm-agent-link-trello" : "rm-agent-link-nourl");
+      trelloA.textContent = c.trelloUrl ? "Trello" : "Sin tarjeta";
+      if (c.trelloUrl) { trelloA.href = c.trelloUrl; trelloA.target = "_blank"; }
+      linksEl.appendChild(trelloA);
+
+      const statusEl = document.createElement("span");
+      statusEl.className = "rm-trello-status";
+      linksEl.appendChild(statusEl);
+      if (c.trelloId) {
+        statusEl.textContent = "…";
+        fetchTrelloStatus(c.trelloId).then(name => { statusEl.textContent = name || ""; }).catch(() => { statusEl.textContent = ""; });
+      }
+
+      const createBtn = document.getElementById("rmSheetCreateResources");
+      const needsCreate = !c.driveUrl || !c.trelloUrl;
+      createBtn.style.display = needsCreate ? "" : "none";
+      createBtn.textContent = "＋ Crear " + (!c.driveUrl && !c.trelloUrl ? "carpeta Drive y tarjeta Trello" : !c.driveUrl ? "carpeta Drive" : "tarjeta Trello");
+      createBtn.disabled = false;
+
+      sheetEl.classList.add("rm-open");
+      sheetOverlay.classList.add("rm-open");
+      // Force animation: use rAF to trigger transition
+      requestAnimationFrame(() => { sheetEl.style.transform = ""; });
+    }
+
+    function closeAgentSheet() {
+      sheetEl.classList.remove("rm-open");
+      sheetOverlay.classList.remove("rm-open");
+    }
+
+    document.getElementById("rmSheetClose").addEventListener("click", closeAgentSheet);
+    sheetOverlay.addEventListener("click", closeAgentSheet);
+
+    document.getElementById("rmSheetGoMedir").addEventListener("click", () => {
+      closeAgentSheet();
+      setMobileTab("measure");
+      setMobileStep(1);
+    });
+
+    document.getElementById("rmSheetCreateResources").addEventListener("click", async () => {
+      const c = state.selectedClient;
+      if (!c) return;
+      const btn = document.getElementById("rmSheetCreateResources");
+      btn.disabled = true;
+      btn.textContent = "Creando...";
+      els.createResources.click();
+      setTimeout(() => { closeAgentSheet(); }, 500);
+    });
+
+    /* ─── MOBILE: STEP-BY-STEP FLOW ─── */
+    function setMobileStep(n) {
+      app.dataset.mstep = n;
+      app.querySelectorAll(".rm-mstep").forEach(s => {
+        const sn = parseInt(s.dataset.mstep, 10);
+        s.classList.toggle("rm-mstep-active", sn === n);
+        s.classList.toggle("rm-mstep-done", sn < n);
+      });
+      const nextBtn = document.getElementById("rmMstepNext");
+      if (n === 1) { nextBtn.textContent = state.imageSource ? "Siguiente →" : "Omitir foto →"; }
+      else if (n === 2) { nextBtn.textContent = "Siguiente →"; }
+      else { nextBtn.style.display = "none"; return; }
+      nextBtn.style.display = "";
+    }
+
+    document.getElementById("rmMstepNext").addEventListener("click", () => {
+      const cur = parseInt(app.dataset.mstep || "1", 10);
+      if (cur === 1) {
+        setMobileStep(2);
+      } else if (cur === 2) {
+        setMobileTab("result");
+      }
+    });
+
+    // When a photo is loaded, update step 1 next button text
+    // Patch: after image loads, update next button
+    els.image.addEventListener("load", () => {
+      if (isMobile() && parseInt(app.dataset.mstep || "1", 10) === 1) {
+        const nextBtn = document.getElementById("rmMstepNext");
+        if (nextBtn) nextBtn.textContent = "Siguiente →";
+      }
+    });
+
+    // Initialize step on load
+    if (isMobile()) { app.dataset.mstep = "1"; setMobileStep(1); }
 
     /* ─── INIT ─── */
     populateRefSelects();
