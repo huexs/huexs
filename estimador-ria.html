@@ -579,8 +579,11 @@
     #rm-app .rm-toast.rm-show { opacity: 1; transform: translateY(0); }
 
     /* ── MOBILE ── */
-    #rm-app .rm-mobile-tools { display: none; }
-    #rm-app .rm-mobile-nav   { display: none; }
+    #rm-app .rm-mobile-tools  { display: none; }
+    #rm-app .rm-mobile-nav    { display: none; }
+    #rm-app .rm-mobile-steps  { display: none; }
+    #rm-agent-sheet           { display: none; }
+    #rm-agent-sheet-overlay   { display: none; }
 
     /* ── DESKTOP LAYOUT ── */
     @media (min-width: 1121px) {
@@ -615,7 +618,7 @@
     @media (max-width: 760px) {
       #rm-app {
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
         width: 100%;
         height: 100dvh;
         min-height: 100dvh;
@@ -623,15 +626,16 @@
         overflow: hidden;
         padding: 0;
       }
-      #rm-app .rm-appbar-wrap { margin: -10px -10px 0; }
+      #rm-app .rm-appbar-wrap { grid-row: 1; margin: -10px -10px 0; }
       #rm-app .rm-appbar { padding: 18px 14px 10px; margin: 0; }
       #rm-app .rm-brand-mark { width: 140px; height: 36px; }
       #rm-app .rm-brand-name, #rm-app .rm-brand-sub { display: none; }
       #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
       #rm-app .rm-chip { max-width: 140px; min-height: 28px; }
 
-      #rm-app .rm-shell { display: grid; grid-template-rows: auto minmax(0,1fr); min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; gap: 6px; }
-      #rm-app .rm-mobile-steps { margin: -10px -10px 0; border-radius: 12px 12px 0 0; }
+      #rm-app .rm-mobile-steps { grid-row: 2; }
+      #rm-app .rm-shell { grid-row: 3; display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; }
+      #rm-app .rm-mobile-nav { grid-row: 4; }
       #rm-app .rm-panel { display: none; height: 100%; max-height: 100%; border-radius: 12px; }
       #rm-app[data-mobile-tab="agents"]  .rm-controls  { display: flex; }
       #rm-app[data-mobile-tab="measure"] .rm-workbench { display: grid; }
@@ -747,11 +751,6 @@
       #rm-app[data-mstep="2"] .rm-mstep-panel[data-mstep="2"] { display: flex; flex-direction: column; height: 100%; }
       #rm-app[data-mstep="3"] .rm-mstep-panel[data-mstep="3"] { display: flex; flex-direction: column; height: 100%; }
       /* On desktop, always show normal measure content */
-      @media (min-width: 761px) {
-        #rm-agent-sheet, #rm-agent-sheet-overlay { display: none !important; }
-        #rm-app .rm-mobile-steps { display: none !important; }
-        #rm-app .rm-mstep-panel { display: contents !important; }
-      }
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
       #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; }
@@ -1068,6 +1067,17 @@
   </div>
   <div id="rmGuideHint" class="rm-guide-hint"></div>
 
+  <!-- Mobile: step indicator (shown inside Medir tab only) -->
+  <div class="rm-mobile-steps">
+    <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Foto</div>
+    <span class="rm-mstep-sep">›</span>
+    <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Medir</div>
+    <span class="rm-mstep-sep">›</span>
+    <div class="rm-mstep" data-mstep="3"><span class="rm-mstep-num">3</span>Guardar</div>
+    <div style="flex:1"></div>
+    <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Siguiente →</button>
+  </div>
+
   <div class="rm-shell">
 
     <!-- PANEL IZQUIERDO -->
@@ -1107,17 +1117,6 @@
 
       </div>
     </aside>
-
-    <!-- Mobile: step indicator (shown inside Medir tab) -->
-    <div class="rm-mobile-steps">
-      <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Foto</div>
-      <span class="rm-mstep-sep">›</span>
-      <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Medir</div>
-      <span class="rm-mstep-sep">›</span>
-      <div class="rm-mstep" data-mstep="3"><span class="rm-mstep-num">3</span>Guardar</div>
-      <div style="flex:1"></div>
-      <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Siguiente →</button>
-    </div>
 
     <!-- CENTRO: Canvas -->
     <main class="rm-panel rm-center rm-workbench">
