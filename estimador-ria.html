@@ -581,9 +581,10 @@
     /* ── MOBILE ── */
     #rm-app .rm-mobile-tools  { display: none; }
     #rm-app .rm-mobile-nav    { display: none; }
-    #rm-app .rm-mobile-steps  { display: none; }
     #rm-agent-sheet           { display: none; }
     #rm-agent-sheet-overlay   { display: none; }
+    /* Mobile-only inline nav buttons hidden on desktop */
+    #rmGoReview, #rmMstepBack { display: none; }
 
     /* ── DESKTOP LAYOUT ── */
     @media (min-width: 1121px) {
@@ -618,7 +619,7 @@
     @media (max-width: 760px) {
       #rm-app {
         display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
         width: 100%;
         height: 100dvh;
         min-height: 100dvh;
@@ -633,13 +634,15 @@
       #rm-app .rm-live-summary .rm-chip:not(:first-child) { display: none; }
       #rm-app .rm-chip { max-width: 140px; min-height: 28px; }
 
-      #rm-app .rm-mobile-steps { grid-row: 2; }
-      #rm-app .rm-shell { grid-row: 3; display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; }
-      #rm-app .rm-mobile-nav { grid-row: 4; }
+      #rm-app .rm-shell { grid-row: 2; display: block; min-height: 0; height: 100%; overflow: hidden; margin: 0; padding: 10px; box-sizing: border-box; }
+      #rm-app .rm-mobile-nav { grid-row: 3; }
       #rm-app .rm-panel { display: none; height: 100%; max-height: 100%; border-radius: 12px; }
       #rm-app[data-mobile-tab="agents"]  .rm-controls  { display: flex; }
-      #rm-app[data-mobile-tab="measure"] .rm-workbench { display: grid; }
-      #rm-app[data-mobile-tab="result"]  .rm-results   { display: flex; }
+      /* Medir tab: canvas + product picker/list stacked and scrollable */
+      #rm-app[data-mobile-tab="measure"] .rm-center  { display: flex; }
+      #rm-app[data-mobile-tab="measure"] .rm-results { display: flex; }
+      /* Guardar tab: full results panel, canvas hidden */
+      #rm-app[data-mobile-tab="result"]  .rm-results { display: flex; }
 
       #rm-app .rm-side { min-height: 0; overflow: hidden; }
       #rm-app .rm-side-body { min-height: 0; }
@@ -702,76 +705,36 @@
         flex-shrink: 0;
       }
 
-      /* ── STEP BAR (2 pasos: Medir / Guardar) ── */
-      #rm-app .rm-mobile-steps {
-        display: none;
-        align-items: center;
-        gap: 0;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 0 12px;
-        min-height: 44px;
-      }
-      #rm-app[data-mobile-tab="measure"] .rm-mobile-steps { display: flex; }
-      .rm-mstep {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0 6px;
-        min-height: 44px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-        color: var(--text-3);
-        flex-shrink: 0;
-        white-space: nowrap;
-      }
-      .rm-mstep-num {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: var(--border);
-        color: var(--text-3);
-        font-size: 10px;
-        font-weight: 800;
-        flex-shrink: 0;
-      }
-      .rm-mstep.rm-mstep-active { color: #F68F2C; }
-      .rm-mstep.rm-mstep-active .rm-mstep-num { background: #F68F2C; color: #fff; }
-      .rm-mstep.rm-mstep-done .rm-mstep-num { background: #14b8a6; color: #fff; }
-      .rm-mstep-sep { color: var(--border); font-size: 14px; flex-shrink: 0; padding: 0 2px; }
-
       /* ── CANVAS / WORKBENCH ── */
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
-      /* Step 1 (Medir): canvas + inline product picker/list, stacked in one scrollable screen
-         — combines "con foto" (canvas) with "manual" (elige producto + lista) so técnicos
-         hacen foto, dibujan las líneas y añaden productos sin cambiar de pantalla. */
-      #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0,1fr) auto auto; min-height: 0; }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-center {
-        display: grid;
-        grid-template-rows: auto 40vh auto auto;
-        height: auto;
-        max-height: none;
-        border-radius: 12px 12px 0 0;
-      }
+      /* Base: panels hidden; shown per-tab above. Canvas column = flex column. */
+      #rm-app .rm-center { flex-direction: column; min-height: 0; }
       #rm-app .rm-canvas-top { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
       #rm-app .rm-magnifier { display: none !important; }
       #rm-app .rm-canvas-bottom { padding: 6px 10px; font-size: 12px; }
       #rm-app .rm-row { grid-template-columns: 1fr; }
+      #rm-app .rm-stage { background: #111; min-height: 0; overflow: hidden; }
 
-      /* Whole shell scrolls in step 1 so photo + tools + product list fit one screen */
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-shell {
+      /* NOTE: do not stretch .rm-stage-inner — .rm-stage centers it via grid place-items:center
+         (base CSS) shrink-wrapped to the image's real size, so the SVG overlay's coordinate box
+         stays aligned with the visible image and taps land where you touch. */
+      #rm-app .rm-image { max-width: 100%; object-fit: contain; }
+
+      /* ── MEDIR TAB: canvas (fixed height) + product picker/list, one scrollable column ── */
+      #rm-app[data-mobile-tab="measure"] .rm-shell {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
       }
-      /* Show only "Productos medidos" (section 02) from the results panel, stacked below the canvas */
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results {
-        display: flex;
+      #rm-app[data-mobile-tab="measure"] .rm-center {
+        height: auto;
+        max-height: none;
+        border-radius: 12px 12px 0 0;
+        flex: none;
+      }
+      #rm-app[data-mobile-tab="measure"] .rm-stage { height: 44vh; flex: none; }
+      #rm-app[data-mobile-tab="measure"] .rm-image { max-height: 44vh; }
+      #rm-app[data-mobile-tab="measure"] .rm-results {
         height: auto;
         max-height: none;
         overflow: visible;
@@ -780,32 +743,25 @@
         border-top: 0;
         margin-top: -1px;
       }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body { overflow: visible; flex: none; }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-panel-header,
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(1),
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(3),
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(4) {
-        display: none;
-      }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] #rmMstepBack { display: none !important; }
-      /* NOTE: do not stretch .rm-stage-inner with height/flex — .rm-stage already centers it
-         via grid place-items:center (base CSS) shrink-wrapped to the image's real size, which
-         keeps the SVG overlay's coordinate system aligned with the visible image. */
-      #rm-app .rm-image { max-height: calc(100dvh - 340px); max-width: 100%; object-fit: contain; }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-image { max-height: 38vh; }
-      #rm-app .rm-stage { background: #111; min-height: 0; overflow: hidden; }
+      #rm-app[data-mobile-tab="measure"] .rm-results .rm-side { overflow: visible; }
+      #rm-app[data-mobile-tab="measure"] .rm-results .rm-side-body { overflow: visible; flex: none; }
+      /* In Medir: show only the product picker/list (sec-products). Hide header, ref, save, photos, back btn. */
+      #rm-app[data-mobile-tab="measure"] .rm-results .rm-panel-header,
+      #rm-app[data-mobile-tab="measure"] .rm-results .rm-sec-save,
+      #rm-app[data-mobile-tab="measure"] .rm-results .rm-photo-section,
+      #rm-app[data-mobile-tab="measure"] #rmMstepBack { display: none; }
+      #rm-app[data-mobile-tab="measure"] #rmGoReview { display: flex; }
 
-      /* Step 2 (Guardar): result tab */
-      #rm-app[data-mobile-tab="measure"][data-mstep="2"] .rm-results { display: flex; }
-      #rm-app[data-mobile-tab="measure"][data-mstep="2"] .rm-controls { display: none !important; }
+      /* ── GUARDAR TAB: full results (products + save + photos), canvas hidden ── */
+      #rm-app[data-mobile-tab="result"] #rmGoReview { display: none; }
+      #rm-app[data-mobile-tab="result"] #rmMstepBack { display: flex; }
 
-      /* Volver button in save step */
-      #rmMstepBack {
-        display: none;
-        width: 100%;
-        margin-bottom: 8px;
-      }
-      #rm-app[data-mobile-tab="measure"][data-mstep="2"] #rmMstepBack { display: flex; }
+      /* Reference section (01) never shown on mobile — ref selector lives in mobile-tools */
+      #rm-app .rm-sec-ref { display: none !important; }
+
+      /* Mobile-only inline nav buttons (Revisar / Volver) */
+      #rmGoReview, #rmMstepBack { display: none; width: calc(100% - 24px); margin: 4px 12px 10px; }
+      #rmGoReview { min-height: 46px; }
 
       #rm-app .rm-mobile-tools {
         display: grid;
@@ -1130,15 +1086,6 @@
   </div>
   <div id="rmGuideHint" class="rm-guide-hint"></div>
 
-  <!-- Mobile: 2-step indicator (shown only in Medir tab) -->
-  <div class="rm-mobile-steps">
-    <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Medir</div>
-    <span class="rm-mstep-sep">›</span>
-    <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Guardar</div>
-    <div style="flex:1"></div>
-    <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Revisar →</button>
-  </div>
-
   <div class="rm-shell">
 
     <!-- PANEL IZQUIERDO -->
@@ -1281,12 +1228,13 @@
       <div class="rm-panel-header">
         <h2 class="rm-panel-title">Flujo de trabajo</h2>
       </div>
-      <!-- Mobile: back button to return to Medir step -->
-      <button id="rmMstepBack" class="rm-btn" type="button" style="margin:8px 12px 0;">← Volver a medir</button>
       <div class="rm-side-body">
 
+        <!-- Mobile: back button to return to Medir (Guardar tab only) -->
+        <button id="rmMstepBack" class="rm-btn" type="button">← Volver a medir</button>
+
         <!-- PASO 01: Referencia -->
-        <section class="rm-section">
+        <section class="rm-section rm-sec-ref">
           <div class="rm-step-head">
             <span class="rm-step-num">01</span>
             <span class="rm-step-title">Escala de referencia</span>
@@ -1359,10 +1307,13 @@
           <div id="rmProductosList" class="rm-productos-list">
             <div class="rm-productos-empty">Sin productos añadidos</div>
           </div>
+
+          <!-- Mobile: advance to review/save (Medir tab only) -->
+          <button id="rmGoReview" class="rm-btn rm-btn-primary" type="button">Revisar y guardar →</button>
         </section>
 
         <!-- PASO 03: Guardar -->
-        <section class="rm-section">
+        <section class="rm-section rm-sec-save">
           <div class="rm-step-head">
             <span class="rm-step-num">03</span>
             <span class="rm-step-title">Guardar</span>
@@ -1761,10 +1712,8 @@
     const touchSt = { active: false, pt: null, hideTimer: null };
 
     function doPlacePoint(pt) {
-      if (state.mode === "measure" && !state.pxPerCm) {
-        showToast("Primero define una referencia de escala.");
-        hideTouchMag(); return;
-      }
+      // No bloqueamos: si aún no hay escala, la primera línea calibra automáticamente
+      // (addLine detecta !pxPerCm y usa la referencia seleccionada). Sin toggle de modo.
       state.points.push(pt);
       if (state.points.length === 2) {
         const [p1, p2] = state.points; state.points = [];
@@ -1867,6 +1816,7 @@
       state.points = []; state.lines = [];
       state.pxPerCm = null; state.reference = null;
       state.measurement = null; state.lastMeasureCm = null;
+      state.mode = "ref"; // primera línea = calibración de escala
       els.image.onload = () => {
         els.stageInner.classList.add("rm-ready");
         els.placeholder.style.display = "none";
@@ -3415,7 +3365,6 @@
     document.getElementById("rmSheetGoMedir").addEventListener("click", () => {
       closeAgentSheet();
       setMobileTab("measure");
-      setMobileStep(1);
     });
 
     document.getElementById("rmSheetCreateResources").addEventListener("click", async () => {
@@ -3428,37 +3377,17 @@
       setTimeout(() => { closeAgentSheet(); }, 500);
     });
 
-    /* ─── MOBILE: STEP-BY-STEP FLOW ─── */
-    function setMobileStep(n) {
-      app.dataset.mstep = n;
-      app.querySelectorAll(".rm-mstep").forEach(s => {
-        const sn = parseInt(s.dataset.mstep, 10);
-        s.classList.toggle("rm-mstep-active", sn === n);
-        s.classList.toggle("rm-mstep-done", sn < n);
-      });
-      const nextBtn = document.getElementById("rmMstepNext");
-      // 2-step flow: step 1 = Medir, step 2 = Guardar
-      if (n === 1) {
-        nextBtn.textContent = "Revisar →";
-        nextBtn.style.display = "";
-      } else {
-        nextBtn.style.display = "none";
-      }
-    }
-
-    document.getElementById("rmMstepNext").addEventListener("click", () => {
-      // Go from step 1 (Medir) to step 2 (Guardar) — show result panel inside measure tab
-      setMobileStep(2);
-      requestAnimationFrame(() => { if (state.imageSource) render(); });
+    /* ─── MOBILE: Medir → Guardar navigation (via bottom-nav tabs) ─── */
+    document.getElementById("rmGoReview").addEventListener("click", () => {
+      if (!state.selectedClient) { showToast("Selecciona un agente primero."); return; }
+      setMobileTab("result");
+      const sb = app.querySelector(".rm-results .rm-side-body");
+      if (sb) sb.scrollTop = 0;
     });
 
     document.getElementById("rmMstepBack").addEventListener("click", () => {
-      setMobileStep(1);
-      requestAnimationFrame(() => { if (state.imageSource) render(); });
+      setMobileTab("measure");
     });
-
-    // Initialize step on load
-    if (isMobile()) { app.dataset.mstep = "1"; setMobileStep(1); }
 
     /* ─── INIT ─── */
     populateRefSelects();
