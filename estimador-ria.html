@@ -748,17 +748,52 @@
       /* ── CANVAS / WORKBENCH ── */
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
-      /* Step 1 (Medir): canvas tab */
+      /* Step 1 (Medir): canvas + inline product picker/list, stacked in one scrollable screen
+         — combines "con foto" (canvas) with "manual" (elige producto + lista) so técnicos
+         hacen foto, dibujan las líneas y añaden productos sin cambiar de pantalla. */
       #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0,1fr) auto auto; min-height: 0; }
-      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-center { display: grid; }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-center {
+        display: grid;
+        grid-template-rows: auto 40vh auto auto;
+        height: auto;
+        max-height: none;
+        border-radius: 12px 12px 0 0;
+      }
       #rm-app .rm-canvas-top { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
       #rm-app .rm-magnifier { display: none !important; }
       #rm-app .rm-canvas-bottom { padding: 6px 10px; font-size: 12px; }
       #rm-app .rm-row { grid-template-columns: 1fr; }
-      /* Image fills available height — subtract steps bar (44) + canvas-top (~70) + mobile-tools (~110) + nav (52) + safe areas */
+
+      /* Whole shell scrolls in step 1 so photo + tools + product list fit one screen */
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-shell {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Show only "Productos medidos" (section 02) from the results panel, stacked below the canvas */
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results {
+        display: flex;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        min-height: auto;
+        border-radius: 0 0 12px 12px;
+        border-top: 0;
+        margin-top: -1px;
+      }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body { overflow: visible; flex: none; }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-panel-header,
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(1),
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(3),
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-results .rm-side-body > .rm-section:nth-child(4) {
+        display: none;
+      }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] #rmMstepBack { display: none !important; }
+      /* NOTE: do not stretch .rm-stage-inner with height/flex — .rm-stage already centers it
+         via grid place-items:center (base CSS) shrink-wrapped to the image's real size, which
+         keeps the SVG overlay's coordinate system aligned with the visible image. */
       #rm-app .rm-image { max-height: calc(100dvh - 340px); max-width: 100%; object-fit: contain; }
-      #rm-app .rm-stage { background: #111; flex: 1; min-height: 0; overflow: hidden; }
-      #rm-app .rm-stage-inner { height: 100%; display: flex; align-items: center; justify-content: center; }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-image { max-height: 38vh; }
+      #rm-app .rm-stage { background: #111; min-height: 0; overflow: hidden; }
 
       /* Step 2 (Guardar): result tab */
       #rm-app[data-mobile-tab="measure"][data-mstep="2"] .rm-results { display: flex; }
