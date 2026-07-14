@@ -702,23 +702,22 @@
         flex-shrink: 0;
       }
 
-      /* Step-by-step mobile flow inside Medir tab */
+      /* ── STEP BAR (2 pasos: Medir / Guardar) ── */
       #rm-app .rm-mobile-steps {
         display: none;
         align-items: center;
         gap: 0;
         background: var(--surface);
         border-bottom: 1px solid var(--border);
-        padding: 0 10px;
+        padding: 0 12px;
         min-height: 44px;
-        overflow: hidden;
       }
       #rm-app[data-mobile-tab="measure"] .rm-mobile-steps { display: flex; }
       .rm-mstep {
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 0 8px;
+        padding: 0 6px;
         min-height: 44px;
         font-size: 11px;
         font-weight: 700;
@@ -744,22 +743,34 @@
       .rm-mstep.rm-mstep-active { color: #F68F2C; }
       .rm-mstep.rm-mstep-active .rm-mstep-num { background: #F68F2C; color: #fff; }
       .rm-mstep.rm-mstep-done .rm-mstep-num { background: #14b8a6; color: #fff; }
-      .rm-mstep-sep { color: var(--border); font-size: 14px; flex-shrink: 0; }
-      /* Measure sub-step panels */
-      #rm-app .rm-mstep-panel { display: none; }
-      #rm-app[data-mstep="1"] .rm-mstep-panel[data-mstep="1"] { display: flex; flex-direction: column; height: 100%; }
-      #rm-app[data-mstep="2"] .rm-mstep-panel[data-mstep="2"] { display: flex; flex-direction: column; height: 100%; }
-      #rm-app[data-mstep="3"] .rm-mstep-panel[data-mstep="3"] { display: flex; flex-direction: column; height: 100%; }
-      /* On desktop, always show normal measure content */
+      .rm-mstep-sep { color: var(--border); font-size: 14px; flex-shrink: 0; padding: 0 2px; }
+
+      /* ── CANVAS / WORKBENCH ── */
       #rm-app .rm-page-btn { min-height: 36px; min-width: 36px; font-size: 14px; }
 
-      #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; }
-      #rm-app[data-mobile-tab="measure"] .rm-center { display: grid; }
+      /* Step 1 (Medir): canvas tab */
+      #rm-app .rm-center { display: none; grid-template-rows: auto minmax(0,1fr) auto auto; min-height: 0; }
+      #rm-app[data-mobile-tab="measure"][data-mstep="1"] .rm-center { display: grid; }
       #rm-app .rm-canvas-top { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
       #rm-app .rm-magnifier { display: none !important; }
-      #rm-app .rm-canvas-bottom { padding: 6px 10px; }
+      #rm-app .rm-canvas-bottom { padding: 6px 10px; font-size: 12px; }
       #rm-app .rm-row { grid-template-columns: 1fr; }
-      #rm-app .rm-image { max-height: calc(100dvh - 170px); max-width: 100%; }
+      /* Image fills available height — subtract steps bar (44) + canvas-top (~70) + mobile-tools (~110) + nav (52) + safe areas */
+      #rm-app .rm-image { max-height: calc(100dvh - 340px); max-width: 100%; object-fit: contain; }
+      #rm-app .rm-stage { background: #111; flex: 1; min-height: 0; overflow: hidden; }
+      #rm-app .rm-stage-inner { height: 100%; display: flex; align-items: center; justify-content: center; }
+
+      /* Step 2 (Guardar): result tab */
+      #rm-app[data-mobile-tab="measure"][data-mstep="2"] .rm-results { display: flex; }
+      #rm-app[data-mobile-tab="measure"][data-mstep="2"] .rm-controls { display: none !important; }
+
+      /* Volver button in save step */
+      #rmMstepBack {
+        display: none;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      #rm-app[data-mobile-tab="measure"][data-mstep="2"] #rmMstepBack { display: flex; }
 
       #rm-app .rm-mobile-tools {
         display: grid;
@@ -782,14 +793,6 @@
       #rm-app .rm-measure-display { padding: 14px; border-radius: 10px; }
       #rm-app .rm-measure-value,
       #rm-app #rmResult { font-size: 36px; }
-
-      /* Step 1 (Foto): hide canvas top toolbar and mobile tools; show only upload area */
-      #rm-app[data-mstep="1"] .rm-canvas-top { display: none; }
-      #rm-app[data-mstep="1"] .rm-canvas-bottom { display: none; }
-      #rm-app[data-mstep="1"] .rm-mobile-tools { display: none; }
-      /* Step 2 (Medir): show tools, hide upload placeholder once image loaded */
-      #rm-app[data-mstep="2"] .rm-canvas-top { display: flex; }
-      /* Step 3: hide measure center — JS will switch to result tab */
 
       #rm-app .rm-mobile-nav {
         display: grid;
@@ -1067,15 +1070,13 @@
   </div>
   <div id="rmGuideHint" class="rm-guide-hint"></div>
 
-  <!-- Mobile: step indicator (shown inside Medir tab only) -->
+  <!-- Mobile: 2-step indicator (shown only in Medir tab) -->
   <div class="rm-mobile-steps">
-    <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Foto</div>
+    <div class="rm-mstep rm-mstep-active" data-mstep="1"><span class="rm-mstep-num">1</span>Medir</div>
     <span class="rm-mstep-sep">›</span>
-    <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Medir</div>
-    <span class="rm-mstep-sep">›</span>
-    <div class="rm-mstep" data-mstep="3"><span class="rm-mstep-num">3</span>Guardar</div>
+    <div class="rm-mstep" data-mstep="2"><span class="rm-mstep-num">2</span>Guardar</div>
     <div style="flex:1"></div>
-    <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Siguiente →</button>
+    <button id="rmMstepNext" class="rm-btn rm-btn-primary" type="button" style="min-height:32px;font-size:12px;padding:0 14px">Revisar →</button>
   </div>
 
   <div class="rm-shell">
@@ -1217,6 +1218,8 @@
       <div class="rm-panel-header">
         <h2 class="rm-panel-title">Flujo de trabajo</h2>
       </div>
+      <!-- Mobile: back button to return to Medir step -->
+      <button id="rmMstepBack" class="rm-btn" type="button" style="margin:8px 12px 0;">← Volver a medir</button>
       <div class="rm-side-body">
 
         <!-- PASO 01: Referencia -->
@@ -3376,28 +3379,24 @@
         s.classList.toggle("rm-mstep-done", sn < n);
       });
       const nextBtn = document.getElementById("rmMstepNext");
-      if (n === 1) { nextBtn.textContent = state.imageSource ? "Siguiente →" : "Omitir foto →"; }
-      else if (n === 2) { nextBtn.textContent = "Siguiente →"; }
-      else { nextBtn.style.display = "none"; return; }
-      nextBtn.style.display = "";
+      // 2-step flow: step 1 = Medir, step 2 = Guardar
+      if (n === 1) {
+        nextBtn.textContent = "Revisar →";
+        nextBtn.style.display = "";
+      } else {
+        nextBtn.style.display = "none";
+      }
     }
 
     document.getElementById("rmMstepNext").addEventListener("click", () => {
-      const cur = parseInt(app.dataset.mstep || "1", 10);
-      if (cur === 1) {
-        setMobileStep(2);
-      } else if (cur === 2) {
-        setMobileTab("result");
-      }
+      // Go from step 1 (Medir) to step 2 (Guardar) — show result panel inside measure tab
+      setMobileStep(2);
+      requestAnimationFrame(() => { if (state.imageSource) render(); });
     });
 
-    // When a photo is loaded, update step 1 next button text
-    // Patch: after image loads, update next button
-    els.image.addEventListener("load", () => {
-      if (isMobile() && parseInt(app.dataset.mstep || "1", 10) === 1) {
-        const nextBtn = document.getElementById("rmMstepNext");
-        if (nextBtn) nextBtn.textContent = "Siguiente →";
-      }
+    document.getElementById("rmMstepBack").addEventListener("click", () => {
+      setMobileStep(1);
+      requestAnimationFrame(() => { if (state.imageSource) render(); });
     });
 
     // Initialize step on load
