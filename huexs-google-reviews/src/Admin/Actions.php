@@ -271,6 +271,8 @@ class Actions {
 				'theme'                => $theme,
 				'card_style'           => $cardStyle,
 				'badge_position'       => $badgePosition,
+				'carousel_autoplay'    => isset( $_POST['hgr_carousel_autoplay'] ),
+				'carousel_autoplay_seconds' => max( 2, min( 30, isset( $_POST['hgr_carousel_seconds'] ) ? (int) $_POST['hgr_carousel_seconds'] : 5 ) ),
 				'accent_color'         => $this->sanitizeColor( $_POST['hgr_accent_color'] ?? '' ),
 				'text_color'           => $this->sanitizeColor( $_POST['hgr_text_color'] ?? '' ),
 				'bg_color'             => $this->sanitizeColor( $_POST['hgr_bg_color'] ?? '' ),

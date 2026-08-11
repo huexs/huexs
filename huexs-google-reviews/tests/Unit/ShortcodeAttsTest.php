@@ -11,8 +11,10 @@ use PHPUnit\Framework\TestCase;
 final class ShortcodeAttsTest extends TestCase {
 
 	private array $settings = array(
-		'default_layout' => 'grid',
-		'badge_position' => 'bottom-right',
+		'default_layout'            => 'grid',
+		'badge_position'            => 'bottom-right',
+		'carousel_autoplay'         => true,
+		'carousel_autoplay_seconds' => 5,
 		'default_limit'  => 6,
 		'show_avatar'    => true,
 		'show_date'      => true,
@@ -60,6 +62,24 @@ final class ShortcodeAttsTest extends TestCase {
 		foreach ( array( Layouts::GRID, Layouts::LIST, Layouts::CAROUSEL, Layouts::SIDEBAR, Layouts::FLOATING ) as $layout ) {
 			self::assertTrue( Layouts::needsReviews( $layout ) );
 		}
+	}
+
+	public function testCarouselAutoplayDefaultsFromSettings(): void {
+		$atts = Shortcodes::normalizeAtts( array(), $this->settings );
+
+		self::assertTrue( $atts['autoplay'] );
+		self::assertSame( 5, $atts['autoplay_seconds'] );
+	}
+
+	public function testCarouselAutoplayCanBeDisabledPerShortcode(): void {
+		self::assertFalse( Shortcodes::normalizeAtts( array( 'autoplay' => 'false' ), $this->settings )['autoplay'] );
+	}
+
+	public function testAutoplayIntervalIsClamped(): void {
+		// Por debajo de 2 s no da tiempo a leer; por encima de 30 parece estático.
+		self::assertSame( 2, Shortcodes::normalizeAtts( array( 'autoplay_seconds' => '0' ), $this->settings )['autoplay_seconds'] );
+		self::assertSame( 30, Shortcodes::normalizeAtts( array( 'autoplay_seconds' => '9999' ), $this->settings )['autoplay_seconds'] );
+		self::assertSame( 8, Shortcodes::normalizeAtts( array( 'autoplay_seconds' => '8' ), $this->settings )['autoplay_seconds'] );
 	}
 
 	public function testFloatingPositionAllowlist(): void {

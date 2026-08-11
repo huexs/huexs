@@ -105,6 +105,21 @@ class SettingsPage {
 							</td>
 						</tr>
 						<tr>
+							<th scope="row"><?php esc_html_e( 'Carrusel', 'huexs-google-reviews' ); ?></th>
+							<td>
+								<label>
+									<input type="checkbox" name="hgr_carousel_autoplay" value="1" <?php checked( $settings['carousel_autoplay'] ); ?> />
+									<?php esc_html_e( 'Avanzar solo, en bucle', 'huexs-google-reviews' ); ?>
+								</label>
+								<p>
+									<label for="hgr_carousel_seconds"><?php esc_html_e( 'Cambiar cada', 'huexs-google-reviews' ); ?></label>
+									<input type="number" id="hgr_carousel_seconds" name="hgr_carousel_seconds" min="2" max="30" class="small-text" value="<?php echo esc_attr( (string) $settings['carousel_autoplay_seconds'] ); ?>" />
+									<?php esc_html_e( 'segundos', 'huexs-google-reviews' ); ?>
+								</p>
+								<p class="description"><?php esc_html_e( 'El carrusel es cíclico: al llegar a la última reseña vuelve a la primera. Se detiene solo mientras el visitante pasa el ratón o navega con el teclado, y aparece un botón de pausa.', 'huexs-google-reviews' ); ?></p>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row"><label for="hgr_badge_position"><?php esc_html_e( 'Posición de la burbuja flotante', 'huexs-google-reviews' ); ?></label></th>
 							<td>
 								<select id="hgr_badge_position" name="hgr_badge_position">

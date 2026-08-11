@@ -148,6 +148,8 @@ $args_shortcode = array(
 	'show_count'   => true,
 	'position'     => 'bottom-right',
 	'force_open'   => isset( $args['picker'] ),
+	'autoplay'     => ! isset( $args['picker'] ),
+	'autoplay_seconds' => (int) ( $args['seconds'] ?? 2 ),
 );
 
 $renderer = new ReviewRenderer( $settings, false );

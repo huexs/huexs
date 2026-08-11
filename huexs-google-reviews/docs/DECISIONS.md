@@ -269,3 +269,34 @@ Cuando Google rechaza una clave, el problema siempre es que algún valor no figu
 restricciones. La pantalla Conexión incluye un bloque desplegable con los valores exactos
 —referente con y sin www, e IP del servidor— cada uno con su botón de copiar, en lugar de
 describirlos en prosa y obligar a deducirlos.
+
+---
+
+# 0.7.0 — Carrusel continuo
+
+## D35 — La posición se lleva por índice, no leyendo `scrollLeft`
+
+Primera implementación: calcular el destino sumando el ancho de una tarjeta a
+`track.scrollLeft`, y detectar los extremos comparando con `scrollWidth - clientWidth`.
+Falla, y el test en navegador lo demostró: con `scroll-behavior: smooth`, `scrollLeft`
+devuelve valores intermedios mientras la animación corre, así que la detección del final
+no se cumplía nunca y el bucle no daba la vuelta.
+
+Ahora el carrusel mantiene su propio índice y navega con
+`index = (index + dirección + total) % total`, desplazándose al `offsetLeft` de esa
+tarjeta. Determinista e inmune a lecturas a media animación. Si el visitante arrastra a
+mano, el índice se recalcula por proximidad al terminar el desplazamiento (`scrollend`).
+
+## D36 — Avance automático con freno
+
+Se revierte la decisión original de no incluir rotación automática: es lo que el
+propietario pide y lo que hace la competencia. Pero con las salvaguardas que exige
+WCAG 2.2.2 para contenido en movimiento:
+
+- **botón de pausa** visible siempre que el avance automático esté activo;
+- se detiene al pasar el ratón, al entrar el foco por teclado y al ocultarse la pestaña;
+- `prefers-reduced-motion` desactiva el avance automático, pero **no** la navegación
+  manual: quien lo prefiera sigue pudiendo recorrer las reseñas con los botones.
+
+El intervalo se limita a 2–30 segundos: por debajo no da tiempo a leer y por encima el
+carrusel parece estático.

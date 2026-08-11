@@ -52,12 +52,19 @@ class Shortcodes {
 			$position = 'bottom-right';
 		}
 
+		// El avance automático se limita a un rango sensato: por debajo de 2 segundos
+		// no da tiempo a leer, y por encima de 30 el carrusel parece estático.
+		$seconds = (int) ( $atts['autoplay_seconds'] ?? $settings['carousel_autoplay_seconds'] ?? 5 );
+		$seconds = max( 2, min( 30, $seconds ) );
+
 		return array(
-			'location'     => $location,
-			'layout'       => $layout,
-			'limit'        => $limit,
-			'order'        => $order,
-			'position'     => $position,
+			'location'         => $location,
+			'layout'           => $layout,
+			'limit'            => $limit,
+			'order'            => $order,
+			'position'         => $position,
+			'autoplay'         => self::boolAtt( $atts['autoplay'] ?? null, (bool) ( $settings['carousel_autoplay'] ?? true ) ),
+			'autoplay_seconds' => $seconds,
 			'show_avatar'  => self::boolAtt( $atts['show_avatar'] ?? null, (bool) $settings['show_avatar'] ),
 			'show_date'    => self::boolAtt( $atts['show_date'] ?? null, (bool) $settings['show_date'] ),
 			'show_reply'   => self::boolAtt( $atts['show_reply'] ?? null, (bool) $settings['show_reply'] ),

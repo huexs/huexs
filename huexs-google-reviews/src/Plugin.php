@@ -246,6 +246,8 @@ final class Plugin {
 			'text_color'           => '',
 			'bg_color'             => '',
 			'badge_position'       => 'bottom-right',
+			'carousel_autoplay'    => true,
+			'carousel_autoplay_seconds' => 5,
 			'stale_notice_admins'  => true,
 			'delete_on_uninstall'  => false,
 		);

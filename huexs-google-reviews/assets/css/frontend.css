@@ -495,3 +495,18 @@ a.hgr-badge:hover {
 		max-width: calc(100vw - 24px);
 	}
 }
+
+/* Botón de pausa del carrusel (solo con avance automático). */
+.hgr-carousel__btn--pause {
+	border-radius: 999px;
+	font-size: 12px;
+	height: auto;
+	padding: 0 12px;
+	width: auto;
+}
+
+.hgr-carousel__btn--pause[aria-pressed="true"] {
+	background: var(--hgr-accent);
+	border-color: var(--hgr-accent);
+	color: #fff;
+}
