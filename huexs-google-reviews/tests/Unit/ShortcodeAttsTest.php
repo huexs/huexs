@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Huexs\GoogleReviews\Tests\Unit;
 
+use Huexs\GoogleReviews\Frontend\Layouts;
 use Huexs\GoogleReviews\Frontend\Shortcodes;
 use PHPUnit\Framework\TestCase;
 
@@ -11,6 +12,7 @@ final class ShortcodeAttsTest extends TestCase {
 
 	private array $settings = array(
 		'default_layout' => 'grid',
+		'badge_position' => 'bottom-right',
 		'default_limit'  => 6,
 		'show_avatar'    => true,
 		'show_date'      => true,
@@ -33,6 +35,36 @@ final class ShortcodeAttsTest extends TestCase {
 
 		$atts = Shortcodes::normalizeAtts( array( 'layout' => 'carousel' ), $this->settings );
 		self::assertSame( 'carousel', $atts['layout'] );
+	}
+
+	public function testAllCatalogLayoutsAreAccepted(): void {
+		foreach ( Layouts::ALL as $layout ) {
+			self::assertSame(
+				$layout,
+				Shortcodes::normalizeAtts( array( 'layout' => $layout ), $this->settings )['layout']
+			);
+		}
+	}
+
+	public function testEveryLayoutMapsToAnExistingTemplate(): void {
+		foreach ( Layouts::ALL as $layout ) {
+			self::assertFileExists(
+				dirname( __DIR__, 2 ) . '/templates/' . Layouts::template( $layout ),
+				'Falta la plantilla del diseño ' . $layout
+			);
+		}
+	}
+
+	public function testOnlyBadgeSkipsReviewLookup(): void {
+		self::assertFalse( Layouts::needsReviews( Layouts::BADGE ) );
+		foreach ( array( Layouts::GRID, Layouts::LIST, Layouts::CAROUSEL, Layouts::SIDEBAR, Layouts::FLOATING ) as $layout ) {
+			self::assertTrue( Layouts::needsReviews( $layout ) );
+		}
+	}
+
+	public function testFloatingPositionAllowlist(): void {
+		self::assertSame( 'top-left', Shortcodes::normalizeAtts( array( 'position' => 'top-left' ), $this->settings )['position'] );
+		self::assertSame( 'bottom-right', Shortcodes::normalizeAtts( array( 'position' => 'javascript:alert(1)' ), $this->settings )['position'] );
 	}
 
 	public function testOrderAllowlist(): void {

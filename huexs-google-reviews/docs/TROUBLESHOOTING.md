@@ -1,8 +1,20 @@
 # Resolución de problemas
 
-Empieza siempre por **Google Reviews → Estado**: identifica credenciales, criptografía, OAuth, cron y última sincronización.
+Empieza siempre por **Google Reviews → Estado**: identifica licencia, criptografía, cron, negocios conectados y última sincronización.
 
-## Conexión
+## Licencia y búsqueda (modo normal)
+
+| Síntoma | Causa probable | Acción |
+|---|---|---|
+| "La clave de licencia no es válida o no corresponde a este dominio" | Clave mal copiada, caducada, o emitida para otro dominio | Revisa la clave; si el sitio cambió de dominio, pide reemisión |
+| "No se pudo verificar la licencia ahora mismo" | La API no responde | La clave queda guardada; reintenta desde Estado → *Probar conexión* |
+| "No se encontró ningún negocio con ese nombre" | El nombre no coincide con la ficha de Google | Copia el nombre exacto de Google Maps y añade la ciudad |
+| Aparecen varios negocios parecidos | Nombre genérico | Compara la dirección que muestra cada resultado |
+| "Tu plan no permite más ubicaciones" | Límite del plan alcanzado | Quita un negocio o amplía el plan |
+| Solo se ven 5 reseñas | Límite de la fuente pública en el plan gratuito | Es lo esperado; la nota media y el total sí son completos. Plan Pro para todas |
+| "hay más reseñas disponibles con el plan Pro" | Aviso de `truncated` | Informativo, solo lo ve el administrador |
+
+## Conexión (modo avanzado)
 
 | Síntoma | Causa probable | Acción |
 |---|---|---|
@@ -17,7 +29,9 @@ Empieza siempre por **Google Reviews → Estado**: identifica credenciales, crip
 
 | Síntoma | Código | Acción |
 |---|---|---|
-| Todas las ubicaciones fallan | `auth_expired` | Reconecta la cuenta en Conexión |
+| Todas las ubicaciones fallan | `auth_expired` | Reconecta la cuenta en Avanzado |
+| Todas las ubicaciones fallan | `invalid_license` | Revisa la clave en Conexión |
+| Una ubicación falla | `not_found` | El negocio ya no es accesible: quítalo y vuelve a buscarlo |
 | 403 | `permission_denied` | La cuenta no administra la ficha, o el proyecto no tiene aprobado Basic API Access |
 | 403 con quota | `quota` | Espera a la renovación de cuota; reduce frecuencia |
 | 429 | `rate_limited` | El plugin ya reintenta con backoff; si persiste, reduce frecuencia |

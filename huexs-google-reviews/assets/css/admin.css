@@ -45,3 +45,133 @@
 .hgr-danger-zone {
 	border-color: #b32d2e;
 }
+
+/* ---------- Onboarding: licencia y búsqueda ---------- */
+
+.hgr-inline-form {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.hgr-plan-pill {
+	background: #e5e7eb;
+	border-radius: 999px;
+	color: #374151;
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	padding: 2px 8px;
+	vertical-align: middle;
+}
+
+.hgr-plan-pill--pro {
+	background: #fbbc04;
+	color: #3d2f00;
+}
+
+.hgr-search-results {
+	border-top: 1px solid #dcdcde;
+	margin: 14px 0 0;
+}
+
+.hgr-search-result {
+	align-items: center;
+	border-bottom: 1px solid #dcdcde;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	margin: 0;
+	padding: 12px 0;
+}
+
+.hgr-search-result__info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.hgr-search-result__address,
+.hgr-search-result__rating {
+	color: #646970;
+	font-size: 13px;
+}
+
+/* ---------- Selector visual de diseño ---------- */
+
+.hgr-layout-picker {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 12px;
+	margin: 12px 0 20px;
+	max-width: 760px;
+}
+
+.hgr-layout-option {
+	border: 2px solid #dcdcde;
+	border-radius: 8px;
+	cursor: pointer;
+	display: block;
+	padding: 10px;
+	transition: border-color 0.15s ease;
+}
+
+.hgr-layout-option:has(input:checked) {
+	border-color: #2271b1;
+	background: #f0f6fc;
+}
+
+.hgr-layout-option--locked {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.hgr-layout-option input {
+	margin-right: 6px;
+}
+
+.hgr-layout-option__label {
+	display: block;
+	font-size: 13px;
+	margin-top: 8px;
+}
+
+/* Miniaturas esquemáticas de cada diseño, dibujadas con gradientes. */
+.hgr-layout-option__preview {
+	background: #f6f7f7;
+	border-radius: 4px;
+	display: block;
+	height: 56px;
+	position: relative;
+	overflow: hidden;
+}
+
+.hgr-layout-option__preview::before,
+.hgr-layout-option__preview::after {
+	background: #c3c4c7;
+	content: '';
+	position: absolute;
+	border-radius: 2px;
+}
+
+.hgr-preview--grid::before { inset: 8px 52% 52% 8px; }
+.hgr-preview--grid::after  { inset: 52% 8px 8px 52%; }
+
+.hgr-preview--list::before { inset: 8px 8px 56% 8px; }
+.hgr-preview--list::after  { inset: 56% 8px 8px 8px; }
+
+.hgr-preview--carousel::before { inset: 12px 45% 12px 8px; }
+.hgr-preview--carousel::after  { inset: 12px 8px 12px 60%; }
+
+.hgr-preview--badge::before { inset: 18px 30% 18px 8px; }
+.hgr-preview--badge::after  { inset: 24px 12px 24px 75%; }
+
+.hgr-preview--floating::before { inset: 60% 8px 8px 55%; border-radius: 999px; }
+.hgr-preview--floating::after  { display: none; }
+
+.hgr-preview--sidebar::before { inset: 8px 55% 8px 8px; }
+.hgr-preview--sidebar::after  { inset: 8px 8px 8px 52%; background: #e8e8e9; }

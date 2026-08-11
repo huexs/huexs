@@ -21,10 +21,17 @@ use Huexs\GoogleReviews\Google\GoogleClientInterface;
 use Huexs\GoogleReviews\Repository\LocationRepository;
 use Huexs\GoogleReviews\Repository\ReviewRepository;
 use Huexs\GoogleReviews\Repository\SyncLogRepository;
+use Huexs\GoogleReviews\Source\HuexsApiSource;
+use Huexs\GoogleReviews\Source\ReviewSourceInterface;
+use Huexs\GoogleReviews\Source\SelfHostedGoogleSource;
+use Huexs\GoogleReviews\Source\SourceRegistry;
 use Huexs\GoogleReviews\Support\Clock;
 use Huexs\GoogleReviews\Support\Credentials;
 use Huexs\GoogleReviews\Support\Crypto;
+use Huexs\GoogleReviews\Support\HttpClientInterface;
+use Huexs\GoogleReviews\Support\License;
 use Huexs\GoogleReviews\Support\Logger;
+use Huexs\GoogleReviews\Support\WpHttpClient;
 use Huexs\GoogleReviews\Sync\RetentionService;
 use Huexs\GoogleReviews\Sync\Scheduler;
 use Huexs\GoogleReviews\Sync\SyncLock;
@@ -55,7 +62,9 @@ final class Plugin {
 		if ( is_admin() ) {
 			( new Menu( $this ) )->register();
 			( new Actions( $this ) )->register();
-			$this->oauthController()->register();
+			if ( self::settings()['advanced_mode'] ) {
+				$this->oauthController()->register();
+			}
 		}
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -65,7 +74,7 @@ final class Plugin {
 		Activation::maybe_upgrade();
 	}
 
-	// ---- Servicios (lazy singletons) ----
+	// ---- Soporte ----
 
 	public function clock(): Clock {
 		return $this->service( Clock::class, static fn() => new Clock() );
@@ -79,9 +88,46 @@ final class Plugin {
 		return $this->service( Crypto::class, static fn() => new Crypto() );
 	}
 
+	public function http(): HttpClientInterface {
+		return $this->service( 'http', fn() => new WpHttpClient( $this->logger() ) );
+	}
+
+	public function license(): License {
+		return $this->service( License::class, fn() => new License( $this->crypto() ) );
+	}
+
 	public function credentials(): Credentials {
 		return $this->service( Credentials::class, fn() => new Credentials( $this->crypto() ) );
 	}
+
+	// ---- Fuentes ----
+
+	public function huexsSource(): HuexsApiSource {
+		return $this->service( HuexsApiSource::class, fn() => new HuexsApiSource( $this->http(), $this->license() ) );
+	}
+
+	public function googleSource(): SelfHostedGoogleSource {
+		return $this->service( SelfHostedGoogleSource::class, fn() => new SelfHostedGoogleSource( $this->googleClient(), $this->tokenStore() ) );
+	}
+
+	public function sources(): SourceRegistry {
+		return $this->service(
+			SourceRegistry::class,
+			function () {
+				$registry = new SourceRegistry();
+				$registry->add( $this->huexsSource() );
+				$registry->add( $this->googleSource() );
+				$registry->setDefault(
+					self::settings()['advanced_mode'] && ! $this->license()->has()
+						? ReviewSourceInterface::SOURCE_GOOGLE
+						: ReviewSourceInterface::SOURCE_HUEXS
+				);
+				return $registry;
+			}
+		);
+	}
+
+	// ---- OAuth propio (modo avanzado) ----
 
 	public function tokenStore(): TokenStore {
 		return $this->service( TokenStore::class, fn() => new TokenStore( $this->crypto() ) );
@@ -99,6 +145,8 @@ final class Plugin {
 		return $this->service( 'google_client', fn() => new GoogleBusinessProfileClient( $this->tokenService(), $this->logger() ) );
 	}
 
+	// ---- Persistencia ----
+
 	public function locations(): LocationRepository {
 		return $this->service( LocationRepository::class, static fn() => new LocationRepository() );
 	}
@@ -111,6 +159,8 @@ final class Plugin {
 		return $this->service( SyncLogRepository::class, static fn() => new SyncLogRepository() );
 	}
 
+	// ---- Sincronización ----
+
 	public function syncLock(): SyncLock {
 		return $this->service( SyncLock::class, fn() => new SyncLock( $this->clock() ) );
 	}
@@ -119,7 +169,7 @@ final class Plugin {
 		return $this->service(
 			SyncService::class,
 			fn() => new SyncService(
-				$this->googleClient(),
+				$this->sources(),
 				$this->locations(),
 				$this->reviews(),
 				$this->syncLogs(),
@@ -138,6 +188,8 @@ final class Plugin {
 		return $this->service( Scheduler::class, fn() => new Scheduler( $this ) );
 	}
 
+	// ---- Frontend ----
+
 	public function shortcodes(): Shortcodes {
 		return $this->service( Shortcodes::class, fn() => new Shortcodes( $this ) );
 	}
@@ -150,7 +202,8 @@ final class Plugin {
 
 	public static function settings(): array {
 		$defaults = array(
-			'sync_frequency_hours' => 6,
+			'sync_frequency_hours' => 24,
+			'advanced_mode'        => false,
 			'default_layout'       => 'grid',
 			'default_limit'        => 6,
 			'show_avatar'          => true,
@@ -159,9 +212,11 @@ final class Plugin {
 			'show_google_logo'     => true,
 			'excerpt_lines'        => 5,
 			'theme'                => 'light',
+			'card_style'           => 'shadow',
 			'accent_color'         => '#fbbc04',
 			'text_color'           => '',
 			'bg_color'             => '',
+			'badge_position'       => 'bottom-right',
 			'stale_notice_admins'  => true,
 			'delete_on_uninstall'  => false,
 		);

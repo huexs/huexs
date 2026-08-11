@@ -8,6 +8,7 @@
 namespace Huexs\GoogleReviews\Admin;
 
 use Huexs\GoogleReviews\Plugin;
+use Huexs\GoogleReviews\Source\HuexsApiSource;
 use Huexs\GoogleReviews\Sync\Scheduler;
 
 class StatusPage {
@@ -21,12 +22,14 @@ class StatusPage {
 
 		global $wpdb;
 
+		$settings  = Plugin::settings();
+		$license   = $this->plugin->license();
 		$crypto    = $this->plugin->crypto();
-		$tokens    = $this->plugin->tokenStore();
 		$nextSync  = wp_next_scheduled( Scheduler::SYNC_EVENT );
 		$nextPurge = wp_next_scheduled( Scheduler::PURGE_EVENT );
 		$logs      = $this->plugin->syncLogs()->recent( 10 );
-		$lastOk    = null;
+
+		$lastOk = null;
 		foreach ( $logs as $log ) {
 			if ( in_array( $log->status, array( 'success', 'partial' ), true ) ) {
 				$lastOk = $log;
@@ -34,9 +37,8 @@ class StatusPage {
 			}
 		}
 
-		$tables = array( 'hgr_locations', 'hgr_reviews', 'hgr_sync_logs' );
 		$tablesOk = true;
-		foreach ( $tables as $table ) {
+		foreach ( array( 'hgr_locations', 'hgr_reviews', 'hgr_sync_logs' ) as $table ) {
 			$name = $wpdb->prefix . $table;
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $name ) ) !== $name ) {
 				$tablesOk = false;
@@ -51,19 +53,20 @@ class StatusPage {
 			array( __( 'PHP', 'huexs-google-reviews' ), PHP_VERSION, version_compare( PHP_VERSION, '8.1', '>=' ) ? 'ok' : 'error' ),
 			array( __( 'HTTPS', 'huexs-google-reviews' ), is_ssl() ? __( 'Sí', 'huexs-google-reviews' ) : __( 'No', 'huexs-google-reviews' ), is_ssl() ? 'ok' : 'warn' ),
 			array(
-				__( 'Constantes de credenciales', 'huexs-google-reviews' ),
-				'constants' === $this->plugin->credentials()->source() ? __( 'Definidas', 'huexs-google-reviews' ) : ( $this->plugin->credentials()->has() ? __( 'En base de datos (cifradas)', 'huexs-google-reviews' ) : __( 'Ausentes', 'huexs-google-reviews' ) ),
-				$this->plugin->credentials()->has() ? 'ok' : 'error',
+				__( 'Licencia', 'huexs-google-reviews' ),
+				$license->has() ? $license->maskedKey() . ' · ' . strtoupper( $license->plan() ) : __( 'Sin activar', 'huexs-google-reviews' ),
+				$license->has() ? 'ok' : 'error',
 			),
+			array( __( 'Servidor de la API', 'huexs-google-reviews' ), HuexsApiSource::baseUrl(), 'ok' ),
 			array(
 				__( 'Criptografía', 'huexs-google-reviews' ),
 				$crypto->isAvailable() ? strtoupper( $crypto->backend() ) : __( 'No disponible', 'huexs-google-reviews' ),
 				$crypto->isAvailable() ? 'ok' : 'error',
 			),
 			array(
-				__( 'Conexión OAuth', 'huexs-google-reviews' ),
-				$tokens->isExpired() ? __( 'Caducada', 'huexs-google-reviews' ) : ( $tokens->isConnected() ? __( 'Válida', 'huexs-google-reviews' ) : __( 'Sin conectar', 'huexs-google-reviews' ) ),
-				$tokens->isExpired() ? 'error' : ( $tokens->isConnected() ? 'ok' : 'warn' ),
+				__( 'Negocios conectados', 'huexs-google-reviews' ),
+				(string) $this->plugin->locations()->countEnabled(),
+				$this->plugin->locations()->countEnabled() > 0 ? 'ok' : 'warn',
 			),
 			array(
 				__( 'Cron de sincronización', 'huexs-google-reviews' ),
@@ -82,11 +85,22 @@ class StatusPage {
 			),
 			array(
 				__( 'Tablas de base de datos', 'huexs-google-reviews' ),
-				$tablesOk ? __( 'Correctas (versión ', 'huexs-google-reviews' ) . get_option( 'hgr_db_version', '?' ) . ')' : __( 'Faltan tablas — desactiva y reactiva el plugin', 'huexs-google-reviews' ),
+				$tablesOk
+					? __( 'Correctas', 'huexs-google-reviews' ) . ' (v' . get_option( 'hgr_db_version', '?' ) . ')'
+					: __( 'Faltan tablas — desactiva y reactiva el plugin', 'huexs-google-reviews' ),
 				$tablesOk ? 'ok' : 'error',
 			),
 			array( __( 'Reseñas en caché', 'huexs-google-reviews' ), (string) $this->plugin->reviews()->countAll(), 'ok' ),
 		);
+
+		if ( $settings['advanced_mode'] ) {
+			$tokens = $this->plugin->tokenStore();
+			$rows[] = array(
+				__( 'Modo avanzado — OAuth propio', 'huexs-google-reviews' ),
+				$tokens->isExpired() ? __( 'Caducado', 'huexs-google-reviews' ) : ( $tokens->isConnected() ? __( 'Conectado', 'huexs-google-reviews' ) : __( 'Sin conectar', 'huexs-google-reviews' ) ),
+				$tokens->isExpired() ? 'error' : ( $tokens->isConnected() ? 'ok' : 'warn' ),
+			);
+		}
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Huexs Google Reviews — Estado y diagnóstico', 'huexs-google-reviews' ); ?></h1>
@@ -106,7 +120,7 @@ class StatusPage {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:12px;">
 					<input type="hidden" name="action" value="hgr_test_connection" />
 					<?php wp_nonce_field( 'hgr_test_connection' ); ?>
-					<?php submit_button( __( 'Probar conexión con Google (solo lectura)', 'huexs-google-reviews' ), 'secondary', 'submit', false ); ?>
+					<?php submit_button( __( 'Probar conexión con la API (solo lectura)', 'huexs-google-reviews' ), 'secondary', 'submit', false ); ?>
 				</form>
 			</div>
 
@@ -123,16 +137,24 @@ class StatusPage {
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach ( $logs as $log ) : ?>
-							<?php if ( null !== $log->error_code || 'failed' === $log->status ) : ?>
-								<tr>
-									<td><?php echo esc_html( $log->started_at ); ?></td>
-									<td><?php echo esc_html( $log->status ); ?></td>
-									<td><?php echo esc_html( $log->error_code ?? '—' ); ?></td>
-									<td><?php echo esc_html( $log->error_message ?? '—' ); ?></td>
-								</tr>
-							<?php endif; ?>
+						<?php
+						$hgr_any = false;
+						foreach ( $logs as $log ) :
+							if ( null === $log->error_code && 'failed' !== $log->status ) {
+								continue;
+							}
+							$hgr_any = true;
+							?>
+							<tr>
+								<td><?php echo esc_html( $log->started_at ); ?></td>
+								<td><?php echo esc_html( $log->status ); ?></td>
+								<td><?php echo esc_html( $log->error_code ?? '—' ); ?></td>
+								<td><?php echo esc_html( $log->error_message ?? '—' ); ?></td>
+							</tr>
 						<?php endforeach; ?>
+						<?php if ( ! $hgr_any ) : ?>
+							<tr><td colspan="4"><?php esc_html_e( 'Sin errores registrados.', 'huexs-google-reviews' ); ?></td></tr>
+						<?php endif; ?>
 					</tbody>
 				</table>
 			</div>

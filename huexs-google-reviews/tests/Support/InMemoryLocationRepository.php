@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Huexs\GoogleReviews\Tests\Support;
 
-use Huexs\GoogleReviews\Google\Dto\LocationDto;
-use Huexs\GoogleReviews\Google\Dto\ReviewDto;
 use Huexs\GoogleReviews\Repository\LocationRepositoryInterface;
-use Huexs\GoogleReviews\Repository\ReviewRepositoryInterface;
-use Huexs\GoogleReviews\Repository\SyncLogRepositoryInterface;
+use Huexs\GoogleReviews\Source\BusinessResult;
+use Huexs\GoogleReviews\Source\LocationReviews;
+use Huexs\GoogleReviews\Source\ReviewSourceInterface;
 
 final class InMemoryLocationRepository implements LocationRepositoryInterface {
 
@@ -17,19 +16,26 @@ final class InMemoryLocationRepository implements LocationRepositoryInterface {
 
 	private int $nextId = 1;
 
-	public function addLocation( array $data ): object {
+	public function addLocation( array $data = array() ): object {
+		$id  = $this->nextId;
 		$row = (object) array_merge(
 			array(
-				'id'                   => $this->nextId,
-				'google_account_name'  => 'accounts/1',
-				'google_location_name' => 'locations/' . $this->nextId,
-				'google_location_id'   => (string) $this->nextId,
-				'title'                => 'Ubicación ' . $this->nextId,
+				'id'                   => $id,
+				'source'               => ReviewSourceInterface::SOURCE_HUEXS,
+				'ref_key'              => 'place-' . $id,
+				'place_id'             => 'place-' . $id,
+				'google_account_name'  => null,
+				'google_location_name' => null,
+				'google_location_id'   => null,
+				'title'                => 'Negocio ' . $id,
+				'address'              => null,
 				'store_code'           => null,
 				'public_google_url'    => null,
 				'enabled'              => 1,
 				'average_rating'       => null,
 				'total_review_count'   => 0,
+				'truncated'            => 0,
+				'source_label'         => null,
 				'last_synced_at'       => null,
 				'last_sync_status'     => null,
 			),
@@ -52,27 +58,39 @@ final class InMemoryLocationRepository implements LocationRepositoryInterface {
 		return $this->rows[ $id ] ?? null;
 	}
 
-	public function upsertFromGoogle( LocationDto $dto, string $now ): int {
+	public function countEnabled(): int {
+		return count( $this->findEnabled() );
+	}
+
+	public function upsertFromBusiness( string $source, BusinessResult $business, string $now ): int {
 		foreach ( $this->rows as $row ) {
-			if ( $row->google_account_name === $dto->accountName && $row->google_location_name === $dto->locationName ) {
-				$row->title = $dto->title;
+			if ( $row->source === $source && $row->ref_key === $business->placeId ) {
+				$row->title = $business->name;
 				return (int) $row->id;
 			}
 		}
 		$row = $this->addLocation(
 			array(
-				'google_account_name'  => $dto->accountName,
-				'google_location_name' => $dto->locationName,
-				'google_location_id'   => $dto->locationId(),
-				'title'                => $dto->title,
-				'store_code'           => $dto->storeCode,
-				'enabled'              => 0,
+				'source'             => $source,
+				'ref_key'            => $business->placeId,
+				'place_id'           => ReviewSourceInterface::SOURCE_HUEXS === $source ? $business->placeId : null,
+				'title'              => $business->name,
+				'address'            => '' !== $business->address ? $business->address : null,
+				'average_rating'     => $business->rating,
+				'total_review_count' => $business->reviewCount ?? 0,
+				'enabled'            => 0,
 			)
 		);
 		return (int) $row->id;
 	}
 
-	public function setEnabled( array $enabledIds, string $now ): void {
+	public function setEnabled( int $id, bool $enabled, string $now ): void {
+		if ( isset( $this->rows[ $id ] ) ) {
+			$this->rows[ $id ]->enabled = $enabled ? 1 : 0;
+		}
+	}
+
+	public function setEnabledSet( array $enabledIds, string $now ): void {
 		foreach ( $this->rows as $row ) {
 			$row->enabled = in_array( (int) $row->id, array_map( 'intval', $enabledIds ), true ) ? 1 : 0;
 		}
@@ -84,18 +102,23 @@ final class InMemoryLocationRepository implements LocationRepositoryInterface {
 		}
 	}
 
-	public function updateSyncSummary( int $id, ?float $averageRating, ?int $totalCount, string $status, string $now ): void {
+	public function updateSyncSummary( int $id, LocationReviews $fetched, string $status, string $now ): void {
 		if ( ! isset( $this->rows[ $id ] ) ) {
 			return;
 		}
 		$row                   = $this->rows[ $id ];
 		$row->last_synced_at   = $now;
 		$row->last_sync_status = $status;
-		if ( null !== $averageRating ) {
-			$row->average_rating = $averageRating;
+		$row->truncated        = $fetched->truncated ? 1 : 0;
+		$row->source_label     = '' !== $fetched->sourceLabel ? $fetched->sourceLabel : null;
+		if ( null !== $fetched->rating ) {
+			$row->average_rating = $fetched->rating;
 		}
-		if ( null !== $totalCount ) {
-			$row->total_review_count = $totalCount;
+		if ( null !== $fetched->reviewCount ) {
+			$row->total_review_count = $fetched->reviewCount;
+		}
+		if ( null !== $fetched->publicUrl && empty( $row->public_google_url ) ) {
+			$row->public_google_url = $fetched->publicUrl;
 		}
 	}
 
@@ -103,6 +126,10 @@ final class InMemoryLocationRepository implements LocationRepositoryInterface {
 		if ( isset( $this->rows[ $id ] ) ) {
 			$this->rows[ $id ]->last_sync_status = $status;
 		}
+	}
+
+	public function delete( int $id ): void {
+		unset( $this->rows[ $id ] );
 	}
 
 	public function deleteAll(): void {

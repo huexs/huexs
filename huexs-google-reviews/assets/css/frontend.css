@@ -1,4 +1,6 @@
-/* Huexs Google Reviews — estilos frontend (temas light/dark/transparent via variables CSS). */
+/* Huexs Google Reviews — estilos frontend.
+   Temas: light / dark / transparent. Estilos de tarjeta: shadow / border / flat.
+   Diseños: list, grid, carousel, badge, floating, sidebar. */
 
 .hgr-wrap {
 	--hgr-accent: #fbbc04;
@@ -6,10 +8,12 @@
 	--hgr-muted: #6b7280;
 	--hgr-card-bg: #ffffff;
 	--hgr-card-border: rgba(0, 0, 0, 0.08);
+	--hgr-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.06);
+	--hgr-radius: 12px;
 	--hgr-clamp-lines: 5;
 	color: var(--hgr-text);
 	font-size: 15px;
-	line-height: 1.5;
+	line-height: 1.55;
 	margin: 0 0 1.5em;
 }
 
@@ -18,24 +22,43 @@
 	--hgr-muted: #9ca3af;
 	--hgr-card-bg: #1f2937;
 	--hgr-card-border: rgba(255, 255, 255, 0.12);
+	--hgr-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .hgr-theme--transparent {
 	--hgr-card-bg: transparent;
 	--hgr-card-border: rgba(128, 128, 128, 0.25);
+	--hgr-card-shadow: none;
 }
 
-/* Tarjeta */
+/* ---------- Tarjeta ---------- */
+
 .hgr-card {
 	background: var(--hgr-card-bg);
-	border: 1px solid var(--hgr-card-border);
-	border-radius: 12px;
+	border-radius: var(--hgr-radius);
 	padding: 16px;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 	height: 100%;
 	box-sizing: border-box;
+}
+
+.hgr-cards--shadow .hgr-card {
+	border: 1px solid var(--hgr-card-border);
+	box-shadow: var(--hgr-card-shadow);
+}
+
+.hgr-cards--border .hgr-card {
+	border: 1px solid var(--hgr-card-border);
+	box-shadow: none;
+}
+
+.hgr-cards--flat .hgr-card {
+	border: none;
+	box-shadow: none;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .hgr-card__header {
@@ -80,10 +103,12 @@
 	font-size: 0.86em;
 }
 
-/* Estrellas */
+/* ---------- Estrellas ---------- */
+
 .hgr-stars {
 	display: inline-flex;
 	gap: 2px;
+	vertical-align: middle;
 }
 
 .hgr-star {
@@ -96,10 +121,11 @@
 }
 
 .hgr-star--empty {
-	fill: color-mix(in srgb, var(--hgr-muted) 35%, transparent);
+	fill: rgba(128, 128, 128, 0.3);
 }
 
-/* Comentario y "Leer más" (el recorte solo se aplica con JS activo) */
+/* ---------- Comentario y "Leer más" ---------- */
+
 .hgr-card__comment {
 	overflow-wrap: anywhere;
 }
@@ -116,15 +142,19 @@
 	align-self: flex-start;
 	background: none;
 	border: none;
-	color: var(--hgr-accent);
+	color: inherit;
 	cursor: pointer;
 	font: inherit;
 	font-weight: 600;
+	opacity: 0.75;
 	padding: 0;
 	text-decoration: underline;
 }
 
-/* Respuesta del propietario */
+.hgr-card__more:hover {
+	opacity: 1;
+}
+
 .hgr-card__reply {
 	border-left: 3px solid var(--hgr-accent);
 	margin: 4px 0 0;
@@ -139,7 +169,8 @@
 	margin-bottom: 2px;
 }
 
-/* Resumen */
+/* ---------- Resumen ---------- */
+
 .hgr-summary {
 	display: flex;
 	align-items: center;
@@ -151,6 +182,7 @@
 .hgr-summary__average {
 	font-size: 1.6em;
 	font-weight: 700;
+	line-height: 1;
 }
 
 .hgr-summary__count,
@@ -165,21 +197,24 @@
 	text-decoration: underline;
 }
 
-/* Lista */
+/* ---------- Lista ---------- */
+
 .hgr-list {
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
 }
 
-/* Cuadrícula */
+/* ---------- Cuadrícula ---------- */
+
 .hgr-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 	gap: 14px;
 }
 
-/* Carrusel: sin JS es una fila desplazable con scroll-snap */
+/* ---------- Carrusel ---------- */
+
 .hgr-carousel {
 	position: relative;
 }
@@ -233,7 +268,180 @@
 	cursor: default;
 }
 
-/* Atribución */
+/* ---------- Insignia ---------- */
+
+.hgr-badge {
+	align-items: center;
+	background: var(--hgr-card-bg);
+	border: 1px solid var(--hgr-card-border);
+	border-radius: var(--hgr-radius);
+	box-shadow: var(--hgr-card-shadow);
+	color: inherit;
+	display: inline-flex;
+	gap: 12px;
+	max-width: 100%;
+	padding: 12px 18px;
+	text-decoration: none;
+}
+
+a.hgr-badge:hover {
+	border-color: var(--hgr-accent);
+}
+
+.hgr-badge__logo .hgr-google-g {
+	width: 28px;
+	height: 28px;
+}
+
+.hgr-badge__body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.hgr-badge__title {
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.hgr-badge__rating {
+	align-items: center;
+	display: flex;
+	gap: 6px;
+}
+
+.hgr-badge__average {
+	font-size: 1.15em;
+	font-weight: 700;
+}
+
+.hgr-badge__count {
+	color: var(--hgr-muted);
+	font-size: 0.85em;
+}
+
+/* ---------- Burbuja flotante ---------- */
+
+.hgr-layout--floating {
+	position: fixed;
+	z-index: 9998;
+	margin: 0;
+	max-width: min(360px, calc(100vw - 32px));
+}
+
+.hgr-floating--bottom-right {
+	right: 16px;
+	bottom: 16px;
+}
+
+.hgr-floating--bottom-left {
+	left: 16px;
+	bottom: 16px;
+}
+
+.hgr-floating--top-right {
+	right: 16px;
+	top: 16px;
+}
+
+.hgr-floating--top-left {
+	left: 16px;
+	top: 16px;
+}
+
+.hgr-floating__toggle {
+	align-items: center;
+	background: var(--hgr-card-bg);
+	border: 1px solid var(--hgr-card-border);
+	border-radius: 999px;
+	box-shadow: var(--hgr-card-shadow);
+	cursor: pointer;
+	display: inline-flex;
+	gap: 8px;
+	list-style: none;
+	padding: 10px 16px;
+}
+
+.hgr-floating__toggle::-webkit-details-marker {
+	display: none;
+}
+
+.hgr-floating__toggle:focus-visible {
+	outline: 2px solid var(--hgr-accent);
+	outline-offset: 2px;
+}
+
+.hgr-floating__toggle .hgr-google-g {
+	width: 20px;
+	height: 20px;
+}
+
+.hgr-floating__average {
+	font-weight: 700;
+}
+
+.hgr-floating__panel {
+	background: var(--hgr-card-bg);
+	border: 1px solid var(--hgr-card-border);
+	border-radius: var(--hgr-radius);
+	box-shadow: var(--hgr-card-shadow);
+	margin-top: 8px;
+	max-height: min(70vh, 520px);
+	overflow-y: auto;
+	padding: 14px;
+}
+
+.hgr-floating__list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* Dentro del panel las tarjetas no repiten fondo ni sombra. */
+.hgr-layout--floating .hgr-card {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	border-bottom: 1px solid var(--hgr-card-border);
+	border-radius: 0;
+	padding: 8px 0;
+}
+
+.hgr-layout--floating .hgr-floating__list > :last-child .hgr-card {
+	border-bottom: none;
+}
+
+/* ---------- Columna lateral ---------- */
+
+.hgr-sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-height: 520px;
+	overflow-y: auto;
+	padding-right: 4px;
+}
+
+.hgr-sidebar:focus-visible {
+	outline: 2px solid var(--hgr-accent);
+	outline-offset: 2px;
+}
+
+.hgr-layout--sidebar .hgr-card {
+	font-size: 0.94em;
+	padding: 12px;
+}
+
+.hgr-layout--sidebar .hgr-card__avatar {
+	width: 32px;
+	height: 32px;
+}
+
+/* ---------- Atribución ---------- */
+
 .hgr-attribution {
 	align-items: center;
 	color: var(--hgr-muted);
@@ -246,9 +454,15 @@
 .hgr-google-g {
 	width: 16px;
 	height: 16px;
+	flex-shrink: 0;
 }
 
-/* Aviso solo-admin */
+.hgr-attribution__by {
+	opacity: 0.8;
+}
+
+/* ---------- Aviso solo-admin ---------- */
+
 .hgr-admin-notice {
 	background: #fef3cd;
 	border: 1px solid #e0c56e;
@@ -258,8 +472,26 @@
 	padding: 10px 14px;
 }
 
+/* ---------- Utilidades ---------- */
+
+.screen-reader-text {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 @media (max-width: 480px) {
 	.hgr-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.hgr-layout--floating {
+		max-width: calc(100vw - 24px);
 	}
 }

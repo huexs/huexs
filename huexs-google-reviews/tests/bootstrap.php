@@ -132,3 +132,77 @@ function __( $text, $domain = 'default' ) { // phpcs:ignore
 function number_format_i18n( $number, $decimals = 0 ) {
 	return number_format( (float) $number, (int) $decimals, ',', '.' );
 }
+
+function urlencode_deep( $value ) {
+	if ( is_array( $value ) ) {
+		return array_map( 'urlencode_deep', $value );
+	}
+	return rawurlencode( (string) $value );
+}
+
+/** Stub suficiente para la forma add_query_arg( array $args, string $url ). */
+function add_query_arg( $args, $url = '' ) {
+	if ( ! is_array( $args ) ) {
+		return (string) $url;
+	}
+	$parts    = explode( '#', (string) $url, 2 );
+	$base     = $parts[0];
+	$fragment = isset( $parts[1] ) ? '#' . $parts[1] : '';
+	$pairs    = array();
+	foreach ( $args as $key => $value ) {
+		if ( null === $value ) {
+			continue;
+		}
+		$pairs[] = rawurlencode( (string) $key ) . '=' . (string) $value;
+	}
+	if ( ! $pairs ) {
+		return $base . $fragment;
+	}
+	$separator = str_contains( $base, '?' ) ? '&' : '?';
+	return $base . $separator . implode( '&', $pairs ) . $fragment;
+}
+
+function home_url( $path = '' ) {
+	return 'https://sitio-de-pruebas.test' . $path;
+}
+
+function get_locale() {
+	return 'es_ES';
+}
+
+// --- Stubs adicionales para el renderizado de plantillas ---
+
+if ( ! defined( 'HGR_PLUGIN_DIR' ) ) {
+	define( 'HGR_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
+}
+if ( ! defined( 'HGR_VERSION' ) ) {
+	define( 'HGR_VERSION', 'test' );
+}
+
+function esc_html_e( $text, $domain = 'default' ) {
+	echo esc_html( $text );
+}
+
+function esc_attr_e( $text, $domain = 'default' ) {
+	echo esc_attr( $text );
+}
+
+function esc_html__( $text, $domain = 'default' ) {
+	return esc_html( $text );
+}
+
+function esc_attr__( $text, $domain = 'default' ) {
+	return esc_attr( $text );
+}
+
+function _n( $single, $plural, $number, $domain = 'default' ) {
+	return 1 === (int) $number ? $single : $plural;
+}
+
+function wp_date( $format, $timestamp = null, $timezone = null ) {
+	return gmdate( $format, $timestamp ?? time() );
+}
+
+function current_user_can( $capability ) {
+	return $GLOBALS['hgr_test_is_admin'] ?? false;
+}

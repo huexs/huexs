@@ -12,8 +12,7 @@ use Huexs\GoogleReviews\Sync\RetentionService;
 
 class Shortcodes {
 
-	public const ALLOWED_LAYOUTS = array( 'list', 'grid', 'carousel' );
-	public const ALLOWED_ORDERS  = array( 'newest', 'oldest' );
+	public const ALLOWED_ORDERS = array( 'newest', 'oldest' );
 
 	public function __construct( private Plugin $plugin ) {}
 
@@ -23,15 +22,15 @@ class Shortcodes {
 	}
 
 	/**
-	 * Normaliza atributos con listas permitidas. Pura para poder testearla.
+	 * Normaliza atributos con listas permitidas. Pura, para poder testearla.
 	 *
 	 * @param array $atts     Atributos crudos del shortcode.
 	 * @param array $settings Ajustes globales (defaults).
 	 */
 	public static function normalizeAtts( array $atts, array $settings ): array {
 		$layout = strtolower( trim( (string) ( $atts['layout'] ?? $settings['default_layout'] ) ) );
-		if ( ! in_array( $layout, self::ALLOWED_LAYOUTS, true ) ) {
-			$layout = 'grid';
+		if ( ! Layouts::isValid( $layout ) ) {
+			$layout = Layouts::GRID;
 		}
 
 		$order = strtolower( trim( (string) ( $atts['order'] ?? 'newest' ) ) );
@@ -48,11 +47,17 @@ class Shortcodes {
 			$location = ctype_digit( $location ) && absint( $location ) > 0 ? (string) absint( $location ) : 'all';
 		}
 
+		$position = strtolower( trim( (string) ( $atts['position'] ?? $settings['badge_position'] ?? 'bottom-right' ) ) );
+		if ( ! in_array( $position, array( 'bottom-right', 'bottom-left', 'top-right', 'top-left' ), true ) ) {
+			$position = 'bottom-right';
+		}
+
 		return array(
 			'location'     => $location,
 			'layout'       => $layout,
 			'limit'        => $limit,
 			'order'        => $order,
+			'position'     => $position,
 			'show_avatar'  => self::boolAtt( $atts['show_avatar'] ?? null, (bool) $settings['show_avatar'] ),
 			'show_date'    => self::boolAtt( $atts['show_date'] ?? null, (bool) $settings['show_date'] ),
 			'show_reply'   => self::boolAtt( $atts['show_reply'] ?? null, (bool) $settings['show_reply'] ),
@@ -84,7 +89,18 @@ class Shortcodes {
 
 		$locations = $this->resolveLocations( $args['location'] );
 		if ( ! $locations ) {
-			return $this->adminNotice( __( 'Huexs Google Reviews: no hay ubicaciones activas. Actívalas en Google Reviews → Ubicaciones.', 'huexs-google-reviews' ) );
+			return $this->adminNotice( __( 'Huexs Google Reviews: todavía no hay ningún negocio conectado. Ve a Google Reviews → Conexión y busca el tuyo.', 'huexs-google-reviews' ) );
+		}
+
+		$summary = $this->summaryData( $locations );
+
+		// La insignia solo necesita el resumen: se resuelve sin consultar reseñas.
+		if ( ! Layouts::needsReviews( $args['layout'] ) ) {
+			if ( null === $summary['average'] ) {
+				return $this->adminNotice( __( 'Huexs Google Reviews: todavía no hay valoración sincronizada.', 'huexs-google-reviews' ) );
+			}
+			$this->plugin->assets()->enqueueFrontend();
+			return $this->renderer( $settings )->renderLayout( $args['layout'], array(), $args, $summary );
 		}
 
 		$locationIds = array_map( static fn( $l ) => (int) $l->id, $locations );
@@ -92,15 +108,17 @@ class Shortcodes {
 		$rows        = $this->filterFresh( $rows );
 
 		if ( ! $rows ) {
-			return $this->adminNotice( __( 'Huexs Google Reviews: todavía no hay reseñas sincronizadas (o han caducado). Ejecuta una sincronización.', 'huexs-google-reviews' ) );
+			return $this->adminNotice( __( 'Huexs Google Reviews: no hay reseñas sincronizadas (o han caducado). Ejecuta una sincronización.', 'huexs-google-reviews' ) );
 		}
 
-		$this->plugin->assets()->enqueueFrontend( $settings );
+		$this->plugin->assets()->enqueueFrontend();
 
-		$renderer = new ReviewRenderer( $settings );
-		$summary  = $args['show_summary'] ? $this->summaryData( $locations ) : null;
-
-		return $renderer->renderLayout( $args['layout'], $rows, $args, $summary );
+		return $this->renderer( $settings )->renderLayout(
+			$args['layout'],
+			$rows,
+			$args,
+			$args['show_summary'] ? $summary : null
+		);
 	}
 
 	public function renderRating( $atts ): string {
@@ -109,7 +127,7 @@ class Shortcodes {
 
 		$locations = $this->resolveLocations( $args['location'] );
 		if ( ! $locations ) {
-			return $this->adminNotice( __( 'Huexs Google Reviews: no hay ubicaciones activas.', 'huexs-google-reviews' ) );
+			return $this->adminNotice( __( 'Huexs Google Reviews: todavía no hay ningún negocio conectado.', 'huexs-google-reviews' ) );
 		}
 
 		$summary = $this->summaryData( $locations );
@@ -117,10 +135,13 @@ class Shortcodes {
 			return $this->adminNotice( __( 'Huexs Google Reviews: todavía no hay valoración sincronizada.', 'huexs-google-reviews' ) );
 		}
 
-		$this->plugin->assets()->enqueueFrontend( $settings );
+		$this->plugin->assets()->enqueueFrontend();
 
-		$renderer = new ReviewRenderer( $settings );
-		return $renderer->renderSummary( $summary, $args );
+		return $this->renderer( $settings )->renderSummary( $summary, $args );
+	}
+
+	private function renderer( array $settings ): ReviewRenderer {
+		return new ReviewRenderer( $settings, $this->plugin->license()->brandingRequired() );
 	}
 
 	/** @return object[] */
@@ -129,7 +150,7 @@ class Shortcodes {
 			return $this->plugin->locations()->findEnabled();
 		}
 		$row = $this->plugin->locations()->find( (int) $location );
-		return $row && (int) $row->enabled === 1 ? array( $row ) : array();
+		return $row && 1 === (int) $row->enabled ? array( $row ) : array();
 	}
 
 	/** Excluye filas cuya última renovación supere la ventana de retención. */
@@ -154,7 +175,8 @@ class Shortcodes {
 		}
 		$combined                   = RatingCalculator::weighted( $input );
 		$combined['multi_location'] = count( $input ) > 1;
-		$combined['public_url']     = count( $locations ) === 1 ? (string) ( $locations[0]->public_google_url ?? '' ) : '';
+		$combined['public_url']     = 1 === count( $locations ) ? (string) ( $locations[0]->public_google_url ?? '' ) : '';
+		$combined['name']           = 1 === count( $locations ) ? (string) ( $locations[0]->title ?? '' ) : '';
 		return $combined;
 	}
 

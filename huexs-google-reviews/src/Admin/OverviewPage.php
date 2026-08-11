@@ -1,6 +1,6 @@
 <?php
 /**
- * Pantalla Resumen.
+ * Pantalla Resumen: estado general, sincronización manual y shortcodes de ejemplo.
  *
  * @package Huexs\GoogleReviews
  */
@@ -19,8 +19,7 @@ class OverviewPage {
 			return;
 		}
 
-		$connected = $this->plugin->tokenStore()->isConnected();
-		$expired   = $this->plugin->tokenStore()->isExpired();
+		$license   = $this->plugin->license();
 		$locations = $this->plugin->locations()->findEnabled();
 		$logs      = $this->plugin->syncLogs()->recent( 5 );
 		$nextSync  = wp_next_scheduled( Scheduler::SYNC_EVENT );
@@ -32,21 +31,33 @@ class OverviewPage {
 			<div class="hgr-admin-card">
 				<h2><?php esc_html_e( 'Estado', 'huexs-google-reviews' ); ?></h2>
 				<p>
-					<?php if ( $expired ) : ?>
-						<span class="hgr-status-error"><?php esc_html_e( 'Conexión caducada — reconecta con Google.', 'huexs-google-reviews' ); ?></span>
-					<?php elseif ( $connected ) : ?>
-						<span class="hgr-status-ok"><?php esc_html_e( 'Conectado con Google.', 'huexs-google-reviews' ); ?></span>
+					<?php if ( ! $license->has() ) : ?>
+						<span class="hgr-status-warn"><?php esc_html_e( 'Sin licencia activada.', 'huexs-google-reviews' ); ?></span>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=hgr-connection' ) ); ?>"><?php esc_html_e( 'Activar ahora', 'huexs-google-reviews' ); ?></a>
+					<?php elseif ( ! $locations ) : ?>
+						<span class="hgr-status-warn"><?php esc_html_e( 'Licencia activa, pero no hay ningún negocio conectado.', 'huexs-google-reviews' ); ?></span>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=hgr-connection' ) ); ?>"><?php esc_html_e( 'Buscar mi negocio', 'huexs-google-reviews' ); ?></a>
 					<?php else : ?>
-						<span class="hgr-status-warn"><?php esc_html_e( 'Sin conectar.', 'huexs-google-reviews' ); ?></span>
+						<span class="hgr-status-ok"><?php esc_html_e( 'Todo listo: reseñas sincronizándose automáticamente.', 'huexs-google-reviews' ); ?></span>
 					<?php endif; ?>
 				</p>
+
 				<ul>
 					<li>
 						<?php
 						printf(
-							/* translators: %d: número de ubicaciones activas. */
-							esc_html__( 'Ubicaciones activas: %d', 'huexs-google-reviews' ),
+							/* translators: %d: número de negocios activos. */
+							esc_html__( 'Negocios conectados: %d', 'huexs-google-reviews' ),
 							count( $locations )
+						);
+						?>
+					</li>
+					<li>
+						<?php
+						printf(
+							/* translators: %s: número de reseñas. */
+							esc_html__( 'Reseñas en caché: %s', 'huexs-google-reviews' ),
+							esc_html( number_format_i18n( $this->plugin->reviews()->countAll() ) )
 						);
 						?>
 					</li>
@@ -69,7 +80,7 @@ class OverviewPage {
 						if ( $nextSync ) {
 							printf(
 								/* translators: %s: fecha de la próxima ejecución. */
-								esc_html__( 'Próxima sincronización programada: %s', 'huexs-google-reviews' ),
+								esc_html__( 'Próxima sincronización: %s', 'huexs-google-reviews' ),
 								esc_html( gmdate( 'Y-m-d H:i:s', $nextSync ) . ' UTC' )
 							);
 						} else {
@@ -84,6 +95,39 @@ class OverviewPage {
 					<?php wp_nonce_field( 'hgr_sync_now' ); ?>
 					<?php submit_button( __( 'Sincronizar ahora', 'huexs-google-reviews' ), 'primary', 'submit', false ); ?>
 				</form>
+			</div>
+
+			<div class="hgr-admin-card">
+				<h2><?php esc_html_e( 'Cómo mostrar las reseñas', 'huexs-google-reviews' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Pega cualquiera de estos shortcodes en una página, entrada o widget. En Elementor, usa el widget "Shortcode".', 'huexs-google-reviews' ); ?></p>
+				<table class="widefat striped">
+					<tbody>
+						<tr>
+							<td><?php esc_html_e( 'Cuadrícula de reseñas', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_reviews layout="grid" limit="6"]</span></td>
+						</tr>
+						<tr>
+							<td><?php esc_html_e( 'Carrusel', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_reviews layout="carousel" limit="10"]</span></td>
+						</tr>
+						<tr>
+							<td><?php esc_html_e( 'Columna lateral (widget estrecho)', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_reviews layout="sidebar" limit="8"]</span></td>
+						</tr>
+						<tr>
+							<td><?php esc_html_e( 'Insignia con la nota media', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_reviews layout="badge"]</span></td>
+						</tr>
+						<tr>
+							<td><?php esc_html_e( 'Burbuja flotante (ponla en el pie para verla en todo el sitio)', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_reviews layout="floating" limit="8"]</span></td>
+						</tr>
+						<tr>
+							<td><?php esc_html_e( 'Solo la valoración, en línea', 'huexs-google-reviews' ); ?></td>
+							<td><span class="hgr-code">[huexs_google_rating]</span></td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 
 			<?php if ( $logs ) : ?>
@@ -113,14 +157,6 @@ class OverviewPage {
 				</table>
 			</div>
 			<?php endif; ?>
-
-			<div class="hgr-admin-card">
-				<h2><?php esc_html_e( 'Shortcodes', 'huexs-google-reviews' ); ?></h2>
-				<p><span class="hgr-code">[huexs_google_reviews layout="grid" limit="6"]</span></p>
-				<p><span class="hgr-code">[huexs_google_reviews layout="carousel" limit="10" show_reply="false"]</span></p>
-				<p><span class="hgr-code">[huexs_google_rating show_count="true"]</span></p>
-				<p class="description"><?php esc_html_e( 'En Elementor, usa el widget "Shortcode" y pega cualquiera de los anteriores.', 'huexs-google-reviews' ); ?></p>
-			</div>
 		</div>
 		<?php
 	}

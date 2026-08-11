@@ -30,27 +30,21 @@ class Assets {
 		);
 	}
 
-	public function enqueueFrontend( array $settings ): void {
+	public function enqueueFrontend(): void {
+		// Si el shortcode se renderiza tarde (p. ej. dentro de Elementor), registramos al vuelo.
+		if ( ! wp_style_is( 'hgr-frontend', 'registered' ) ) {
+			$this->registerFrontend();
+		}
 		wp_enqueue_style( 'hgr-frontend' );
 		wp_enqueue_script( 'hgr-carousel' );
 	}
 
 	public function registerAdmin( string $hook ): void {
-		if ( ! str_contains( $hook, 'hgr-' ) && ! str_contains( $hook, 'huexs-google-reviews' ) ) {
+		if ( ! str_contains( $hook, 'hgr-' ) ) {
 			return;
 		}
-		wp_enqueue_style(
-			'hgr-admin',
-			HGR_PLUGIN_URL . 'assets/css/admin.css',
-			array(),
-			HGR_VERSION
-		);
-		wp_enqueue_script(
-			'hgr-admin',
-			HGR_PLUGIN_URL . 'assets/js/admin.js',
-			array(),
-			HGR_VERSION,
-			array( 'in_footer' => true )
-		);
+		wp_enqueue_style( 'hgr-admin', HGR_PLUGIN_URL . 'assets/css/admin.css', array(), HGR_VERSION );
+		wp_enqueue_style( 'hgr-frontend', HGR_PLUGIN_URL . 'assets/css/frontend.css', array(), HGR_VERSION );
+		wp_enqueue_script( 'hgr-admin', HGR_PLUGIN_URL . 'assets/js/admin.js', array(), HGR_VERSION, array( 'in_footer' => true ) );
 	}
 }

@@ -5,7 +5,8 @@
 
 namespace Huexs\GoogleReviews\Repository;
 
-use Huexs\GoogleReviews\Google\Dto\LocationDto;
+use Huexs\GoogleReviews\Source\BusinessResult;
+use Huexs\GoogleReviews\Source\LocationReviews;
 
 interface LocationRepositoryInterface {
 
@@ -17,17 +18,27 @@ interface LocationRepositoryInterface {
 
 	public function find( int $id ): ?object;
 
-	/** Inserta o actualiza la ubicación descubierta en Google. Devuelve el id interno. */
-	public function upsertFromGoogle( LocationDto $dto, string $now ): int;
+	public function countEnabled(): int;
+
+	/**
+	 * Alta o actualización de una ubicación descubierta en una fuente.
+	 * Idempotente por (source, ref_key). Devuelve el id interno.
+	 */
+	public function upsertFromBusiness( string $source, BusinessResult $business, string $now ): int;
+
+	public function setEnabled( int $id, bool $enabled, string $now ): void;
 
 	/** @param int[] $enabledIds */
-	public function setEnabled( array $enabledIds, string $now ): void;
+	public function setEnabledSet( array $enabledIds, string $now ): void;
 
 	public function savePublicUrl( int $id, ?string $url, string $now ): void;
 
-	public function updateSyncSummary( int $id, ?float $averageRating, ?int $totalCount, string $status, string $now ): void;
+	/** Guarda el resumen devuelto por la fuente tras una sincronización correcta. */
+	public function updateSyncSummary( int $id, LocationReviews $fetched, string $status, string $now ): void;
 
 	public function markSyncStatus( int $id, string $status, string $now ): void;
+
+	public function delete( int $id ): void;
 
 	public function deleteAll(): void;
 }

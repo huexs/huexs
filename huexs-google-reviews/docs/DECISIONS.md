@@ -45,3 +45,55 @@ Las consultas de presentación descartan filas con `last_seen_at` > 30 días y l
 
 ## D13 — Desconexión = borrado total
 Al desconectar: revocación best-effort del token en Google, borrado de tokens, reseñas, ubicaciones y logs. Cumple §13 y criterio de aceptación 9.
+
+---
+
+# Cambio de alcance — 0.2.0 (11 de agosto de 2026)
+
+El propietario decidió reorientar el producto: de plugin interno con OAuth por instalación a **producto distribuible y monetizable** para todos los negocios y clientes de Huexs. Esto contradice deliberadamente varios puntos de la especificación 1.0, que se registran aquí.
+
+## D14 — La API central de Huexs pasa a ser la fuente por defecto
+
+La especificación 1.0 prohibía Places API (§2). Se revierte esa decisión: la fuente por defecto es la **API central de Huexs** (`api.huexs.com`), que internamente resuelve con **Places API (New)**.
+
+Motivo: el requisito de producto es que cualquier cliente conecte escribiendo solo el nombre de su negocio, sin proyecto de Google Cloud ni OAuth. Places API permite exactamente eso (`places:searchText` → Place ID → nota, total y reseñas). El coste es su límite duro de **5 reseñas por ficha**.
+
+Se descartó el scraping de Google Maps que se planteó inicialmente: incumple los Términos de Google, expone a bloqueos en un producto vendido a terceros, y reintroduce la fragilidad que el proyecto quería eliminar, solo que ahora en el servidor de Huexs. Queda registrado como opción rechazada, no como pendiente.
+
+## D15 — OAuth Pro se ejecuta en el servidor, no en el plugin
+
+Un plugin distribuido no puede contener el `client_secret` de Google: cualquiera que descargue el ZIP lo leería. Por tanto el flujo OAuth de la API de Business Profile (que sí da todas las reseñas) lo ejecuta el backend de Huexs, que custodia las credenciales. El plugin solo redirige y consulta estado (`/v1/oauth/start`, `/v1/oauth/status`).
+
+Es el mismo modelo que usa Trustindex, verificado al auditar su plugin 13.3.1: su cliente WordPress es una carcasa y toda la lógica vive en `admin.trustindex.io`.
+
+## D16 — El código OAuth de la 0.1.0 se conserva como "modo avanzado"
+
+En lugar de eliminarlo, el OAuth directo con proyecto propio de Google Cloud pasa a ser un modo opcional (`advanced_mode`), pensado para los sitios propios de Huexs y para clientes que no quieran depender del servicio central. Da todas las reseñas sin intermediario.
+
+## D17 — Abstracción `ReviewSourceInterface`
+
+El plugin no conoce Google: conoce *fuentes*. `HuexsApiSource` y `SelfHostedGoogleSource` implementan el mismo contrato y cada ubicación recuerda con cuál fue dada de alta (columna `source`). `SyncService` es agnóstico.
+
+Consecuencia buscada: si mañana cambia la fuente (otra API, otro proveedor, Business Profile directo), se escribe una clase nueva y no se toca nada más.
+
+Contrato clave: **una fuente que no puede completar la lectura lanza excepción; nunca devuelve un resultado parcial.** Es lo que preserva la regla crítica de que una sincronización incompleta no borre reseñas.
+
+## D18 — Esquema v2: ubicaciones agnósticas de fuente
+
+`hgr_locations` gana `source`, `ref_key`, `place_id`, `address`, `truncated` y `source_label`. El índice único pasa de `(google_account_name, google_location_name)` a `(source, ref_key)`. Como `dbDelta()` no elimina índices obsoletos, la migración v1→v2 lo hace explícitamente y marca las filas heredadas como `google_oauth`.
+
+## D19 — El gating de plan se aplica en el servidor
+
+El plugin es GPL: cualquier cliente puede editar el PHP y quitarse los límites. Por eso `limits.max_reviews` y `layouts` solo sirven para que la interfaz sea coherente; **el recorte real lo hace la API** al no servir más reseñas de las que cubre el plan. Documentado como requisito en `API_CONTRACT.md`.
+
+## D20 — Catálogo de diseños ampliado
+
+Auditado el plugin de Trustindex (GPLv2+) para extraer aprendizajes. Hallazgo relevante: **sus diseños no están en el ZIP**; se descargan de `cdn.trustindex.io/assets/widget-presetted-css/v2/{styleId}-{setId}.css`. No se ha copiado ningún archivo suyo — la GPL cubre el código del plugin, no los assets servidos desde su CDN, y reimplementar es además más limpio.
+
+Lo que sí se ha tomado es el **catálogo de formatos**, que es una idea de producto, no código: se añaden `badge` (insignia compacta con nota y total), `floating` (burbuja fija en una esquina) y `sidebar` (columna estrecha) a los `list`/`grid`/`carousel` existentes. `badge` y `floating` funcionan solo con nota media y total, datos que Places API sí devuelve completos aunque las reseñas vengan recortadas: son los formatos que mejor rinden en el plan gratuito.
+
+No se ha incorporado su filtro por estrellas: la especificación lo prohíbe (§3.4) y esa prohibición se mantiene.
+
+## D21 — Servidor simulado incluido
+
+`tools/mock-api-server.php` implementa el contrato completo con datos ficticios. Permite probar el plugin de extremo a extremo sin backend y sirve de referencia ejecutable para quien lo implemente. No se distribuye en el ZIP.

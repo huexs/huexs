@@ -8,6 +8,7 @@
 namespace Huexs\GoogleReviews\Auth;
 
 use Huexs\GoogleReviews\Plugin;
+use Huexs\GoogleReviews\Source\ReviewSourceInterface;
 use Huexs\GoogleReviews\Support\Credentials;
 use Huexs\GoogleReviews\Support\Logger;
 
@@ -153,9 +154,16 @@ class OAuthController {
 		}
 
 		$this->tokenStore->clear();
-		$this->plugin->reviews()->deleteAll();
-		$this->plugin->locations()->deleteAll();
-		$this->plugin->syncLogs()->deleteAll();
+
+		// Solo se borra lo que pertenece a esta conexión: los negocios dados de alta
+		// mediante la API de Huexs no se ven afectados.
+		foreach ( $this->plugin->locations()->all() as $location ) {
+			if ( ReviewSourceInterface::SOURCE_GOOGLE !== $location->source ) {
+				continue;
+			}
+			$this->plugin->reviews()->deleteByLocation( (int) $location->id );
+			$this->plugin->locations()->delete( (int) $location->id );
+		}
 
 		$this->redirectWithNotice( 'success', 'disconnected' );
 	}
@@ -164,7 +172,7 @@ class OAuthController {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'       => 'hgr-connection',
+					'page'       => 'hgr-advanced',
 					'hgr_notice' => $code,
 					'hgr_type'   => $type,
 				),

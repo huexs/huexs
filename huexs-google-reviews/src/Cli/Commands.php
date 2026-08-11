@@ -67,15 +67,20 @@ class Commands {
 	 * @subcommand status
 	 */
 	public function status( array $args, array $assocArgs ): void {
-		$tokens   = $this->plugin->tokenStore();
 		$nextSync = wp_next_scheduled( Scheduler::SYNC_EVENT );
 		$logs     = $this->plugin->syncLogs()->recent( 1 );
 		$last     = $logs[0] ?? null;
+		$license  = $this->plugin->license();
 
-		\WP_CLI::log( 'Conexión OAuth: ' . ( $tokens->isExpired() ? 'caducada' : ( $tokens->isConnected() ? 'válida' : 'sin conectar' ) ) );
-		\WP_CLI::log( 'Credenciales: ' . $this->plugin->credentials()->source() );
+		\WP_CLI::log( 'Licencia: ' . ( $license->has() ? $license->maskedKey() . ' (' . $license->plan() . ')' : 'sin activar' ) );
 		\WP_CLI::log( 'Criptografía: ' . $this->plugin->crypto()->backend() );
-		\WP_CLI::log( 'Ubicaciones activas: ' . count( $this->plugin->locations()->findEnabled() ) );
+
+		if ( Plugin::settings()['advanced_mode'] ) {
+			$tokens = $this->plugin->tokenStore();
+			\WP_CLI::log( 'OAuth propio: ' . ( $tokens->isExpired() ? 'caducado' : ( $tokens->isConnected() ? 'válido' : 'sin conectar' ) ) );
+		}
+
+		\WP_CLI::log( 'Negocios conectados: ' . $this->plugin->locations()->countEnabled() );
 		\WP_CLI::log( 'Reseñas en caché: ' . $this->plugin->reviews()->countAll() );
 		\WP_CLI::log( 'Próximo cron: ' . ( $nextSync ? gmdate( 'Y-m-d H:i:s', $nextSync ) . ' UTC' : 'no programado' ) );
 		\WP_CLI::log( 'Última ejecución: ' . ( $last ? $last->started_at . ' UTC (' . $last->status . ')' : 'nunca' ) );

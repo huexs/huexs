@@ -2,7 +2,7 @@
 
 Registradas sin implementar, según §2 de la especificación.
 
-- Widget nativo de Elementor (0.2.0).
+- Widget nativo de Elementor (0.3.0).
 - Bloque Gutenberg específico.
 - Notificaciones en tiempo real (Google Pub/Sub) para nuevas reseñas.
 - Responder reseñas desde WordPress.
@@ -15,3 +15,8 @@ Registradas sin implementar, según §2 de la especificación.
 - Auditoría para comercialización a terceros (BYO Google Cloud Project, verificación OAuth).
 - Cachear avatares localmente (hoy se cargan desde dominios de Google con `referrerpolicy="no-referrer"`).
 - Orden `rating` en shortcodes (hoy solo newest/oldest).
+- Búsqueda de negocio con autocompletado en vivo (hoy es buscar → elegir, sin AJAX).
+- Panel de Huexs para emitir y revocar claves de licencia (backend, fuera del plugin).
+- Actualizaciones automáticas del plugin desde servidor propio (updater privado).
+- Caché de miniaturas de avatar en el propio dominio, para evitar peticiones a Google desde el navegador.
+- Reseñas de otras plataformas (Facebook, Tripadvisor) tras la misma abstracción de fuentes.

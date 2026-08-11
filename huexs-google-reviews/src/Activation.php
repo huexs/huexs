@@ -7,14 +7,16 @@
 
 namespace Huexs\GoogleReviews;
 
+use Huexs\GoogleReviews\Source\ReviewSourceInterface;
 use Huexs\GoogleReviews\Sync\Scheduler;
 
 final class Activation {
 
-	public const DB_VERSION = '1';
+	public const DB_VERSION = '2';
 
 	public static function activate(): void {
 		self::create_tables();
+		self::migrate();
 		update_option( 'hgr_db_version', self::DB_VERSION, false );
 		update_option( 'hgr_plugin_version', HGR_VERSION, false );
 		Scheduler::ensure_events( Plugin::settings()['sync_frequency_hours'] );
@@ -23,6 +25,7 @@ final class Activation {
 	public static function maybe_upgrade(): void {
 		if ( get_option( 'hgr_db_version' ) !== self::DB_VERSION ) {
 			self::create_tables();
+			self::migrate();
 			update_option( 'hgr_db_version', self::DB_VERSION, false );
 		}
 		if ( get_option( 'hgr_plugin_version' ) !== HGR_VERSION ) {
@@ -40,21 +43,27 @@ final class Activation {
 		dbDelta(
 			"CREATE TABLE {$p}hgr_locations (
 				id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-				google_account_name varchar(191) NOT NULL,
-				google_location_name varchar(191) NOT NULL,
-				google_location_id varchar(100) NOT NULL DEFAULT '',
+				source varchar(20) NOT NULL DEFAULT 'huexs',
+				ref_key varchar(191) NOT NULL DEFAULT '',
+				place_id varchar(191) DEFAULT NULL,
+				google_account_name varchar(191) DEFAULT NULL,
+				google_location_name varchar(191) DEFAULT NULL,
+				google_location_id varchar(100) DEFAULT NULL,
 				title varchar(255) NOT NULL DEFAULT '',
+				address varchar(255) DEFAULT NULL,
 				store_code varchar(100) DEFAULT NULL,
 				public_google_url text DEFAULT NULL,
 				enabled tinyint(1) NOT NULL DEFAULT 0,
 				average_rating decimal(3,2) DEFAULT NULL,
 				total_review_count int(10) unsigned NOT NULL DEFAULT 0,
+				truncated tinyint(1) NOT NULL DEFAULT 0,
+				source_label varchar(30) DEFAULT NULL,
 				last_synced_at datetime DEFAULT NULL,
 				last_sync_status varchar(30) DEFAULT NULL,
 				created_at datetime NOT NULL,
 				updated_at datetime NOT NULL,
 				PRIMARY KEY  (id),
-				UNIQUE KEY account_location (google_account_name,google_location_name),
+				UNIQUE KEY source_ref (source,ref_key),
 				KEY enabled (enabled)
 			) $charset;"
 		);
@@ -99,6 +108,33 @@ final class Activation {
 				PRIMARY KEY  (id),
 				KEY started (started_at)
 			) $charset;"
+		);
+	}
+
+	/**
+	 * Migración v1 → v2.
+	 *
+	 * dbDelta no elimina índices obsoletos ni rellena columnas nuevas: se hace aquí.
+	 * Las instalaciones de la 0.1.0 usaban exclusivamente OAuth propio.
+	 */
+	private static function migrate(): void {
+		global $wpdb;
+		$table = $wpdb->prefix . 'hgr_locations';
+
+		// El índice único original (cuenta + ubicación) queda sustituido por (source, ref_key).
+		$indexes = (array) $wpdb->get_results( "SHOW INDEX FROM {$table} WHERE Key_name = 'account_location'" ); // phpcs:ignore WordPress.DB
+		if ( $indexes ) {
+			$wpdb->query( "ALTER TABLE {$table} DROP INDEX account_location" ); // phpcs:ignore WordPress.DB
+		}
+
+		// Filas heredadas: eran todas de OAuth propio y su referencia estable es el nombre de ubicación.
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			$wpdb->prepare(
+				"UPDATE {$table}
+				 SET source = %s, ref_key = google_location_name
+				 WHERE ref_key = '' AND google_location_name IS NOT NULL AND google_location_name <> ''",
+				ReviewSourceInterface::SOURCE_GOOGLE
+			)
 		);
 	}
 }

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<div class="hgr-wrap hgr-layout--grid <?php echo esc_attr( $renderer->themeClass() ); ?>" style="<?php echo esc_attr( $renderer->styleVars() ); ?>">
+<div class="<?php echo esc_attr( $renderer->wrapClasses( 'grid' ) ); ?>" style="<?php echo esc_attr( $renderer->styleVars() ); ?>">
 	<?php
 	if ( null !== $summary && null !== $summary['average'] ) {
 		$standalone = false;

@@ -215,10 +215,29 @@ Respuesta: `{ "listName": "Contactar" }`
 
 ## Plugin WordPress: Huexs Google Reviews (`huexs-google-reviews/`)
 
-MVP de plugin WordPress que sincroniza reseñas de Google Business Profile via OAuth 2.0 y las muestra con shortcodes (`[huexs_google_reviews]`, `[huexs_google_rating]`) compatibles con Elementor (widget Shortcode).
+Plugin WordPress **distribuible y monetizable** (v0.2.0) que muestra reseñas de Google y las mantiene actualizadas solas. El cliente solo pega una clave de licencia y busca su negocio por nombre.
 
-- Especificación fuente de verdad: `ESPECIFICACION_MVP_PLUGIN_GOOGLE_REVIEWS.md` (aportada por el propietario; ver `huexs-google-reviews/docs/DECISIONS.md`).
-- Namespace `Huexs\GoogleReviews`, prefijo `hgr_`, tablas propias `hgr_locations`/`hgr_reviews`/`hgr_sync_logs`.
-- Reseñas = caché temporal (purga a 30 días). NO filtrar reseñas por puntuación. NO usar Places API ni scraping.
-- Tests: `cd huexs-google-reviews && composer install && composer test`.
-- Docs internas del plugin en `huexs-google-reviews/docs/`.
+### Arquitectura
+
+- **Fuente por defecto:** API central de Huexs (`api.huexs.com/v1`), que resuelve con Places API. Contrato en `huexs-google-reviews/docs/API_CONTRACT.md` — **el backend aún no existe**; se desarrolla contra `tools/mock-api-server.php`.
+- **Modo avanzado (opcional):** OAuth con proyecto propio de Google Cloud, para sitios propios y clientes que no quieran depender del servicio central.
+- Ambas detrás de `ReviewSourceInterface`; cada ubicación recuerda su `source`. `SyncService` es agnóstico.
+- Namespace `Huexs\GoogleReviews`, prefijo `hgr_`, tablas `hgr_locations`/`hgr_reviews`/`hgr_sync_logs` (esquema v2).
+
+### Reglas del proyecto
+
+- Reseñas = caché temporal, purga a 30 días. **NO filtrar reseñas por puntuación.**
+- **NO scraping de Google Maps** (decisión D14: incumple ToS y es frágil).
+- El `client_secret` de Google **nunca** va en el plugin: el OAuth Pro lo ejecuta el backend.
+- El gating de plan se aplica en el **servidor**, no en el plugin (es GPL y editable).
+- Una sincronización incompleta **nunca** borra reseñas existentes.
+- Diseños: `list`, `grid`, `carousel`, `badge`, `floating`, `sidebar`.
+
+### Comandos
+
+```
+cd huexs-google-reviews && composer install && composer test   # 72 tests
+php -S localhost:8787 tools/mock-api-server.php                # API simulada
+```
+
+Docs internas en `huexs-google-reviews/docs/` (DECISIONS, API_CONTRACT, INSTALLATION, GOOGLE_CLOUD_SETUP, PRIVACY, TROUBLESHOOTING, BACKLOG).
