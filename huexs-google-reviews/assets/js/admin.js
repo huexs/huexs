@@ -207,6 +207,30 @@
 
 	document.querySelectorAll( '[data-hgr-search]' ).forEach( initSearch );
 
+	/**
+	 * Escribe texto en un nodo convirtiendo las URLs en enlaces.
+	 *
+	 * Los errores de Google incluyen la URL exacta de la consola para resolverlos:
+	 * se construye con nodos de texto, nunca con innerHTML.
+	 */
+	function renderWithLinks( node, text ) {
+		node.textContent = '';
+		text.split( /(https:\/\/[^\s]+)/ ).forEach( function ( part ) {
+			if ( part.indexOf( 'https://' ) !== 0 ) {
+				node.appendChild( document.createTextNode( part ) );
+				return;
+			}
+			var url = part.replace( /[.,;:)]+$/, '' );
+			var link = document.createElement( 'a' );
+			link.href = url;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+			link.textContent = url;
+			node.appendChild( link );
+			node.appendChild( document.createTextNode( part.slice( url.length ) ) );
+		} );
+	}
+
 	// ---- Probar la clave de Google ----
 
 	document.querySelectorAll( '[data-hgr-test-key]' ).forEach( function ( button ) {
@@ -240,7 +264,7 @@
 						return;
 					}
 					var data = ( payload && payload.data ) || {};
-					result.textContent = [ data.message, data.action ].filter( Boolean ).join( ' ' );
+					renderWithLinks( result, [ data.message, data.action ].filter( Boolean ).join( ' ' ) );
 					result.className = 'hgr-test-result hgr-test-result--error';
 				} )
 				.catch( function () {

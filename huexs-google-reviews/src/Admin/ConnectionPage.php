@@ -293,7 +293,7 @@ class ConnectionPage {
 			<?php if ( null !== $error ) : ?>
 				<div class="hgr-alert hgr-alert--error">
 					<p><strong><?php esc_html_e( 'Google rechazó la petición. Respuesta literal:', 'huexs-google-reviews' ); ?></strong></p>
-					<p class="hgr-code hgr-code--block"><?php echo esc_html( $error ); ?></p>
+					<p class="hgr-code hgr-code--block"><?php echo self::linkify( $error ); // phpcs:ignore WordPress.Security.EscapeOutput -- escapado dentro de linkify(). ?></p>
 				</div>
 			<?php elseif ( is_array( $results ) && ! $results ) : ?>
 				<p class="hgr-search__status hgr-search__status--warn"><?php esc_html_e( 'Ningún negocio con ese nombre. Prueba a añadir la ciudad.', 'huexs-google-reviews' ); ?></p>
@@ -418,6 +418,30 @@ class ConnectionPage {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Escapa el texto y convierte en enlaces las URLs que contenga.
+	 *
+	 * Los errores de Google suelen incluir la URL exacta de la consola para resolver
+	 * el problema: obligar a copiarla a mano no tiene sentido.
+	 */
+	public static function linkify( string $text ): string {
+		$parts = preg_split( '#(https://[^\s<>"\']+)#', $text, -1, PREG_SPLIT_DELIM_CAPTURE );
+		$out   = '';
+
+		foreach ( (array) $parts as $part ) {
+			if ( ! str_starts_with( $part, 'https://' ) ) {
+				$out .= esc_html( $part );
+				continue;
+			}
+			// Los signos de puntuación finales no forman parte del enlace.
+			$url  = rtrim( $part, '.,;:)' );
+			$rest = substr( $part, strlen( $url ) );
+			$out .= '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $url ) . '</a>' . esc_html( $rest );
+		}
+
+		return $out;
 	}
 
 	/** Estrellas para la administración, con texto accesible. */
