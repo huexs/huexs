@@ -4,7 +4,7 @@ Tags: google reviews, google business profile, reseñas, reviews, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.5.1
+Stable tag: 0.6.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,11 @@ Sí, mediante el widget Shortcode de Elementor. El widget nativo llegará en una
 No. El plugin no filtra por puntuación, por decisión de diseño y por coherencia con las políticas de presentación de Google.
 
 == Changelog ==
+
+= 0.6.0 =
+* El plugin prueba automáticamente el dominio con y sin www al hablar con Google: una clave registrada como www.tusitio.com ya no falla en tusitio.com.
+* Nuevo bloque con los valores exactos (referentes e IP) listos para copiar en Google Cloud.
+* Corregido: un error de búsqueda antiguo seguía mostrándose al recargar la página.
 
 = 0.5.1 =
 * Los errores de Google que incluyen un enlace a la consola ahora son clicables.

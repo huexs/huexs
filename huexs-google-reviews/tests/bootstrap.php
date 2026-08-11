@@ -170,6 +170,10 @@ function get_locale() {
 	return 'es_ES';
 }
 
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( (string) $url, $component );
+}
+
 // --- Stubs adicionales para el renderizado de plantillas ---
 
 if ( ! defined( 'HGR_PLUGIN_DIR' ) ) {

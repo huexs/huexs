@@ -25,6 +25,7 @@ foreach ( array_slice( $argv, 1 ) as $arg ) {
 $state = $args['state'] ?? 'conectado';
 
 $GLOBALS['hgr_test_is_admin'] = true;
+$_SERVER['SERVER_ADDR']       = '203.0.113.45';
 
 // --- Stubs adicionales que solo necesita la administración ---
 
@@ -46,6 +47,14 @@ function wp_nonce_field( $action = -1, $name = '_wpnonce', $referer = true, $dis
 
 function get_current_user_id() {
 	return 1;
+}
+
+function sanitize_text_field( $str ) {
+	return trim( strip_tags( (string) $str ) );
+}
+
+function wp_unslash( $value ) {
+	return is_string( $value ) ? stripslashes( $value ) : $value;
 }
 
 // --- Doble mínimo de $wpdb: la pantalla solo lee ubicaciones ---

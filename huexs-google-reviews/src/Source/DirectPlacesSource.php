@@ -53,20 +53,16 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		}
 		$this->assertConfigured();
 
-		try {
-			$data = $this->http->postJson(
-				self::SEARCH_URL,
-				array(
-					'textQuery'      => $query,
-					'languageCode'   => $this->language(),
-					'regionCode'     => $this->region(),
-					'maxResultCount' => 10,
-				),
-				$this->headers( self::SEARCH_FIELDS )
-			);
-		} catch ( SourceException $e ) {
-			throw $this->translate( $e );
-		}
+		$body = array(
+			'textQuery'      => $query,
+			'languageCode'   => $this->language(),
+			'regionCode'     => $this->region(),
+			'maxResultCount' => 10,
+		);
+
+		$data = $this->withRefererFallback(
+			fn( string $referer ) => $this->http->postJson( self::SEARCH_URL, $body, $this->headers( self::SEARCH_FIELDS, $referer ) )
+		);
 
 		return PlacesMapper::searchResults( $data );
 	}
@@ -82,13 +78,62 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		$url = self::DETAILS_URL . rawurlencode( $placeId )
 			. '?languageCode=' . rawurlencode( $this->language() );
 
-		try {
-			$data = $this->http->getJson( $url, $this->headers( self::DETAILS_FIELDS ) );
-		} catch ( SourceException $e ) {
-			throw $this->translate( $e );
-		}
+		$data = $this->withRefererFallback(
+			fn( string $referer ) => $this->http->getJson( $url, $this->headers( self::DETAILS_FIELDS, $referer ) )
+		);
 
 		return PlacesMapper::place( $data, $placeId );
+	}
+
+	/**
+	 * Ejecuta la petición probando las formas equivalentes del dominio del sitio.
+	 *
+	 * Google compara el referente contra una lista literal. Un sitio registrado como
+	 * `https://www.ejemplo.com/*` rechaza `https://ejemplo.com/` aunque sea el mismo
+	 * sitio, así que se prueban ambas formas antes de darlo por fallido. Solo se
+	 * reintenta cuando Google bloquea explícitamente por referente: cualquier otro
+	 * error se propaga a la primera.
+	 *
+	 * @param callable(string):array $request
+	 * @throws SourceException
+	 */
+	private function withRefererFallback( callable $request ): array {
+		$candidates = $this->refererCandidates();
+		$last       = null;
+
+		foreach ( $candidates as $referer ) {
+			try {
+				return $request( $referer );
+			} catch ( SourceException $e ) {
+				$last = $e;
+				if ( ! $this->isRefererBlocked( $e ) ) {
+					break;
+				}
+			}
+		}
+
+		throw $this->translate( $last ?? new SourceException( 'upstream_error', 'Sin respuesta de Google.' ) );
+	}
+
+	/** El dominio del sitio, en sus formas con y sin www. */
+	private function refererCandidates(): array {
+		$home = \home_url( '/' );
+		$host = (string) wp_parse_url( $home, PHP_URL_HOST );
+
+		if ( '' === $host ) {
+			return array( $home );
+		}
+
+		$alternate = str_starts_with( $host, 'www.' )
+			? substr( $host, 4 )
+			: 'www.' . $host;
+
+		return array( $home, str_replace( '://' . $host, '://' . $alternate, $home ) );
+	}
+
+	private function isRefererBlocked( SourceException $e ): bool {
+		$message = strtolower( $e->getMessage() );
+		return str_contains( $message, 'referer' ) && str_contains( $message, 'blocked' );
 	}
 
 	/**
@@ -120,7 +165,7 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		}
 	}
 
-	private function headers( string $fieldMask ): array {
+	private function headers( string $fieldMask, ?string $referer = null ): array {
 		return array(
 			'X-Goog-Api-Key'   => $this->key->value(),
 			'X-Goog-FieldMask' => $fieldMask,
@@ -129,7 +174,7 @@ class DirectPlacesSource implements ReviewSourceInterface {
 			// referente y Google la bloquea con "Requests from referer <empty>".
 			// Declarar el dominio del propio sitio es exacto: la petición sale de él.
 			// Con restricción por IP esta cabecera es inocua.
-			'Referer'          => \home_url( '/' ),
+			'Referer'          => $referer ?? \home_url( '/' ),
 		);
 	}
 

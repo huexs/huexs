@@ -578,3 +578,38 @@
 		gap: 6px;
 	}
 }
+
+/* ---- Valores para Google Cloud ---- */
+
+.hgr-cloud-values {
+	border-top: 1px solid #e0e0e0;
+	margin-top: 16px;
+	padding-top: 12px;
+}
+
+.hgr-cloud-values summary {
+	color: #2271b1;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.hgr-value-list {
+	list-style: none;
+	margin: 12px 0;
+	padding: 0;
+}
+
+.hgr-value-list li {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+
+.hgr-value-list__label {
+	color: #646970;
+	font-size: 13px;
+	min-width: 170px;
+}

@@ -28,7 +28,10 @@ class ConnectionPage {
 		$locations = $this->plugin->locations()->all();
 		$results   = get_transient( 'hgr_search_' . get_current_user_id() );
 		$query     = get_transient( 'hgr_search_q_' . get_current_user_id() );
-		$error     = get_transient( 'hgr_search_error_' . get_current_user_id() );
+		$error = get_transient( 'hgr_search_error_' . get_current_user_id() );
+		// De un solo uso: un error de hace diez minutos no debe seguir en pantalla
+		// al recargar, dando la impresión de que el problema persiste.
+		delete_transient( 'hgr_search_error_' . get_current_user_id() );
 		?>
 		<div class="wrap hgr-wrap">
 			<h1 class="hgr-page-title"><?php esc_html_e( 'Huexs Google Reviews', 'huexs-google-reviews' ); ?></h1>
@@ -162,7 +165,60 @@ class ConnectionPage {
 			<p class="hgr-test-result" role="status" aria-live="polite" data-hgr-test-result></p>
 
 			<p class="hgr-note"><?php esc_html_e( 'Google Places devuelve como máximo 5 reseñas por ficha y no incluye las respuestas del propietario. Es un límite de Google, no del plugin: la nota media y el total sí son completos.', 'huexs-google-reviews' ); ?></p>
+
+			<?php $this->renderCloudValues(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Los valores exactos que hay que pegar en Google Cloud.
+	 *
+	 * Si Google rechaza la clave, el problema siempre es que alguno de estos datos no
+	 * figura en las restricciones. Tenerlos aquí, listos para copiar, evita tener que
+	 * deducirlos.
+	 */
+	private function renderCloudValues(): void {
+		$home = home_url( '/' );
+		$host = (string) wp_parse_url( $home, PHP_URL_HOST );
+		$bare = str_starts_with( $host, 'www.' ) ? substr( $host, 4 ) : $host;
+		$ip   = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '';
+
+		$values = array(
+			array( __( 'Referente (sin www)', 'huexs-google-reviews' ), 'https://' . $bare . '/*' ),
+			array( __( 'Referente (con www)', 'huexs-google-reviews' ), 'https://www.' . $bare . '/*' ),
+		);
+		if ( '' !== $ip ) {
+			$values[] = array( __( 'IP de este servidor', 'huexs-google-reviews' ), $ip );
+		}
+		?>
+		<details class="hgr-cloud-values">
+			<summary><?php esc_html_e( '¿Google rechaza la clave? Valores para pegar en Google Cloud', 'huexs-google-reviews' ); ?></summary>
+
+			<p class="hgr-note">
+				<?php esc_html_e( 'En Google Cloud → APIs y servicios → Credenciales → tu clave. Según el tipo de restricción que tengas, pega uno u otro:', 'huexs-google-reviews' ); ?>
+			</p>
+
+			<ul class="hgr-value-list">
+				<?php foreach ( $values as $value ) : ?>
+					<li>
+						<span class="hgr-value-list__label"><?php echo esc_html( $value[0] ); ?></span>
+						<code class="hgr-code" data-hgr-copy><?php echo esc_html( $value[1] ); ?></code>
+						<button type="button" class="button-link" data-hgr-copy-btn data-label-copied="<?php esc_attr_e( '¡Copiado!', 'huexs-google-reviews' ); ?>">
+							<?php esc_html_e( 'Copiar', 'huexs-google-reviews' ); ?>
+						</button>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+
+			<p class="hgr-note">
+				<?php esc_html_e( 'Con "Sitios web (referentes HTTP)" añade las dos primeras líneas: el plugin prueba ambas formas del dominio automáticamente. Con "Direcciones IP", añade la IP. Y comprueba que en Restricciones de API esté marcada Places API (New).', 'huexs-google-reviews' ); ?>
+			</p>
+
+			<p class="hgr-note">
+				<?php esc_html_e( 'Si tienes prisa: pon Restricciones de aplicación en "Ninguna", confirma que todo funciona, y después vuelve a cerrarla.', 'huexs-google-reviews' ); ?>
+			</p>
+		</details>
 		<?php
 	}
 

@@ -241,3 +241,31 @@ Repaso de interfaz sobre la primera pantalla que ve cualquiera:
 
 `tools/render-admin-preview.php` renderiza la pantalla fuera de WordPress (con un doble
 de `$wpdb`) para poder revisarla sin desplegar. No se incluye en el ZIP.
+
+## D32 — Probar las dos formas del dominio como referente
+
+Google compara el referente contra una lista literal: una clave registrada como
+`https://www.ejemplo.com/*` rechaza `https://ejemplo.com/` aunque sea el mismo sitio.
+Como `home_url()` devuelve solo una de las dos formas, el plugin prueba ambas y se queda
+con la que Google acepte.
+
+Solo se reintenta cuando el error es explícitamente un bloqueo por referente; cualquier
+otro (cuota, API deshabilitada, red) se propaga a la primera para no multiplicar
+llamadas facturables.
+
+No se permite configurar un referente arbitrario: declarar un dominio que no es el del
+sitio sería falsear la petición. Las variantes con y sin www sí son el mismo sitio.
+
+## D33 — Los errores no se quedan pegados en pantalla
+
+El error de búsqueda vivía en un transient de 10 minutos y se repintaba en cada carga de
+la pantalla, aunque el usuario no hubiera vuelto a buscar. Daba la impresión de que el
+fallo persistía después de haberlo corregido. Ahora es de un solo uso: se muestra una vez
+y se borra al leerlo.
+
+## D34 — Los datos de configuración, listos para copiar
+
+Cuando Google rechaza una clave, el problema siempre es que algún valor no figura en sus
+restricciones. La pantalla Conexión incluye un bloque desplegable con los valores exactos
+—referente con y sin www, e IP del servidor— cada uno con su botón de copiar, en lugar de
+describirlos en prosa y obligar a deducirlos.

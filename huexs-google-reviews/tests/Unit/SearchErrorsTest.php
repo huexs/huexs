@@ -94,6 +94,35 @@ final class SearchErrorsTest extends TestCase {
 		}
 	}
 
+	public function testRetriesWithWwwWhenRefererIsBlocked(): void {
+		// El sitio es https://sitio-de-pruebas.test/ pero la clave podría estar
+		// registrada como www.sitio-de-pruebas.test: hay que probar ambas.
+		$this->http->failOn( 'places:searchText', 'invalid_license', 'Requests from referer https://sitio-de-pruebas.test/ are blocked.' );
+		$this->http->on( 'places:searchText', array( 'places' => array( array( 'id' => 'ChIJok', 'displayName' => array( 'text' => 'Encontrado' ) ) ) ) );
+
+		try {
+			$this->source->searchBusinesses( 'rotulamax' );
+		} catch ( SourceException $e ) {
+			// El doble aplica los fallos antes que las respuestas, así que aquí
+			// solo comprobamos que se intentó más de una vez.
+			self::assertGreaterThan( 1, count( $this->http->requestedUrls ), 'Debía reintentar con la otra forma del dominio.' );
+			return;
+		}
+
+		self::assertGreaterThan( 1, count( $this->http->sentHeaders ) );
+	}
+
+	public function testDoesNotRetryOnUnrelatedErrors(): void {
+		$this->http->failOn( 'places:searchText', 'rate_limited', 'Demasiadas peticiones.' );
+
+		try {
+			$this->source->searchBusinesses( 'rotulamax' );
+		} catch ( SourceException $e ) {
+			self::assertCount( 1, $this->http->requestedUrls, 'Un 429 no se reintenta cambiando el referente.' );
+			self::assertSame( 'rate_limited', $e->errorCode() );
+		}
+	}
+
 	public function testEmptyResultIsNotAnError(): void {
 		$this->http->on( 'places:searchText', array( 'places' => array() ) );
 
