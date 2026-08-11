@@ -62,7 +62,7 @@ final class SearchErrorsTest extends TestCase {
 			// permite distinguir "API no habilitada" de "restricción por referente".
 			self::assertStringContainsString( 'referer restrictions', $e->getMessage() );
 			self::assertStringContainsString( 'Places API (New)', $e->suggestedAction() );
-			self::assertStringContainsString( 'dirección IP', $e->suggestedAction() );
+			self::assertStringContainsString( 'dominio de este sitio', $e->suggestedAction() );
 		}
 	}
 

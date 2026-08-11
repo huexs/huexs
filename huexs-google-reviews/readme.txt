@@ -4,7 +4,7 @@ Tags: google reviews, google business profile, reseñas, reviews, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.4.2
+Stable tag: 0.5.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,12 @@ Sí, mediante el widget Shortcode de Elementor. El widget nativo llegará en una
 No. El plugin no filtra por puntuación, por decisión de diseño y por coherencia con las políticas de presentación de Google.
 
 == Changelog ==
+
+= 0.5.0 =
+* **Corregido: las claves restringidas por referente HTTP ya funcionan.** El plugin envía el dominio del sitio como referente, que es lo que Google espera.
+* Pantalla Conexión rediseñada: indicador de pasos, tarjetas y estado claro de un vistazo.
+* Botón "Probar clave" con veredicto inmediato.
+* Botón para copiar el shortcode de cada negocio.
 
 = 0.4.2 =
 * La pantalla Estado muestra la IP del servidor, para restringir la clave de Google por IP sin tener que buscarla.

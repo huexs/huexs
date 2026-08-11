@@ -73,6 +73,24 @@ final class DirectPlacesSourceTest extends TestCase {
 		self::assertArrayNotHasKey( 'Authorization', $headers, 'El modo directo no usa licencia.' );
 	}
 
+	public function testSendsSiteDomainAsReferer(): void {
+		$this->http->on( 'places:searchText', array( 'places' => array() ) );
+
+		$this->source->searchBusinesses( 'mi negocio' );
+
+		// Sin esta cabecera, una clave restringida por referente HTTP —el valor por
+		// defecto que propone Google— bloquea todas las llamadas de servidor.
+		self::assertSame( 'https://sitio-de-pruebas.test/', $this->http->sentHeaders[0]['Referer'] );
+	}
+
+	public function testRefererIsAlsoSentWhenFetchingReviews(): void {
+		$this->http->on( 'places/ChIJabc', array( 'id' => 'ChIJabc', 'reviews' => array() ) );
+
+		$this->source->fetchReviews( $this->location() );
+
+		self::assertSame( 'https://sitio-de-pruebas.test/', $this->http->sentHeaders[0]['Referer'] );
+	}
+
 	public function testSearchMapsGooglePayload(): void {
 		$this->http->on(
 			'places:searchText',

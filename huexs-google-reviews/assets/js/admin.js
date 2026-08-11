@@ -206,4 +206,71 @@
 	}
 
 	document.querySelectorAll( '[data-hgr-search]' ).forEach( initSearch );
+
+	// ---- Probar la clave de Google ----
+
+	document.querySelectorAll( '[data-hgr-test-key]' ).forEach( function ( button ) {
+		var result = document.querySelector( '[data-hgr-test-result]' );
+		var original = button.textContent;
+
+		button.addEventListener( 'click', function () {
+			button.disabled = true;
+			button.textContent = button.dataset.labelTesting;
+			if ( result ) {
+				result.textContent = '';
+				result.className = 'hgr-test-result';
+			}
+
+			fetch(
+				button.dataset.ajaxUrl +
+					'?action=hgr_test_key&_wpnonce=' +
+					encodeURIComponent( button.dataset.nonce ),
+				{ credentials: 'same-origin' }
+			)
+				.then( function ( response ) {
+					return response.json();
+				} )
+				.then( function ( payload ) {
+					if ( ! result ) {
+						return;
+					}
+					if ( payload && payload.success ) {
+						result.textContent = payload.data.message;
+						result.className = 'hgr-test-result hgr-test-result--ok';
+						return;
+					}
+					var data = ( payload && payload.data ) || {};
+					result.textContent = [ data.message, data.action ].filter( Boolean ).join( ' ' );
+					result.className = 'hgr-test-result hgr-test-result--error';
+				} )
+				.catch( function () {
+					if ( result ) {
+						result.textContent = 'No se pudo contactar con el servidor.';
+						result.className = 'hgr-test-result hgr-test-result--error';
+					}
+				} )
+				.finally( function () {
+					button.disabled = false;
+					button.textContent = original;
+				} );
+		} );
+	} );
+
+	// ---- Copiar shortcode ----
+
+	document.querySelectorAll( '[data-hgr-copy-btn]' ).forEach( function ( button ) {
+		button.addEventListener( 'click', function () {
+			var code = button.parentNode.querySelector( '[data-hgr-copy]' );
+			if ( ! code || ! navigator.clipboard ) {
+				return;
+			}
+			navigator.clipboard.writeText( code.textContent.trim() ).then( function () {
+				var original = button.textContent;
+				button.textContent = button.dataset.labelCopied || '¡Copiado!';
+				window.setTimeout( function () {
+					button.textContent = original;
+				}, 1600 );
+			} );
+		} );
+	} );
 } )();

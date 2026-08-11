@@ -23,6 +23,7 @@ class Actions {
 
 	public function register(): void {
 		add_action( 'wp_ajax_hgr_search_businesses', array( $this, 'ajaxSearch' ) );
+		add_action( 'wp_ajax_hgr_test_key', array( $this, 'ajaxTestKey' ) );
 		add_action( 'admin_post_hgr_save_license', array( $this, 'saveLicense' ) );
 		add_action( 'admin_post_hgr_save_places_key', array( $this, 'savePlacesKey' ) );
 		add_action( 'admin_post_hgr_search_business', array( $this, 'searchBusiness' ) );
@@ -108,6 +109,32 @@ class Actions {
 					$results
 				),
 			)
+		);
+	}
+
+	/** Prueba la clave con una búsqueda real y devuelve el veredicto al momento. */
+	public function ajaxTestKey(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permisos insuficientes.', 'huexs-google-reviews' ) ), 403 );
+		}
+		check_ajax_referer( 'hgr_test_key' );
+
+		try {
+			// Una consulta cualquiera basta: lo que se comprueba es que Google acepta la clave.
+			$this->plugin->activeSource()->searchBusinesses( 'restaurante' );
+		} catch ( SourceException $e ) {
+			$this->plugin->logger()->debug( 'ajaxTestKey: ' . $e->getMessage(), array( 'code' => $e->errorCode() ) );
+			wp_send_json_error(
+				array(
+					'code'    => $e->errorCode(),
+					'message' => $e->getMessage(),
+					'action'  => $e->suggestedAction(),
+				)
+			);
+		}
+
+		wp_send_json_success(
+			array( 'message' => __( 'La clave funciona: Google responde correctamente.', 'huexs-google-reviews' ) )
 		);
 	}
 

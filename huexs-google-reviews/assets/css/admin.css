@@ -306,3 +306,275 @@
 	user-select: all;
 	word-break: break-word;
 }
+
+/* ==========================================================================
+   Pantalla Conexión — onboarding en tres pasos
+   ========================================================================== */
+
+.hgr-page-title {
+	margin-bottom: 4px;
+}
+
+/* ---- Indicador de pasos ---- */
+
+.hgr-steps {
+	counter-reset: hgr-step;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	list-style: none;
+	margin: 16px 0 24px;
+	max-width: 900px;
+	padding: 0;
+}
+
+.hgr-step {
+	align-items: center;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 999px;
+	color: #646970;
+	display: flex;
+	font-size: 13px;
+	gap: 8px;
+	margin: 0;
+	padding: 6px 16px 6px 8px;
+}
+
+.hgr-step__bullet {
+	align-items: center;
+	background: #dcdcde;
+	border-radius: 50%;
+	color: #50575e;
+	display: inline-flex;
+	font-size: 12px;
+	font-weight: 700;
+	height: 22px;
+	justify-content: center;
+	width: 22px;
+}
+
+.hgr-step--current {
+	border-color: #2271b1;
+	color: #1d2327;
+	font-weight: 600;
+}
+
+.hgr-step--current .hgr-step__bullet {
+	background: #2271b1;
+	color: #fff;
+}
+
+.hgr-step--done {
+	border-color: #00a32a;
+	color: #1d2327;
+}
+
+.hgr-step--done .hgr-step__bullet {
+	background: #00a32a;
+	color: #fff;
+}
+
+/* ---- Tarjetas ---- */
+
+.hgr-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	margin-bottom: 16px;
+	max-width: 900px;
+	padding: 20px 24px;
+}
+
+.hgr-card--ok {
+	border-left: 4px solid #00a32a;
+}
+
+.hgr-card--muted {
+	background: #f6f7f7;
+}
+
+.hgr-card__head {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.hgr-card__head h2 {
+	font-size: 16px;
+	margin: 0;
+}
+
+.hgr-lead {
+	color: #50575e;
+	margin: 0 0 12px;
+}
+
+.hgr-note {
+	color: #787c82;
+	font-size: 13px;
+	margin: 12px 0 0;
+}
+
+.hgr-pill {
+	background: #e5e7eb;
+	border-radius: 999px;
+	color: #374151;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	padding: 3px 10px;
+}
+
+.hgr-pill--full,
+.hgr-pill--pro {
+	background: #00a32a;
+	color: #fff;
+}
+
+.hgr-inline {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+/* ---- Fila de clave ---- */
+
+.hgr-keyrow {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 8px 0;
+}
+
+.hgr-keyrow__label {
+	color: #646970;
+	font-size: 13px;
+}
+
+.hgr-keyrow__source {
+	color: #787c82;
+	font-size: 12px;
+}
+
+.hgr-test-result {
+	font-size: 13px;
+	margin: 8px 0 0;
+	min-height: 1.2em;
+}
+
+.hgr-test-result--ok {
+	color: #00701a;
+	font-weight: 600;
+}
+
+.hgr-test-result--error {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+/* ---- Avisos ---- */
+
+.hgr-alert {
+	border-radius: 0 4px 4px 0;
+	margin-top: 14px;
+	padding: 12px 16px;
+}
+
+.hgr-alert--error {
+	background: #fcf0f1;
+	border-left: 4px solid #b32d2e;
+}
+
+.hgr-alert p {
+	margin: 0 0 6px;
+}
+
+.hgr-code--block {
+	display: block;
+	line-height: 1.5;
+	padding: 8px 10px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* ---- Negocios conectados ---- */
+
+.hgr-business-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.hgr-business {
+	align-items: flex-start;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	padding: 14px 16px;
+}
+
+.hgr-business__main {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.hgr-business__name {
+	font-size: 15px;
+}
+
+.hgr-business__address,
+.hgr-business__meta,
+.hgr-business__count {
+	color: #646970;
+	font-size: 13px;
+}
+
+.hgr-business__rating {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.hgr-business__average {
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.hgr-admin-stars {
+	color: #dcdcde;
+	letter-spacing: 1px;
+}
+
+.hgr-admin-star--full {
+	color: #fbbc04;
+}
+
+.hgr-business__shortcode {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 6px;
+}
+
+@media (max-width: 782px) {
+	.hgr-business {
+		flex-direction: column;
+	}
+
+	.hgr-steps {
+		gap: 6px;
+	}
+}

@@ -124,6 +124,12 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		return array(
 			'X-Goog-Api-Key'   => $this->key->value(),
 			'X-Goog-FieldMask' => $fieldMask,
+			// Muchas claves de Google están restringidas por referente HTTP, porque es
+			// lo que Google propone por defecto. Una llamada de servidor no envía
+			// referente y Google la bloquea con "Requests from referer <empty>".
+			// Declarar el dominio del propio sitio es exacto: la petición sale de él.
+			// Con restricción por IP esta cabecera es inocua.
+			'Referer'          => \home_url( '/' ),
 		);
 	}
 

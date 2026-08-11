@@ -206,3 +206,38 @@ una llamada facturable a Google**:
 
 Verificado en navegador: teclear "Rotula" letra a letra genera **una** llamada, no seis.
 Sin JavaScript, el botón "Buscar" sigue funcionando con el envío del formulario.
+
+---
+
+# 0.5.0 — El referente, y repaso de interfaz
+
+## D30 — Enviar el dominio del sitio como `Referer`
+
+Causa raíz del fallo en producción: Google devolvía `Requests from referer <empty>
+are blocked`. La clave estaba restringida por **referente HTTP**, que es lo que Google
+propone por defecto al crear una clave, y una petición de servidor no envía referente.
+
+La solución no es obligar al usuario a cambiar la restricción a IP —fricción, y en
+hostings con IP variable directamente inviable—, sino **enviar la cabecera `Referer`
+con el dominio del propio sitio**. Es exacto y no engaña a nadie: la petición sale del
+servidor de ese dominio, con su clave, para mostrar reseñas en ese mismo dominio. Es
+justamente lo que la restricción pretende autorizar.
+
+Con restricción por IP la cabecera es inocua, así que se envía siempre y ambos tipos de
+restricción funcionan sin que el usuario tenga que saber cuál tiene.
+
+## D31 — La pantalla Conexión guía, no solo configura
+
+Repaso de interfaz sobre la primera pantalla que ve cualquiera:
+
+- **Indicador de pasos** (Conectar → Tu negocio → Diseño) con estado real: marca lo
+  completado y resalta lo siguiente. El usuario sabe siempre qué le falta.
+- **"Probar clave"** con veredicto inmediato en la propia tarjeta, sin recargar. Cierra
+  el bucle de diagnóstico donde ocurre el problema.
+- **Errores literales de Google** en un bloque destacado y seleccionable, en lugar de un
+  mensaje genérico.
+- **Negocios como fichas** con nota, estrellas, total real y estado de sincronización,
+  más un botón para copiar su shortcode.
+
+`tools/render-admin-preview.php` renderiza la pantalla fuera de WordPress (con un doble
+de `$wpdb`) para poder revisarla sin desplegar. No se incluye en el ZIP.
