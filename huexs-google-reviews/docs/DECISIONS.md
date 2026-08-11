@@ -293,10 +293,35 @@ Se revierte la decisión original de no incluir rotación automática: es lo que
 propietario pide y lo que hace la competencia. Pero con las salvaguardas que exige
 WCAG 2.2.2 para contenido en movimiento:
 
-- **botón de pausa** visible siempre que el avance automático esté activo;
-- se detiene al pasar el ratón, al entrar el foco por teclado y al ocultarse la pestaña;
+- se detiene al pasar el ratón, al entrar el foco por teclado, al tocar la pantalla y al
+  ocultarse la pestaña;
 - `prefers-reduced-motion` desactiva el avance automático, pero **no** la navegación
   manual: quien lo prefiera sigue pudiendo recorrer las reseñas con los botones.
 
 El intervalo se limita a 2–30 segundos: por debajo no da tiempo a leer y por encima el
 carrusel parece estático.
+
+## D37 — Sin botón de pausa en el widget
+
+La versión 0.7.0 añadió un botón "Pausar" visible como salvaguarda de WCAG 2.2.2. El
+propietario lo rechaza expresamente: *"no quiero que en el widget haya un botón de pausar.
+Simplemente avanza y ya está, esto es cómo funciona un carrusel."* Se retira.
+
+Los frenos invisibles se conservan y son los que cubren el criterio en la práctica: el
+avance se detiene al pasar el ratón, al llevar el foco dentro con el teclado, al tocar el
+carrusel y mientras la pestaña esté oculta, y `prefers-reduced-motion` lo desactiva por
+completo. Quien quiera un widget totalmente estático puede hacerlo desde la pantalla
+Diseño o con `autoplay="false"` en el shortcode.
+
+## D38 — El ciclo va por paradas reales, no por tarjetas
+
+Al quitar el botón de pausa se instrumentó el carrusel en navegador y salió un fallo que
+0.7.0 no veía: **una tarjeta no es siempre una parada**. Cuando la pista llega a su tope
+(`scrollWidth - clientWidth`), las últimas tarjetas ya están a la vista, así que pedir su
+posición no mueve nada. Con seis reseñas en escritorio eso eran dos ciclos muertos: el
+carrusel se quedaba clavado cuatro segundos al final antes de volver al principio.
+
+El ciclo se calcula ahora sobre la última posición con parada propia — la primera cuya
+distancia alcanza el tope — y los desplazamientos se recortan a ese tope. El número de
+paradas se recalcula en cada movimiento, así que se adapta al ancho: 6 paradas a 390 px,
+5 a 768 px y 4 a 1440 px con el mismo marcado.

@@ -27,17 +27,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		aria-label="<?php esc_attr_e( 'Reseñas de Google', 'huexs-google-reviews' ); ?>"
 	>
 		<div class="hgr-carousel__controls">
-			<?php if ( ! empty( $args['autoplay'] ) ) : ?>
-				<button
-					type="button"
-					class="hgr-carousel__btn hgr-carousel__btn--pause"
-					data-hgr-pause
-					data-label-pause="<?php esc_attr_e( 'Pausar', 'huexs-google-reviews' ); ?>"
-					data-label-play="<?php esc_attr_e( 'Reanudar', 'huexs-google-reviews' ); ?>"
-					aria-pressed="false"
-					hidden
-				><?php esc_html_e( 'Pausar', 'huexs-google-reviews' ); ?></button>
-			<?php endif; ?>
 			<button type="button" class="hgr-carousel__btn" data-hgr-prev aria-label="<?php esc_attr_e( 'Reseña anterior', 'huexs-google-reviews' ); ?>" hidden>&#8592;</button>
 			<button type="button" class="hgr-carousel__btn" data-hgr-next aria-label="<?php esc_attr_e( 'Reseña siguiente', 'huexs-google-reviews' ); ?>" hidden>&#8594;</button>
 		</div>

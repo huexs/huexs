@@ -4,7 +4,7 @@ Tags: google reviews, google business profile, reseñas, reviews, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.7.0
+Stable tag: 0.7.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,9 +71,14 @@ No. El plugin no filtra por puntuación, por decisión de diseño y por coherenc
 
 == Changelog ==
 
+= 0.7.1 =
+* Fuera el botón de pausa del carrusel: el widget simplemente avanza, como se espera de un carrusel.
+* Corregido: el carrusel se quedaba parado unos segundos al llegar a las últimas reseñas antes de volver a empezar. Ahora el ritmo es constante en todo el recorrido, en móvil y en escritorio.
+* Sigue deteniéndose solo mientras el visitante pasa el ratón, navega con el teclado, toca la pantalla o la pestaña está oculta.
+
 = 0.7.0 =
 * El carrusel avanza solo y en bucle: al llegar a la última reseña vuelve a la primera, y hacia atrás igual.
-* Se detiene solo mientras el visitante pasa el ratón, navega con el teclado o la pestaña está oculta, y añade botón de pausa.
+* Se detiene solo mientras el visitante pasa el ratón, navega con el teclado o la pestaña está oculta.
 * Velocidad configurable (2–30 segundos) desde la pantalla Diseño o por shortcode: `autoplay="false"`, `autoplay_seconds="8"`.
 
 = 0.6.0 =

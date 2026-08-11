@@ -5,8 +5,9 @@
  * desplazable y los comentarios se muestran completos.
  *
  * El carrusel es cíclico: al llegar al final vuelve al principio, y al revés.
- * El avance automático se detiene al pasar el ratón, al mover el foco dentro,
- * al ocultarse la pestaña y en cuanto el visitante navega a mano.
+ * No lleva botón de pausa: avanza y ya está. Se detiene solo, sin controles a la
+ * vista, al pasar el ratón, al mover el foco dentro, al tocar la pantalla y
+ * mientras la pestaña esté oculta.
  */
 ( function () {
 	'use strict';
@@ -30,25 +31,48 @@
 		prev.hidden = false;
 		next.hidden = false;
 
-		var pauseButton = root.querySelector( '[data-hgr-pause]' );
 		var intervalMs = Math.max( 2, parseInt( root.dataset.autoplaySeconds, 10 ) || 5 ) * 1000;
 		// prefers-reduced-motion desactiva el avance automático, no la navegación.
 		var autoplayWanted = root.dataset.autoplay === '1' && ! reducedMotion;
 
 		var timer = null;
-		var paused = false;
 
 		// La posición se lleva por índice, no leyendo scrollLeft: durante el
 		// desplazamiento suave scrollLeft devuelve valores intermedios, y calcular
 		// sobre ellos hacía que el salto de vuelta al principio fallara.
 		var index = 0;
 
-		function offsetOf( position ) {
+		function maxScroll() {
+			return Math.max( 0, track.scrollWidth - track.clientWidth );
+		}
+
+		function rawOffset( position ) {
 			return slides[ position ].offsetLeft - slides[ 0 ].offsetLeft;
 		}
 
+		/**
+		 * Última tarjeta con parada propia. Cuando la pista llega a su tope, las
+		 * tarjetas siguientes ya están a la vista, así que pedir su posición no
+		 * mueve nada: el avance automático se quedaba clavado un par de ciclos al
+		 * final antes de volver al principio. El ciclo va de 0 a esta posición.
+		 */
+		function lastIndex() {
+			var limit = maxScroll();
+			for ( var i = 0; i < slides.length; i++ ) {
+				if ( rawOffset( i ) >= limit ) {
+					return i;
+				}
+			}
+			return slides.length - 1;
+		}
+
+		function offsetOf( position ) {
+			return Math.min( rawOffset( position ), maxScroll() );
+		}
+
 		function scrollToIndex( position ) {
-			index = ( position + slides.length ) % slides.length;
+			var stops = lastIndex() + 1;
+			index = ( ( position % stops ) + stops ) % stops;
 			track.scrollTo( {
 				left: offsetOf( index ),
 				behavior: reducedMotion ? 'auto' : 'smooth'
@@ -65,8 +89,9 @@
 			var current = track.scrollLeft;
 			var closest = 0;
 			var best = Infinity;
+			var stops = lastIndex() + 1;
 
-			for ( var i = 0; i < slides.length; i++ ) {
+			for ( var i = 0; i < stops; i++ ) {
 				var distance = Math.abs( offsetOf( i ) - current );
 				if ( distance < best ) {
 					best = distance;
@@ -77,7 +102,7 @@
 		}
 
 		function startAutoplay() {
-			if ( ! autoplayWanted || paused || timer ) {
+			if ( ! autoplayWanted || timer ) {
 				return;
 			}
 			timer = window.setInterval( function () {
@@ -89,22 +114,6 @@
 			if ( timer ) {
 				window.clearInterval( timer );
 				timer = null;
-			}
-		}
-
-		/** Pausa definitiva, a petición del visitante. */
-		function setPaused( value ) {
-			paused = value;
-			if ( paused ) {
-				stopAutoplay();
-			} else {
-				startAutoplay();
-			}
-			if ( pauseButton ) {
-				pauseButton.setAttribute( 'aria-pressed', String( paused ) );
-				pauseButton.textContent = paused
-					? pauseButton.dataset.labelPlay
-					: pauseButton.dataset.labelPause;
 			}
 		}
 
@@ -125,14 +134,8 @@
 			}
 		} );
 
-		if ( pauseButton && autoplayWanted ) {
-			pauseButton.hidden = false;
-			pauseButton.addEventListener( 'click', function () {
-				setPaused( ! paused );
-			} );
-		}
-
-		// Se detiene mientras el visitante está leyendo o interactuando.
+		// No hay botón de pausa: el carrusel avanza y ya está. Se detiene solo,
+		// sin controles a la vista, mientras el visitante está leyendo.
 		root.addEventListener( 'mouseenter', stopAutoplay );
 		root.addEventListener( 'mouseleave', startAutoplay );
 		root.addEventListener( 'focusin', stopAutoplay );
