@@ -23,6 +23,7 @@ class ConnectionPage {
 		}
 
 		$license   = $this->plugin->license();
+		$unlocked  = $license->isUnlocked();
 		$locations = $this->plugin->locations()->all();
 		$results   = get_transient( 'hgr_search_' . get_current_user_id() );
 		$query     = get_transient( 'hgr_search_q_' . get_current_user_id() );
@@ -30,9 +31,9 @@ class ConnectionPage {
 		<div class="wrap hgr-wrap-admin">
 			<h1><?php esc_html_e( 'Huexs Google Reviews', 'huexs-google-reviews' ); ?></h1>
 
-			<?php $this->renderLicenseBox( $license ); ?>
+			<?php $this->renderLicenseBox( $license, $unlocked ); ?>
 
-			<?php if ( $license->has() ) : ?>
+			<?php if ( $unlocked || $license->has() ) : ?>
 				<?php $this->renderSearchBox( is_array( $results ) ? $results : null, is_string( $query ) ? $query : '' ); ?>
 			<?php endif; ?>
 
@@ -47,9 +48,56 @@ class ConnectionPage {
 		<?php
 	}
 
-	private function renderLicenseBox( $license ): void {
+	private function renderLicenseBox( $license, bool $unlocked ): void {
 		$plan   = $license->plan();
 		$limits = $license->limits();
+
+		// Con clave propia de Google no hay nada que licenciar: el sitio es autónomo.
+		if ( $unlocked ) {
+			$direct = $this->plugin->placesKey()->has();
+			?>
+			<div class="hgr-admin-card">
+				<h2><?php esc_html_e( '1. Modo completo activo', 'huexs-google-reviews' ); ?></h2>
+				<p>
+					<span class="hgr-status-ok"><?php esc_html_e( 'Sin licencia y sin límites.', 'huexs-google-reviews' ); ?></span>
+					<span class="hgr-plan-pill hgr-plan-pill--pro"><?php esc_html_e( 'FULL', 'huexs-google-reviews' ); ?></span>
+				</p>
+				<p class="description">
+					<?php if ( $direct ) : ?>
+						<?php esc_html_e( 'Este sitio usa tu propia clave de Google Places (definida en wp-config.php) y habla directamente con Google. No consume el servicio central ni necesita clave de licencia.', 'huexs-google-reviews' ); ?>
+					<?php else : ?>
+						<?php esc_html_e( 'Este sitio usa tu propio proyecto de Google Cloud mediante OAuth. No consume el servicio central ni necesita clave de licencia.', 'huexs-google-reviews' ); ?>
+					<?php endif; ?>
+				</p>
+				<?php if ( $direct ) : ?>
+					<p class="description">
+						<?php esc_html_e( 'Nota: Google Places devuelve como máximo 5 reseñas por ficha y no incluye las respuestas del propietario. Es un límite de Google, no del plugin.', 'huexs-google-reviews' ); ?>
+					</p>
+					<?php $keyStore = $this->plugin->placesKey(); ?>
+					<p>
+						<?php esc_html_e( 'Clave en uso:', 'huexs-google-reviews' ); ?>
+						<span class="hgr-code"><?php echo esc_html( $keyStore->masked() ); ?></span>
+						<?php if ( 'constant' === $keyStore->source() ) : ?>
+							<span class="description"><?php esc_html_e( '(desde wp-config.php)', 'huexs-google-reviews' ); ?></span>
+						<?php endif; ?>
+					</p>
+					<?php if ( 'option' === $keyStore->source() ) : ?>
+						<form
+							method="post"
+							action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+							data-hgr-confirm="<?php esc_attr_e( '¿Quitar la clave de Google Places de este sitio?', 'huexs-google-reviews' ); ?>"
+						>
+							<input type="hidden" name="action" value="hgr_save_places_key" />
+							<input type="hidden" name="hgr_places_key" value="" />
+							<?php wp_nonce_field( 'hgr_save_places_key' ); ?>
+							<button type="submit" class="button-link delete"><?php esc_html_e( 'Quitar clave', 'huexs-google-reviews' ); ?></button>
+						</form>
+					<?php endif; ?>
+				<?php endif; ?>
+			</div>
+			<?php
+			return;
+		}
 		?>
 		<div class="hgr-admin-card">
 			<h2><?php esc_html_e( '1. Tu clave de licencia', 'huexs-google-reviews' ); ?></h2>
@@ -87,6 +135,31 @@ class ConnectionPage {
 				/>
 				<?php submit_button( $license->has() ? __( 'Cambiar clave', 'huexs-google-reviews' ) : __( 'Activar', 'huexs-google-reviews' ), 'primary', 'submit', false ); ?>
 			</form>
+		</div>
+
+		<div class="hgr-admin-card">
+			<h2><?php esc_html_e( 'O usa tu propia clave de Google', 'huexs-google-reviews' ); ?></h2>
+			<p><?php esc_html_e( 'Si tienes una clave de Google Places propia, el plugin funciona en modo completo: sin licencia, sin límites y sin pasar por el servicio de Huexs.', 'huexs-google-reviews' ); ?></p>
+			<p class="description">
+				<?php esc_html_e( 'Lo más seguro es definirla en wp-config.php:', 'huexs-google-reviews' ); ?>
+				<span class="hgr-code">define( 'HGR_GOOGLE_PLACES_KEY', '…' );</span>
+			</p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="hgr-inline-form">
+				<input type="hidden" name="action" value="hgr_save_places_key" />
+				<?php wp_nonce_field( 'hgr_save_places_key' ); ?>
+				<input
+					type="password"
+					name="hgr_places_key"
+					class="regular-text"
+					autocomplete="off"
+					placeholder="AIza…"
+					aria-label="<?php esc_attr_e( 'Clave de Google Places', 'huexs-google-reviews' ); ?>"
+				/>
+				<?php submit_button( __( 'Guardar clave de Google', 'huexs-google-reviews' ), 'secondary', 'submit', false ); ?>
+			</form>
+			<p class="description">
+				<?php esc_html_e( 'Se guarda cifrada. Restringe la clave en Google Cloud a Places API (New) y a la IP de este servidor.', 'huexs-google-reviews' ); ?>
+			</p>
 		</div>
 		<?php
 	}

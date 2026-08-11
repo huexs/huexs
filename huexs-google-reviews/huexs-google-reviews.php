@@ -3,7 +3,7 @@
  * Plugin Name:       Huexs Google Reviews
  * Plugin URI:        https://huexs.com
  * Description:       Muestra tus reseñas de Google y mantenlas actualizadas automáticamente. Busca tu negocio por nombre, sin configuración técnica. Shortcodes compatibles con Elementor.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Huexs
@@ -43,7 +43,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
 	return;
 }
 
-define( 'HGR_VERSION', '0.2.0' );
+define( 'HGR_VERSION', '0.3.0' );
 define( 'HGR_PLUGIN_FILE', __FILE__ );
 define( 'HGR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'HGR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

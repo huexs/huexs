@@ -21,6 +21,7 @@ use Huexs\GoogleReviews\Google\GoogleClientInterface;
 use Huexs\GoogleReviews\Repository\LocationRepository;
 use Huexs\GoogleReviews\Repository\ReviewRepository;
 use Huexs\GoogleReviews\Repository\SyncLogRepository;
+use Huexs\GoogleReviews\Source\DirectPlacesSource;
 use Huexs\GoogleReviews\Source\HuexsApiSource;
 use Huexs\GoogleReviews\Source\ReviewSourceInterface;
 use Huexs\GoogleReviews\Source\SelfHostedGoogleSource;
@@ -31,6 +32,7 @@ use Huexs\GoogleReviews\Support\Crypto;
 use Huexs\GoogleReviews\Support\HttpClientInterface;
 use Huexs\GoogleReviews\Support\License;
 use Huexs\GoogleReviews\Support\Logger;
+use Huexs\GoogleReviews\Support\PlacesKey;
 use Huexs\GoogleReviews\Support\WpHttpClient;
 use Huexs\GoogleReviews\Sync\RetentionService;
 use Huexs\GoogleReviews\Sync\Scheduler;
@@ -106,6 +108,14 @@ final class Plugin {
 		return $this->service( HuexsApiSource::class, fn() => new HuexsApiSource( $this->http(), $this->license() ) );
 	}
 
+	public function placesKey(): PlacesKey {
+		return $this->service( PlacesKey::class, fn() => new PlacesKey( $this->crypto() ) );
+	}
+
+	public function directSource(): DirectPlacesSource {
+		return $this->service( DirectPlacesSource::class, fn() => new DirectPlacesSource( $this->http(), $this->placesKey() ) );
+	}
+
 	public function googleSource(): SelfHostedGoogleSource {
 		return $this->service( SelfHostedGoogleSource::class, fn() => new SelfHostedGoogleSource( $this->googleClient(), $this->tokenStore() ) );
 	}
@@ -116,15 +126,34 @@ final class Plugin {
 			function () {
 				$registry = new SourceRegistry();
 				$registry->add( $this->huexsSource() );
+				$registry->add( $this->directSource() );
 				$registry->add( $this->googleSource() );
-				$registry->setDefault(
-					self::settings()['advanced_mode'] && ! $this->license()->has()
-						? ReviewSourceInterface::SOURCE_GOOGLE
-						: ReviewSourceInterface::SOURCE_HUEXS
-				);
+				$registry->setDefault( $this->defaultSourceId() );
 				return $registry;
 			}
 		);
+	}
+
+	/**
+	 * Fuente con la que se dan de alta los negocios nuevos.
+	 *
+	 * Prioridad: clave propia de Places (modo directo) → OAuth propio (modo
+	 * avanzado) → API central de Huexs. Así un sitio con clave propia nunca
+	 * depende del servicio central ni pide licencia.
+	 */
+	public function defaultSourceId(): string {
+		if ( $this->placesKey()->has() ) {
+			return DirectPlacesSource::SOURCE_ID;
+		}
+		if ( self::settings()['advanced_mode'] && $this->tokenStore()->isConnected() ) {
+			return ReviewSourceInterface::SOURCE_GOOGLE;
+		}
+		return ReviewSourceInterface::SOURCE_HUEXS;
+	}
+
+	/** Fuente activa para búsquedas y altas desde la administración. */
+	public function activeSource(): ReviewSourceInterface {
+		return $this->sources()->get( $this->defaultSourceId() );
 	}
 
 	// ---- OAuth propio (modo avanzado) ----

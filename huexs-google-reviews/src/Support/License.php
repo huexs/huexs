@@ -24,7 +24,37 @@ class License {
 		'min_sync_interval_hours' => 24,
 	);
 
+	/**
+	 * Sin restricciones. Se aplica cuando el sitio no depende del servicio central
+	 * (modo directo o modo avanzado): no hay nada que limitar porque no hay plan.
+	 */
+	public const UNLOCKED_LIMITS = array(
+		'max_reviews'             => 200,
+		'max_locations'           => 50,
+		'layouts'                 => array( 'list', 'grid', 'carousel', 'badge', 'floating', 'sidebar' ),
+		'branding_required'       => false,
+		'min_sync_interval_hours' => 6,
+	);
+
 	public function __construct( private Crypto $crypto ) {}
+
+	/**
+	 * ¿Este sitio funciona sin licencia?
+	 *
+	 * Ocurre con la clave de Places propia (modo directo) o con OAuth propio
+	 * (modo avanzado). En ambos casos el sitio no consume el servicio central.
+	 */
+	public function isUnlocked(): bool {
+		if ( ( new PlacesKey( $this->crypto ) )->has() ) {
+			return true;
+		}
+		return \Huexs\GoogleReviews\Plugin::settings()['advanced_mode'] && $this->tokenConnected();
+	}
+
+	/** Se requiere licencia solo si el sitio depende de la API central. */
+	public function isRequired(): bool {
+		return ! $this->isUnlocked();
+	}
 
 	public function key(): string {
 		if ( defined( 'HGR_LICENSE_KEY' ) && HGR_LICENSE_KEY ) {
@@ -73,16 +103,28 @@ class License {
 	// ---- Plan ----
 
 	public function plan(): string {
+		if ( $this->isUnlocked() ) {
+			return 'full';
+		}
 		return (string) ( $this->planData()['plan'] ?? 'free' );
 	}
 
 	public function isPro(): bool {
-		return 'pro' === $this->plan();
+		return in_array( $this->plan(), array( 'pro', 'full' ), true );
 	}
 
 	public function limits(): array {
+		if ( $this->isUnlocked() ) {
+			return self::UNLOCKED_LIMITS;
+		}
 		$limits = $this->planData()['limits'] ?? array();
 		return is_array( $limits ) ? array_merge( self::DEFAULT_LIMITS, $limits ) : self::DEFAULT_LIMITS;
+	}
+
+	/** Comprueba el token OAuth sin acoplar License al TokenStore. */
+	private function tokenConnected(): bool {
+		$store = new \Huexs\GoogleReviews\Auth\TokenStore( $this->crypto );
+		return $store->isConnected();
 	}
 
 	public function maxReviews(): int {

@@ -4,7 +4,7 @@ Tags: google reviews, google business profile, reseñas, reviews, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,11 @@ Sí, mediante el widget Shortcode de Elementor. El widget nativo llegará en una
 No. El plugin no filtra por puntuación, por decisión de diseño y por coherencia con las políticas de presentación de Google.
 
 == Changelog ==
+
+= 0.3.0 =
+* Nuevo: **modo completo**. Con una clave propia de Google Places el plugin funciona sin licencia y sin límites — pensado para tus propios sitios.
+* La clave se puede definir en wp-config.php (`HGR_GOOGLE_PLACES_KEY`) o guardarse cifrada desde el panel.
+* Corregido: el plugin exigía activar una licencia incluso a quien no usa el servicio central.
 
 = 0.2.0 =
 * Nuevo: conexión por clave de licencia y búsqueda del negocio por su nombre. Ya no hace falta configurar Google Cloud.

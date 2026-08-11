@@ -97,3 +97,54 @@ No se ha incorporado su filtro por estrellas: la especificación lo prohíbe (§
 ## D21 — Servidor simulado incluido
 
 `tools/mock-api-server.php` implementa el contrato completo con datos ficticios. Permite probar el plugin de extremo a extremo sin backend y sirve de referencia ejecutable para quien lo implemente. No se distribuye en el ZIP.
+
+---
+
+# 0.3.0 — Modo completo sin licencia (11 de agosto de 2026)
+
+## D22 — El propietario no debe licenciarse a sí mismo
+
+Detectado en cuanto se probó la 0.2.0: nada más entrar, el plugin exigía activar una
+licencia aunque el sitio fuera del propio Huexs. Es un fallo de diseño: la licencia solo
+tiene sentido para **quien consume el servicio central**, no para quien pone su propia
+infraestructura.
+
+Nueva regla: **la licencia se exige únicamente si el sitio depende de la API de Huexs.**
+`License::isUnlocked()` devuelve verdadero si hay clave propia de Places (modo directo) o
+si hay OAuth propio conectado (modo avanzado). En esos casos el plan pasa a `full`, sin
+límites de reseñas, ubicaciones, diseños ni marca.
+
+## D23 — Modo directo (`DirectPlacesSource`)
+
+Tercera fuente: el propio WordPress llama a Google Places sin intermediarios. Requisitos:
+solo una clave. Ventajas para los sitios propios: cero infraestructura, cero licencia, y
+funciona antes de que exista el servidor central.
+
+Prioridad de fuente por defecto: clave propia de Places → OAuth propio → API de Huexs.
+
+## D24 — La clave de Places sigue el patrón de las credenciales OAuth
+
+`Support\PlacesKey`: constante `HGR_GOOGLE_PLACES_KEY` en wp-config.php (recomendado) o,
+si el hosting no permite editarlo, opción cifrada mediante `Crypto`. Nunca en texto plano,
+nunca en Git, nunca en el ZIP.
+
+Esta indirección resolvió además un problema de pruebas: una constante global no se puede
+deshacer entre tests y contaminaba los del modo API. Con la clave inyectada, cada prueba
+controla su propio estado.
+
+## D25 — La API key de Google no se hardcodea, en ningún caso
+
+Se planteó pegar la clave en el repositorio. Se descartó por un motivo práctico antes que
+formal: GitHub escanea repositorios en busca de credenciales y notifica al proveedor, y
+Google revoca automáticamente las claves detectadas. Una clave commiteada se rompe sola en
+minutos. A eso se suma que el plugin se distribuye como ZIP: cualquier secreto en el repo
+acabaría en manos de cada cliente que lo instale.
+
+La clave vive en una de estas tres, todas fuera de Git: variable de entorno del servidor
+(API central), constante en wp-config.php, u opción cifrada en la base de datos del sitio.
+
+## Pendiente de decidir (producto)
+
+El modelo del plan gratuito para terceros: si se limita a actualización manual (como los
+plugins freemium del repositorio de WordPress.org) o a un número menor de reseñas con
+sincronización automática. Está sin decidir y no bloquea nada.

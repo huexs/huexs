@@ -53,11 +53,33 @@ class StatusPage {
 			array( __( 'PHP', 'huexs-google-reviews' ), PHP_VERSION, version_compare( PHP_VERSION, '8.1', '>=' ) ? 'ok' : 'error' ),
 			array( __( 'HTTPS', 'huexs-google-reviews' ), is_ssl() ? __( 'Sí', 'huexs-google-reviews' ) : __( 'No', 'huexs-google-reviews' ), is_ssl() ? 'ok' : 'warn' ),
 			array(
-				__( 'Licencia', 'huexs-google-reviews' ),
-				$license->has() ? $license->maskedKey() . ' · ' . strtoupper( $license->plan() ) : __( 'Sin activar', 'huexs-google-reviews' ),
-				$license->has() ? 'ok' : 'error',
+				__( 'Modo', 'huexs-google-reviews' ),
+				$license->isUnlocked()
+					? __( 'Completo — clave propia de Google, sin licencia ni límites', 'huexs-google-reviews' )
+					: __( 'Servicio central de Huexs', 'huexs-google-reviews' ),
+				'ok',
 			),
-			array( __( 'Servidor de la API', 'huexs-google-reviews' ), HuexsApiSource::baseUrl(), 'ok' ),
+			array(
+				__( 'Licencia', 'huexs-google-reviews' ),
+				$license->isUnlocked()
+					? __( 'No necesaria en este modo', 'huexs-google-reviews' )
+					: ( $license->has() ? $license->maskedKey() . ' · ' . strtoupper( $license->plan() ) : __( 'Sin activar', 'huexs-google-reviews' ) ),
+				$license->isUnlocked() || $license->has() ? 'ok' : 'error',
+			),
+			array(
+				__( 'Clave de Google Places', 'huexs-google-reviews' ),
+				match ( $this->plugin->placesKey()->source() ) {
+					'constant' => __( 'Definida en wp-config.php', 'huexs-google-reviews' ),
+					'option'   => __( 'Guardada cifrada en la base de datos', 'huexs-google-reviews' ),
+					default    => __( 'No configurada', 'huexs-google-reviews' ),
+				},
+				'none' === $this->plugin->placesKey()->source() ? 'warn' : 'ok',
+			),
+			array(
+				__( 'Servidor de la API', 'huexs-google-reviews' ),
+				$license->isUnlocked() ? __( 'No se usa en modo completo', 'huexs-google-reviews' ) : HuexsApiSource::baseUrl(),
+				'ok',
+			),
 			array(
 				__( 'Criptografía', 'huexs-google-reviews' ),
 				$crypto->isAvailable() ? strtoupper( $crypto->backend() ) : __( 'No disponible', 'huexs-google-reviews' ),

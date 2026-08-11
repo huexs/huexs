@@ -23,6 +23,7 @@ class Actions {
 
 	public function register(): void {
 		add_action( 'admin_post_hgr_save_license', array( $this, 'saveLicense' ) );
+		add_action( 'admin_post_hgr_save_places_key', array( $this, 'savePlacesKey' ) );
 		add_action( 'admin_post_hgr_search_business', array( $this, 'searchBusiness' ) );
 		add_action( 'admin_post_hgr_add_business', array( $this, 'addBusiness' ) );
 		add_action( 'admin_post_hgr_remove_business', array( $this, 'removeBusiness' ) );
@@ -64,13 +65,27 @@ class Actions {
 		$this->redirect( 'hgr-connection', 'success', 'license_saved' );
 	}
 
+	public function savePlacesKey(): void {
+		$this->authorize( 'hgr_save_places_key' );
+
+		$key = isset( $_POST['hgr_places_key'] ) ? sanitize_text_field( wp_unslash( $_POST['hgr_places_key'] ) ) : '';
+
+		try {
+			$this->plugin->placesKey()->store( $key );
+		} catch ( \RuntimeException ) {
+			$this->redirect( 'hgr-connection', 'error', 'crypto_unavailable' );
+		}
+
+		$this->redirect( 'hgr-connection', 'success', '' === $key ? 'places_key_removed' : 'places_key_saved' );
+	}
+
 	public function searchBusiness(): void {
 		$this->authorize( 'hgr_search_business' );
 
 		$query = isset( $_POST['hgr_query'] ) ? sanitize_text_field( wp_unslash( $_POST['hgr_query'] ) ) : '';
 
 		try {
-			$results = $this->plugin->huexsSource()->searchBusinesses( $query );
+			$results = $this->plugin->activeSource()->searchBusinesses( $query );
 		} catch ( SourceException $e ) {
 			$this->plugin->logger()->debug( 'searchBusiness: ' . $e->getMessage(), array( 'code' => $e->errorCode() ) );
 			$this->storeSearch( array(), $query );
@@ -104,7 +119,7 @@ class Actions {
 			null
 		);
 
-		$id = $this->plugin->locations()->upsertFromBusiness( ReviewSourceInterface::SOURCE_HUEXS, $business, $now );
+		$id = $this->plugin->locations()->upsertFromBusiness( $this->plugin->defaultSourceId(), $business, $now );
 		$this->plugin->locations()->setEnabled( $id, true, $now );
 		$this->clearSearch();
 
@@ -220,7 +235,12 @@ class Actions {
 		$this->authorize( 'hgr_test_connection' );
 
 		try {
-			$this->plugin->huexsSource()->refreshAccount();
+			if ( $this->plugin->license()->isUnlocked() ) {
+				// Sin servicio central que consultar: se prueba la fuente activa.
+				$this->plugin->activeSource()->searchBusinesses( 'Huexs' );
+			} else {
+				$this->plugin->huexsSource()->refreshAccount();
+			}
 			$this->redirect( 'hgr-status', 'success', 'test_ok' );
 		} catch ( SourceException $e ) {
 			$this->plugin->logger()->debug( 'testConnection: ' . $e->getMessage(), array( 'code' => $e->errorCode() ) );

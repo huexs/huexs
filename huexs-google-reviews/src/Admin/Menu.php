@@ -50,6 +50,8 @@ class Menu {
 		$messages = array(
 			// Licencia y negocios.
 			'license_saved'        => __( 'Licencia activada correctamente.', 'huexs-google-reviews' ),
+			'places_key_saved'     => __( 'Clave de Google guardada. El plugin está en modo completo, sin licencia ni límites.', 'huexs-google-reviews' ),
+			'places_key_removed'   => __( 'Clave de Google eliminada.', 'huexs-google-reviews' ),
 			'license_invalid'      => __( 'La clave de licencia no es válida o no corresponde a este dominio.', 'huexs-google-reviews' ),
 			'license_missing'      => __( 'Introduce una clave de licencia.', 'huexs-google-reviews' ),
 			'license_unreachable'  => __( 'No se pudo verificar la licencia ahora mismo. La hemos guardado; reintenta desde la pantalla Estado.', 'huexs-google-reviews' ),
