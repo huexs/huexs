@@ -25,6 +25,7 @@ class SettingsPage {
 		$license  = $this->plugin->license();
 		$allowed  = $license->allowedLayouts();
 		$minHours = $license->minSyncHours();
+		$preview  = $this->previewData();
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Huexs Google Reviews — Diseño', 'huexs-google-reviews' ); ?></h1>
@@ -37,7 +38,19 @@ class SettingsPage {
 					<h2><?php esc_html_e( 'Diseño predeterminado', 'huexs-google-reviews' ); ?></h2>
 					<p class="description"><?php esc_html_e( 'Se usa cuando el shortcode no indica un diseño concreto. Puedes mezclar diseños distintos en distintas páginas con el atributo layout.', 'huexs-google-reviews' ); ?></p>
 
-					<fieldset class="hgr-layout-picker">
+					<?php if ( null !== $preview ) : ?>
+						<p class="description hgr-live-preview-note">
+							<?php
+							printf(
+								/* translators: %s: nombre del negocio. */
+								esc_html__( 'Cada diseño se muestra con las reseñas reales de %s. Elige el que mejor encaje en tu web.', 'huexs-google-reviews' ),
+								'<strong>' . esc_html( $preview['summary']['name'] ) . '</strong>'
+							);
+							?>
+						</p>
+					<?php endif; ?>
+
+					<fieldset class="hgr-layout-picker<?php echo null !== $preview ? ' hgr-layout-picker--live' : ''; ?>">
 						<legend class="screen-reader-text"><?php esc_html_e( 'Diseño', 'huexs-google-reviews' ); ?></legend>
 						<?php foreach ( Layouts::labels() as $key => $label ) : ?>
 							<?php $hgr_locked = ! in_array( $key, $allowed, true ); ?>
@@ -49,7 +62,22 @@ class SettingsPage {
 									<?php checked( $settings['default_layout'], $key ); ?>
 									<?php disabled( $hgr_locked ); ?>
 								/>
-								<span class="hgr-layout-option__preview hgr-preview--<?php echo esc_attr( $key ); ?>" aria-hidden="true"></span>
+								<?php if ( null !== $preview ) : ?>
+									<span class="hgr-layout-option__preview hgr-layout-option__preview--live hgr-live--<?php echo esc_attr( $key ); ?>">
+										<span class="hgr-layout-option__scale" aria-hidden="true">
+											<?php
+											echo $preview['renderer']->renderLayout( // phpcs:ignore WordPress.Security.EscapeOutput -- plantillas internas escapadas.
+												$key,
+												$preview['reviews'],
+												$preview['args'],
+												$preview['summary']
+											);
+											?>
+										</span>
+									</span>
+								<?php else : ?>
+									<span class="hgr-layout-option__preview hgr-preview--<?php echo esc_attr( $key ); ?>" aria-hidden="true"></span>
+								<?php endif; ?>
 								<span class="hgr-layout-option__label">
 									<?php echo esc_html( $label ); ?>
 									<?php if ( $hgr_locked ) : ?>
@@ -200,6 +228,58 @@ class SettingsPage {
 			<?php $this->renderPreview( $settings ); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Datos reales para dibujar cada diseño en el selector.
+	 *
+	 * Devuelve null mientras no haya nada sincronizado: en ese caso el selector
+	 * cae a las miniaturas esquemáticas.
+	 *
+	 * @return array{renderer:ReviewRenderer, reviews:object[], summary:array, args:array}|null
+	 */
+	private function previewData(): ?array {
+		$enabled = $this->plugin->locations()->findEnabled();
+		if ( ! $enabled ) {
+			return null;
+		}
+
+		$ids     = array_map( static fn( $l ) => (int) $l->id, $enabled );
+		$reviews = $this->plugin->reviews()->findForDisplay( $ids, 'newest', 4 );
+		if ( ! $reviews ) {
+			return null;
+		}
+
+		// La insignia necesita nota media; sin ella no hay vista previa fiable.
+		$location = $enabled[0];
+		if ( null === $location->average_rating ) {
+			return null;
+		}
+
+		$settings = Plugin::settings();
+
+		return array(
+			'renderer' => new ReviewRenderer( $settings, $this->plugin->license()->brandingRequired() ),
+			'reviews'  => $reviews,
+			'summary'  => array(
+				'average'        => (float) $location->average_rating,
+				'count'          => (int) $location->total_review_count,
+				'multi_location' => count( $enabled ) > 1,
+				'public_url'     => (string) ( $location->public_google_url ?? '' ),
+				'name'           => (string) $location->title,
+			),
+			'args'     => array(
+				'show_avatar'  => (bool) $settings['show_avatar'],
+				'show_date'    => (bool) $settings['show_date'],
+				'show_reply'   => (bool) $settings['show_reply'],
+				'show_summary' => true,
+				'show_count'   => true,
+				'position'     => (string) $settings['badge_position'],
+				// En la web la burbuja empieza plegada; en la miniatura se muestra
+				// desplegada para que se entienda de un vistazo qué hace al pulsarla.
+				'force_open'   => true,
+			),
+		);
 	}
 
 	private function renderPreview( array $settings ): void {

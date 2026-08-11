@@ -4,7 +4,7 @@ Tags: google reviews, google business profile, reseñas, reviews, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,10 @@ Sí, mediante el widget Shortcode de Elementor. El widget nativo llegará en una
 No. El plugin no filtra por puntuación, por decisión de diseño y por coherencia con las políticas de presentación de Google.
 
 == Changelog ==
+
+= 0.4.0 =
+* Nuevo: el selector de diseño dibuja **cada formato con tus reseñas reales** en cuanto conectas el negocio, en vez de miniaturas genéricas. Eliges viendo cómo va a quedar de verdad.
+* La burbuja flotante se muestra desplegada en la vista previa, para entender qué hace al pulsarla.
 
 = 0.3.0 =
 * Nuevo: **modo completo**. Con una clave propia de Google Places el plugin funciona sin licencia y sin límites — pensado para tus propios sitios.

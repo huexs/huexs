@@ -175,3 +175,93 @@
 
 .hgr-preview--sidebar::before { inset: 8px 55% 8px 8px; }
 .hgr-preview--sidebar::after  { inset: 8px 8px 8px 52%; background: #e8e8e9; }
+
+/* ---------- Selector de diseño con reseñas reales ---------- */
+
+.hgr-live-preview-note {
+	margin: 4px 0 14px;
+}
+
+.hgr-layout-picker--live {
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+/* La vista previa es una maqueta a escala: no debe capturar clics ni foco,
+   el clic tiene que llegar a la etiqueta para seleccionar el diseño. */
+.hgr-layout-option__preview--live {
+	background: #fff;
+	border-radius: 4px;
+	display: block;
+	height: 190px;
+	overflow: hidden;
+	pointer-events: none;
+	position: relative;
+	user-select: none;
+}
+
+.hgr-layout-option__scale {
+	display: block;
+	transform: scale(0.34);
+	transform-origin: top left;
+	width: 294%;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+/* La cuadrícula a escala cabe mejor en dos columnas estrechas. */
+.hgr-live--grid .hgr-grid {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+/* El carrusel no se puede desplazar dentro de la miniatura: se muestra la primera. */
+.hgr-live--carousel .hgr-carousel__track {
+	overflow: hidden;
+}
+
+.hgr-live--carousel .hgr-carousel__controls {
+	opacity: 0.5;
+}
+
+/* La columna lateral es estrecha por definición, pero hay que ver varias tarjetas. */
+.hgr-live--sidebar .hgr-layout-option__scale {
+	width: 208%;
+	transform: scale(0.48);
+}
+
+.hgr-live--sidebar .hgr-sidebar {
+	max-height: none;
+	overflow: visible;
+}
+
+/* La insignia es pequeña: se amplía y se centra para que se lea. */
+.hgr-live--badge .hgr-layout-option__scale {
+	width: 140%;
+	transform: scale(0.72);
+	padding-top: 55px;
+}
+
+/* La burbuja es position:fixed en la web; aquí se ancla a la miniatura. */
+/* Anclada arriba en la miniatura para que se vean a la vez la pastilla y el panel. */
+.hgr-live--floating .hgr-layout--floating {
+	position: absolute;
+	right: 6px;
+	top: 6px;
+	left: auto;
+	bottom: auto;
+	max-width: 300px;
+}
+
+.hgr-live--floating .hgr-layout-option__scale {
+	height: 100%;
+	transform: scale(0.5);
+	width: 200%;
+}
+
+.hgr-live--floating .hgr-floating__panel {
+	max-height: 240px;
+}
+
+/* El fondo de la miniatura acompaña al tema elegido. */
+.hgr-layout-option__preview--live:has(.hgr-theme--dark) {
+	background: #111827;
+}

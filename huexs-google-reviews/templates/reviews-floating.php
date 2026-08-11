@@ -19,7 +19,7 @@ $hgr_average  = null !== $summary && null !== $summary['average'] ? (float) $sum
 	class="<?php echo esc_attr( $renderer->wrapClasses( 'floating' ) ); ?> hgr-floating--<?php echo esc_attr( $hgr_position ); ?>"
 	style="<?php echo esc_attr( $renderer->styleVars() ); ?>"
 >
-	<details class="hgr-floating" data-hgr-floating>
+	<details class="hgr-floating" data-hgr-floating <?php echo empty( $args['force_open'] ) ? '' : 'open'; ?>>
 		<summary class="hgr-floating__toggle">
 			<?php echo $renderer->googleLogoHtml(); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG interno. ?>
 			<?php if ( null !== $hgr_average ) : ?>

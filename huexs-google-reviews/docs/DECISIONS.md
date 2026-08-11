@@ -148,3 +148,22 @@ La clave vive en una de estas tres, todas fuera de Git: variable de entorno del 
 El modelo del plan gratuito para terceros: si se limita a actualización manual (como los
 plugins freemium del repositorio de WordPress.org) o a un número menor de reseñas con
 sincronización automática. Está sin decidir y no bloquea nada.
+
+## D26 — El selector de diseño usa datos reales, no maquetas
+
+Los plugins de la competencia enseñan miniaturas genéricas y el usuario tiene que
+imaginarse el resultado. Aquí, en cuanto hay un negocio conectado, cada opción del
+selector renderiza el diseño real con las reseñas ya sincronizadas, a escala mediante
+`transform: scale()`.
+
+Detalles que hubo que resolver:
+
+- Las miniaturas llevan `pointer-events: none` para que el clic llegue a la etiqueta y
+  seleccione el diseño en lugar de interactuar con la vista previa.
+- La burbuja flotante es `position: fixed` y un `<details>` plegado. En la miniatura se
+  ancla a su contenedor y se abre con el atributo `open` mediante el argumento
+  `force_open`. Intentar abrirla solo con CSS no funciona: el navegador oculta el
+  contenido de un `details` cerrado a nivel de agente de usuario y ninguna regla de
+  autor lo revierte.
+- Si todavía no hay reseñas sincronizadas, el selector cae a las miniaturas esquemáticas
+  de siempre.
