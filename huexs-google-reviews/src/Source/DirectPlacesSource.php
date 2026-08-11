@@ -53,16 +53,20 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		}
 		$this->assertConfigured();
 
-		$data = $this->http->postJson(
-			self::SEARCH_URL,
-			array(
-				'textQuery'      => $query,
-				'languageCode'   => $this->language(),
-				'regionCode'     => $this->region(),
-				'maxResultCount' => 10,
-			),
-			$this->headers( self::SEARCH_FIELDS )
-		);
+		try {
+			$data = $this->http->postJson(
+				self::SEARCH_URL,
+				array(
+					'textQuery'      => $query,
+					'languageCode'   => $this->language(),
+					'regionCode'     => $this->region(),
+					'maxResultCount' => 10,
+				),
+				$this->headers( self::SEARCH_FIELDS )
+			);
+		} catch ( SourceException $e ) {
+			throw $this->translate( $e );
+		}
 
 		return PlacesMapper::searchResults( $data );
 	}
@@ -78,9 +82,33 @@ class DirectPlacesSource implements ReviewSourceInterface {
 		$url = self::DETAILS_URL . rawurlencode( $placeId )
 			. '?languageCode=' . rawurlencode( $this->language() );
 
-		$data = $this->http->getJson( $url, $this->headers( self::DETAILS_FIELDS ) );
+		try {
+			$data = $this->http->getJson( $url, $this->headers( self::DETAILS_FIELDS ) );
+		} catch ( SourceException $e ) {
+			throw $this->translate( $e );
+		}
 
 		return PlacesMapper::place( $data, $placeId );
+	}
+
+	/**
+	 * Reetiqueta los errores del transporte al vocabulario de esta fuente.
+	 *
+	 * El cliente HTTP traduce 401/403 a `invalid_license` porque su caso habitual es
+	 * la API de Huexs. Aquí no hay licencia de por medio: un 403 significa que la
+	 * clave de Google está mal configurada, y decir lo contrario manda al
+	 * administrador a buscar el problema donde no está.
+	 */
+	private function translate( SourceException $e ): SourceException {
+		if ( 'invalid_license' !== $e->errorCode() ) {
+			return $e;
+		}
+
+		return new SourceException(
+			'places_key_rejected',
+			'Google rechazó la clave de Places. Respuesta de Google: ' . $e->getMessage(),
+			$e
+		);
 	}
 
 	private function assertConfigured(): void {

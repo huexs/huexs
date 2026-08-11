@@ -21,16 +21,21 @@ class Menu {
 	public function addPages(): void {
 		$cap = 'manage_options';
 
+		// Una sola instancia por pantalla: al registrar el mismo slug como menú y como
+		// primer submenú, WordPress engancha ambos callbacks. Si fueran objetos distintos
+		// tendrían identidades distintas y la pantalla se renderizaría dos veces.
+		$connection = new ConnectionPage( $this->plugin );
+
 		add_menu_page(
 			__( 'Google Reviews', 'huexs-google-reviews' ),
 			__( 'Google Reviews', 'huexs-google-reviews' ),
 			$cap,
 			'hgr-connection',
-			array( new ConnectionPage( $this->plugin ), 'render' ),
+			array( $connection, 'render' ),
 			'dashicons-star-filled',
 			58
 		);
-		add_submenu_page( 'hgr-connection', __( 'Conexión', 'huexs-google-reviews' ), __( 'Conexión', 'huexs-google-reviews' ), $cap, 'hgr-connection', array( new ConnectionPage( $this->plugin ), 'render' ) );
+		add_submenu_page( 'hgr-connection', __( 'Conexión', 'huexs-google-reviews' ), __( 'Conexión', 'huexs-google-reviews' ), $cap, 'hgr-connection', array( $connection, 'render' ) );
 		add_submenu_page( 'hgr-connection', __( 'Diseño', 'huexs-google-reviews' ), __( 'Diseño', 'huexs-google-reviews' ), $cap, 'hgr-settings', array( new SettingsPage( $this->plugin ), 'render' ) );
 		add_submenu_page( 'hgr-connection', __( 'Resumen', 'huexs-google-reviews' ), __( 'Resumen', 'huexs-google-reviews' ), $cap, 'hgr-overview', array( new OverviewPage( $this->plugin ), 'render' ) );
 		add_submenu_page( 'hgr-connection', __( 'Estado', 'huexs-google-reviews' ), __( 'Estado', 'huexs-google-reviews' ), $cap, 'hgr-status', array( new StatusPage( $this->plugin ), 'render' ) );

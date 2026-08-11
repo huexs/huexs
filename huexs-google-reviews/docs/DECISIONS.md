@@ -167,3 +167,42 @@ Detalles que hubo que resolver:
   autor lo revierte.
 - Si todavía no hay reseñas sincronizadas, el selector cae a las miniaturas esquemáticas
   de siempre.
+
+---
+
+# 0.4.1 — Correcciones sobre pruebas reales
+
+## D27 — La pantalla se renderizaba dos veces
+
+Al registrar el mismo slug con `add_menu_page()` y `add_submenu_page()` se pasaban
+**dos instancias distintas** de `ConnectionPage`. WordPress las trata como callbacks
+diferentes (identidades distintas en `_wp_filter_build_unique_id`), engancha las dos al
+hook de la pantalla y ejecuta ambas. Con una única instancia reutilizada, el segundo
+registro sustituye al primero en lugar de sumarse.
+
+## D28 — Un error de la clave de Google no es un problema de licencia
+
+`WpHttpClient` traduce 401/403 a `invalid_license` porque su caso de uso principal es la
+API de Huexs. En modo directo eso era engañoso: un 403 de Google por API no habilitada o
+restricción mal puesta acababa diciéndole al administrador que revisara una clave de
+licencia que ni siquiera usa.
+
+`DirectPlacesSource` ahora reetiqueta ese caso como `places_key_rejected`, conserva
+íntegro el mensaje de Google y sugiere las tres causas reales (Places API New sin
+habilitar, restricción por referente HTTP en lugar de por IP, o facturación inactiva).
+
+Regla general que deja esto: **el mensaje de error de origen nunca se sustituye por uno
+genérico.** Un "no se encontró nada" que en realidad era un 403 cuesta horas de
+diagnóstico.
+
+## D29 — Búsqueda predictiva con presupuesto en mente
+
+El buscador sugiere mientras se escribe mediante `admin-ajax` (solo `manage_options` y
+con nonce; no es un endpoint público). Dos límites deliberados, porque **cada búsqueda es
+una llamada facturable a Google**:
+
+- mínimo de 3 caracteres antes de consultar;
+- *debounce* de 350 ms, y toda petición en vuelo se cancela al seguir escribiendo.
+
+Verificado en navegador: teclear "Rotula" letra a letra genera **una** llamada, no seis.
+Sin JavaScript, el botón "Buscar" sigue funcionando con el envío del formulario.

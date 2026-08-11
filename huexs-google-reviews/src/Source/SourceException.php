@@ -35,6 +35,7 @@ class SourceException extends \RuntimeException {
 			'auth_expired'        => __( 'La conexión con Google ha caducado. Reconecta la cuenta.', 'huexs-google-reviews' ),
 			'permission_denied'   => __( 'Sin permisos sobre esta ficha. Comprueba que la cuenta la administra.', 'huexs-google-reviews' ),
 			'configuration_error' => __( 'Falta configuración. Revisa la pantalla Conexión.', 'huexs-google-reviews' ),
+			'places_key_rejected' => __( 'Revisa tu clave en Google Cloud: que esté habilitada "Places API (New)" (no la antigua), que la restricción sea por dirección IP y no por referente HTTP, y que la IP autorizada sea la de este servidor. Comprueba también que el proyecto tenga facturación activa.', 'huexs-google-reviews' ),
 			default               => __( 'Reintenta más tarde. Si persiste, revisa la pantalla Estado.', 'huexs-google-reviews' ),
 		};
 	}

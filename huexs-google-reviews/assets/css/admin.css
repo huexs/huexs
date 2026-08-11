@@ -265,3 +265,44 @@
 .hgr-layout-option__preview--live:has(.hgr-theme--dark) {
 	background: #111827;
 }
+
+/* ---------- Buscador de negocios en vivo ---------- */
+
+.hgr-search {
+	position: relative;
+}
+
+.hgr-search__status {
+	margin: 10px 0 0;
+	min-height: 1.4em;
+	color: #646970;
+	font-size: 13px;
+}
+
+.hgr-search__status--warn {
+	color: #996800;
+	font-weight: 600;
+}
+
+.hgr-search__status--error {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.hgr-search-results[hidden] {
+	display: none;
+}
+
+.hgr-search-error {
+	background: #fcf0f1;
+	border-left: 4px solid #b32d2e;
+	border-radius: 0 4px 4px 0;
+	margin-top: 14px;
+	padding: 12px 16px;
+}
+
+.hgr-search-error .hgr-code {
+	display: block;
+	user-select: all;
+	word-break: break-word;
+}

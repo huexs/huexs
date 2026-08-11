@@ -34,7 +34,14 @@ class ConnectionPage {
 			<?php $this->renderLicenseBox( $license, $unlocked ); ?>
 
 			<?php if ( $unlocked || $license->has() ) : ?>
-				<?php $this->renderSearchBox( is_array( $results ) ? $results : null, is_string( $query ) ? $query : '' ); ?>
+				<?php
+				$searchError = get_transient( 'hgr_search_error_' . get_current_user_id() );
+				$this->renderSearchBox(
+					is_array( $results ) ? $results : null,
+					is_string( $query ) ? $query : '',
+					is_string( $searchError ) ? $searchError : null
+				);
+				?>
 			<?php endif; ?>
 
 			<?php $this->renderConnectedBox( $locations ); ?>
@@ -165,29 +172,57 @@ class ConnectionPage {
 	}
 
 	/** @param \Huexs\GoogleReviews\Source\BusinessResult[]|null $results */
-	private function renderSearchBox( ?array $results, string $query ): void {
+	private function renderSearchBox( ?array $results, string $query, ?string $error = null ): void {
 		?>
 		<div class="hgr-admin-card">
 			<h2><?php esc_html_e( '2. Busca tu negocio', 'huexs-google-reviews' ); ?></h2>
-			<p><?php esc_html_e( 'Escribe el nombre tal y como aparece en Google (añade la ciudad si hay varios con el mismo nombre).', 'huexs-google-reviews' ); ?></p>
+			<p><?php esc_html_e( 'Empieza a escribir el nombre tal y como aparece en Google. Añade la ciudad si hay varios con el mismo nombre.', 'huexs-google-reviews' ); ?></p>
 
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="hgr-inline-form">
-				<input type="hidden" name="action" value="hgr_search_business" />
-				<?php wp_nonce_field( 'hgr_search_business' ); ?>
-				<input
-					type="search"
-					name="hgr_query"
-					class="regular-text"
-					value="<?php echo esc_attr( $query ); ?>"
-					placeholder="<?php esc_attr_e( 'Ej.: Huexs Señalética Barcelona', 'huexs-google-reviews' ); ?>"
-					aria-label="<?php esc_attr_e( 'Nombre del negocio', 'huexs-google-reviews' ); ?>"
-					required
-					minlength="3"
-				/>
-				<?php submit_button( __( 'Buscar', 'huexs-google-reviews' ), 'secondary', 'submit', false ); ?>
-			</form>
+			<div
+				class="hgr-search"
+				data-hgr-search
+				data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
+				data-post-url="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+				data-search-nonce="<?php echo esc_attr( wp_create_nonce( 'hgr_live_search' ) ); ?>"
+				data-add-nonce="<?php echo esc_attr( wp_create_nonce( 'hgr_add_business' ) ); ?>"
+				data-label-use="<?php esc_attr_e( 'Usar este negocio', 'huexs-google-reviews' ); ?>"
+				data-label-searching="<?php esc_attr_e( 'Buscando…', 'huexs-google-reviews' ); ?>"
+				data-label-empty="<?php esc_attr_e( 'No se encontró ningún negocio con ese nombre. Prueba a añadir la ciudad o revisa cómo aparece exactamente en Google Maps.', 'huexs-google-reviews' ); ?>"
+				data-label-reviews="<?php esc_attr_e( 'reseñas', 'huexs-google-reviews' ); ?>"
+			>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="hgr-inline-form">
+					<input type="hidden" name="action" value="hgr_search_business" />
+					<?php wp_nonce_field( 'hgr_search_business' ); ?>
+					<input
+						type="search"
+						name="hgr_query"
+						class="regular-text"
+						value="<?php echo esc_attr( $query ); ?>"
+						placeholder="<?php esc_attr_e( 'Ej.: RotulaMax Barcelona', 'huexs-google-reviews' ); ?>"
+						aria-label="<?php esc_attr_e( 'Nombre del negocio', 'huexs-google-reviews' ); ?>"
+						autocomplete="off"
+						required
+						minlength="3"
+						data-hgr-search-input
+					/>
+					<?php submit_button( __( 'Buscar', 'huexs-google-reviews' ), 'secondary', 'submit', false, array( 'data-hgr-search-submit' => '1' ) ); ?>
+				</form>
 
-			<?php if ( null !== $results ) : ?>
+				<p class="hgr-search__status" role="status" aria-live="polite" data-hgr-search-status></p>
+				<ul class="hgr-search-results" data-hgr-search-results hidden></ul>
+			</div>
+
+			<?php if ( null !== $error ) : ?>
+				<div class="hgr-search-error">
+					<p><strong><?php esc_html_e( 'La búsqueda falló. Motivo exacto:', 'huexs-google-reviews' ); ?></strong></p>
+					<p class="hgr-code"><?php echo esc_html( $error ); ?></p>
+					<p class="description">
+						<?php esc_html_e( 'Comprobaciones habituales: que en Google Cloud esté habilitada "Places API (New)" y no la versión antigua; que la clave esté restringida por dirección IP (no por referente HTTP, que no funciona en llamadas de servidor); y que la IP autorizada sea la de este servidor de WordPress.', 'huexs-google-reviews' ); ?>
+					</p>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( null !== $results && null === $error ) : ?>
 				<?php if ( ! $results ) : ?>
 					<p class="hgr-status-warn"><?php esc_html_e( 'No se encontró ningún negocio con ese nombre. Prueba a añadir la ciudad o revisa cómo aparece exactamente en Google Maps.', 'huexs-google-reviews' ); ?></p>
 				<?php else : ?>

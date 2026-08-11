@@ -22,6 +22,7 @@ class Actions {
 	public function __construct( private Plugin $plugin ) {}
 
 	public function register(): void {
+		add_action( 'wp_ajax_hgr_search_businesses', array( $this, 'ajaxSearch' ) );
 		add_action( 'admin_post_hgr_save_license', array( $this, 'saveLicense' ) );
 		add_action( 'admin_post_hgr_save_places_key', array( $this, 'savePlacesKey' ) );
 		add_action( 'admin_post_hgr_search_business', array( $this, 'searchBusiness' ) );
@@ -65,6 +66,51 @@ class Actions {
 		$this->redirect( 'hgr-connection', 'success', 'license_saved' );
 	}
 
+	/**
+	 * Búsqueda en vivo desde la pantalla Conexión.
+	 *
+	 * Solo administradores y con nonce: no es un endpoint público.
+	 */
+	public function ajaxSearch(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Permisos insuficientes.', 'huexs-google-reviews' ) ),
+				403
+			);
+		}
+		check_ajax_referer( 'hgr_live_search' );
+
+		$query = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
+
+		try {
+			$results = $this->plugin->activeSource()->searchBusinesses( $query );
+		} catch ( SourceException $e ) {
+			$this->plugin->logger()->debug( 'ajaxSearch: ' . $e->getMessage(), array( 'code' => $e->errorCode() ) );
+			wp_send_json_error(
+				array(
+					'code'    => $e->errorCode(),
+					'message' => $e->getMessage(),
+					'action'  => $e->suggestedAction(),
+				)
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'results' => array_map(
+					static fn( $r ) => array(
+						'place_id'     => $r->placeId,
+						'name'         => $r->name,
+						'address'      => $r->address,
+						'rating'       => $r->rating,
+						'review_count' => $r->reviewCount,
+					),
+					$results
+				),
+			)
+		);
+	}
+
 	public function savePlacesKey(): void {
 		$this->authorize( 'hgr_save_places_key' );
 
@@ -88,7 +134,9 @@ class Actions {
 			$results = $this->plugin->activeSource()->searchBusinesses( $query );
 		} catch ( SourceException $e ) {
 			$this->plugin->logger()->debug( 'searchBusiness: ' . $e->getMessage(), array( 'code' => $e->errorCode() ) );
-			$this->storeSearch( array(), $query );
+			// Se conserva el motivo real: un "no se encontró nada" genérico oculta
+			// problemas de configuración de la clave que el administrador debe ver.
+			$this->storeSearch( array(), $query, $e->errorCode() . ': ' . $e->getMessage() . ' ' . $e->suggestedAction() );
 			$this->redirect( 'hgr-connection', 'error', 'search_failed' );
 		}
 
@@ -289,7 +337,7 @@ class Actions {
 	// ---- Utilidades ----
 
 	/** @param \Huexs\GoogleReviews\Source\BusinessResult[] $results */
-	private function storeSearch( array $results, string $query ): void {
+	private function storeSearch( array $results, string $query, ?string $error = null ): void {
 		$plain = array_map(
 			static fn( $r ) => array(
 				'place_id'          => $r->placeId,
@@ -304,12 +352,19 @@ class Actions {
 		set_transient( 'hgr_search_raw_' . get_current_user_id(), $plain, self::SEARCH_TTL );
 		set_transient( 'hgr_search_q_' . get_current_user_id(), $query, self::SEARCH_TTL );
 		set_transient( 'hgr_search_' . get_current_user_id(), array_values( array_filter( array_map( array( BusinessResult::class, 'fromApi' ), $plain ) ) ), self::SEARCH_TTL );
+
+		if ( null === $error ) {
+			delete_transient( 'hgr_search_error_' . get_current_user_id() );
+		} else {
+			set_transient( 'hgr_search_error_' . get_current_user_id(), $error, self::SEARCH_TTL );
+		}
 	}
 
 	private function clearSearch(): void {
 		delete_transient( 'hgr_search_' . get_current_user_id() );
 		delete_transient( 'hgr_search_raw_' . get_current_user_id() );
 		delete_transient( 'hgr_search_q_' . get_current_user_id() );
+		delete_transient( 'hgr_search_error_' . get_current_user_id() );
 	}
 
 	private function authorize( string $nonceAction ): void {
