@@ -1,0 +1,23 @@
+{
+  "name": "huexs-reviews-api",
+  "version": "1.0.0",
+  "description": "API central de Huexs: sirve reseñas de Google al plugin Huexs Google Reviews.",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js",
+    "license:issue": "node scripts/issue-license.js",
+    "license:list": "node scripts/list-licenses.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "express": "^4.21.2"
+  }
+}

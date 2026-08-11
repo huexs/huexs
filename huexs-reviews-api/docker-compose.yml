@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    image: huexs-reviews-api:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # La clave NUNCA se escribe aquí: se toma del fichero .env, que no va a Git.
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-21600}
+      DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-es}
+      DEFAULT_REGION: ${DEFAULT_REGION:-ES}
+      DATABASE_PATH: /data/huexs-reviews.sqlite
+    volumes:
+      - huexs-reviews-data:/data
+
+volumes:
+  huexs-reviews-data:

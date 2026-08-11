@@ -241,3 +241,22 @@ php -S localhost:8787 tools/mock-api-server.php                # API simulada
 ```
 
 Docs internas en `huexs-google-reviews/docs/` (DECISIONS, API_CONTRACT, INSTALLATION, GOOGLE_CLOUD_SETUP, PRIVACY, TROUBLESHOOTING, BACKLOG).
+
+---
+
+## API central: Huexs Reviews API (`huexs-reviews-api/`)
+
+Servidor Node.js que alimenta el plugin. Implementa `huexs-google-reviews/docs/API_CONTRACT.md`.
+
+- **Stack:** Node 22 + Express + SQLite (better-sqlite3). Dockerfile listo para easypanel.
+- **Fuente:** Google Places API (New) — `places:searchText` y `places/{id}`.
+- **La clave de Google vive SOLO aquí**, en la variable `GOOGLE_MAPS_API_KEY`. Nunca en el plugin ni en Git.
+- **El gating de plan se aplica en el servidor** (`src/config.js`), no en el plugin: el plugin es GPL y editable.
+- Licencias con anclaje opcional a dominio; se emiten con `npm run license:issue` o `POST /admin/licenses`.
+- Caché por `place_id` (no por cliente) para no repetir llamadas facturables a Google.
+
+```
+cd huexs-reviews-api && npm install && npm test   # 20 tests, Google simulado
+```
+
+Pendiente: OAuth Pro (`/v1/oauth/start` devuelve 501), rate limiting por licencia.
