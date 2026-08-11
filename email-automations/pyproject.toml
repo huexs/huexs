@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "email-automations-handoff"
+version = "0.1.0"
+description = "Sanitized domain templates for three email automations"
+requires-python = ">=3.11"
+dependencies = [
+  "pypdf>=5.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<10",
+]
+google = [
+  "google-api-python-client>=2.120,<3",
+  "google-auth>=2.28,<3",
+  "google-auth-oauthlib>=1.2,<2",
+]
+claude = [
+  "anthropic>=0.40,<1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["email_automations*"]
+

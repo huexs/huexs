@@ -1,0 +1,2 @@
+"""Generic Gmail invoice processor."""
+

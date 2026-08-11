@@ -1,0 +1,20 @@
+[Unit]
+Description=Automatització de correu: gmail_invoices
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/email-automations
+ExecStart=%h/email-automations/.venv/bin/python -m email_automations.gmail_invoices.cli
+RuntimeMaxSec=600
+# Els secrets viuen fora del repositori; carrega'ls d'un fitxer d'entorn 0600.
+EnvironmentFile=-%h/email-automations/credentials/service.env
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/email-automations/data %h/email-automations/credentials
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,10 @@
+{
+  "id": "message-school-001",
+  "thread_id": "thread-school-001",
+  "sender": "school@example.invalid",
+  "subject": "General announcement",
+  "body_text": "Group A has an activity next week.",
+  "received_at": "2030-01-10T10:00:00+00:00",
+  "attachments": []
+}
+

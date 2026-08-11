@@ -1,0 +1,48 @@
+{
+  "database_path": "data/automations.sqlite3",
+  "google": {
+    "auth_mode": "oauth_user",
+    "client_secrets_path": "credentials/client_secret.json",
+    "token_path": "credentials/token.json",
+    "service_account_path": "credentials/service-account.json",
+    "delegated_user": "",
+    "sender": "me"
+  },
+  "storage": {
+    "type": "local",
+    "drive_folder_id": "",
+    "local_root": "data/invoices"
+  },
+  "summarizer": {
+    "type": "keyword",
+    "model": "claude-opus-5",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "max_source_chars": 20000,
+    "max_tokens": 1024
+  },
+  "gmail_invoices": {
+    "label": "Automation/Invoices",
+    "review_recipient": "review@example.invalid",
+    "limit": 50,
+    "providers": [
+      {
+        "slug": "example-provider",
+        "sender_contains": ["billing@example.invalid"],
+        "subject_contains": ["invoice"]
+      }
+    ]
+  },
+  "gmail_school": {
+    "label": "Automation/School",
+    "summary_recipient": "summary@example.invalid",
+    "limit": 50,
+    "targets": ["Group A", "General announcements"]
+  },
+  "youtube_to_mail": {
+    "recipient": "videos@example.invalid",
+    "lookback_hours": 48,
+    "max_videos": 25,
+    "max_channels": 50,
+    "cache_path": "data/youtube_uploads.json"
+  }
+}

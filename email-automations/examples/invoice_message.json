@@ -1,0 +1,16 @@
+{
+  "id": "message-invoice-001",
+  "thread_id": "thread-invoice-001",
+  "sender": "billing@example.invalid",
+  "subject": "Invoice for the current period",
+  "body_text": "Please find the invoice attached.",
+  "received_at": "2030-01-10T09:00:00+00:00",
+  "attachments": [
+    {
+      "filename": "invoice.pdf",
+      "content_type": "application/pdf",
+      "data_note": "The demo creates placeholder bytes; no document is bundled."
+    }
+  ]
+}
+
