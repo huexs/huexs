@@ -2,6 +2,19 @@
 
 Empieza siempre por **Google Reviews → Estado**: identifica licencia, criptografía, cron, negocios conectados y última sincronización.
 
+## Clave propia de Google (modo completo)
+
+El plugin muestra el mensaje literal de Google. Los tres bloqueos habituales:
+
+| Mensaje de Google | Causa | Solución |
+|---|---|---|
+| `Requests from referer <empty> are blocked` | La clave está restringida por **referente HTTP**. Las llamadas salen del servidor, no del navegador, y no llevan referente | Credenciales → tu clave → Restricciones de aplicación → **Direcciones IP** |
+| `Requests from IP address X are blocked` | Restricción por IP con una IP que no es la de este servidor | Añade la IP que indica el propio mensaje: es la real |
+| `Places API (New) has not been used in project…` | Se habilitó la **Places API** antigua, no la nueva | Biblioteca → habilitar **Places API (New)** |
+| `This API project is not authorized` / errores de facturación | Proyecto sin facturación activa | Activar facturación en Google Cloud |
+
+Para saber qué IP autorizar: **Google Reviews → Estado → IP de este servidor**. Si el hosting usa balanceador o NAT, la IP de salida puede ser distinta; en ese caso, la definitiva es la que aparece en el propio mensaje `Requests from IP address X are blocked`.
+
 ## Licencia y búsqueda (modo normal)
 
 | Síntoma | Causa probable | Acción |

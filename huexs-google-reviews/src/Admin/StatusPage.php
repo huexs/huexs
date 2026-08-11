@@ -76,6 +76,14 @@ class StatusPage {
 				'none' === $this->plugin->placesKey()->source() ? 'warn' : 'ok',
 			),
 			array(
+				__( 'IP de este servidor', 'huexs-google-reviews' ),
+				// Pista para restringir la clave de Google por IP. En hostings con
+				// balanceador o NAT la IP de salida puede ser otra: la definitiva la
+				// revela el propio mensaje de error de Google al bloquear.
+				isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : __( 'No disponible', 'huexs-google-reviews' ),
+				'ok',
+			),
+			array(
 				__( 'Servidor de la API', 'huexs-google-reviews' ),
 				$license->isUnlocked() ? __( 'No se usa en modo completo', 'huexs-google-reviews' ) : HuexsApiSource::baseUrl(),
 				'ok',
