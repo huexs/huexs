@@ -1,0 +1,47 @@
+/* Huexs Google Reviews — estilos de administración. */
+
+.hgr-admin-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	margin-top: 16px;
+	max-width: 900px;
+	padding: 16px 20px;
+}
+
+.hgr-admin-card h2 {
+	margin-top: 0;
+}
+
+.hgr-status-ok {
+	color: #00701a;
+	font-weight: 600;
+}
+
+.hgr-status-warn {
+	color: #996800;
+	font-weight: 600;
+}
+
+.hgr-status-error {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.hgr-code {
+	background: #f0f0f1;
+	border-radius: 4px;
+	display: inline-block;
+	font-family: monospace;
+	padding: 2px 8px;
+	user-select: all;
+}
+
+.hgr-table-locations td,
+.hgr-table-locations th {
+	vertical-align: middle;
+}
+
+.hgr-danger-zone {
+	border-color: #b32d2e;
+}

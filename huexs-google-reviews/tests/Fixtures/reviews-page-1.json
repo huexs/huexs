@@ -1,0 +1,41 @@
+{
+    "reviews": [
+        {
+            "reviewId": "rev-001",
+            "reviewer": {
+                "displayName": "María García",
+                "profilePhotoUrl": "https://lh3.googleusercontent.com/a/photo-maria"
+            },
+            "starRating": "FIVE",
+            "comment": "Servicio excelente.\nMuy recomendable, volveré seguro.",
+            "createTime": "2026-07-01T10:15:30Z",
+            "updateTime": "2026-07-01T10:15:30Z",
+            "reviewReply": {
+                "comment": "¡Gracias María! Un placer atenderte.",
+                "updateTime": "2026-07-02T09:00:00Z"
+            }
+        },
+        {
+            "reviewId": "rev-002",
+            "reviewer": {
+                "displayName": "Andrés Müller"
+            },
+            "starRating": "FOUR",
+            "comment": "Muy bien en general — atención rápida y trato cercano. Ünïcödé ✓ 星",
+            "createTime": "2026-06-20T18:45:00+02:00",
+            "updateTime": "2026-06-21T08:00:00+02:00"
+        },
+        {
+            "reviewId": "rev-003",
+            "reviewer": {
+                "displayName": "Cliente sin comentario"
+            },
+            "starRating": "THREE",
+            "createTime": "2026-05-15T12:00:00Z",
+            "updateTime": "2026-05-15T12:00:00Z"
+        }
+    ],
+    "averageRating": 4.4,
+    "totalReviewCount": 5,
+    "nextPageToken": "page-2-token"
+}

@@ -1,0 +1,27 @@
+{
+    "reviews": [
+        {
+            "reviewId": "rev-004",
+            "reviewer": {
+                "displayName": "Anónimo"
+            },
+            "starRating": "FIVE",
+            "comment": "Todo perfecto.",
+            "createTime": "2026-04-10T09:30:00Z",
+            "updateTime": "2026-04-10T09:30:00Z"
+        },
+        {
+            "name": "accounts/1/locations/10/reviews/rev-005",
+            "reviewer": {
+                "displayName": "Lucía Pérez",
+                "profilePhotoUrl": "https://lh3.googleusercontent.com/a/photo-lucia"
+            },
+            "starRating": "ONE",
+            "comment": "No quedé satisfecha con el resultado.",
+            "createTime": "2026-03-05T16:20:00Z",
+            "updateTime": "2026-03-05T16:20:00Z"
+        }
+    ],
+    "averageRating": 4.4,
+    "totalReviewCount": 5
+}

@@ -1,0 +1,15 @@
+{
+    "reviews": [
+        {
+            "reviewer": {
+                "displayName": "Sin identificador ni estrellas"
+            },
+            "comment": "Esta reseña no tiene reviewId ni starRating y debe descartarse."
+        },
+        {
+            "reviewId": "rev-bad-stars",
+            "starRating": "SEVEN",
+            "comment": "Puntuación fuera de rango."
+        }
+    ]
+}

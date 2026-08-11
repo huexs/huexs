@@ -210,3 +210,15 @@ Respuesta: `{ "listName": "Contactar" }`
 - ✅ Columnas Sheets AC/AD/AE renombradas: Toldo / Placa Metacrilato / Banderola Montaje
 - ⏳ W4 pendiente de activar en n8n (JSON listo en repo)
 - ⏳ Borrar fila de prueba ES99999 del Spreadsheet
+
+---
+
+## Plugin WordPress: Huexs Google Reviews (`huexs-google-reviews/`)
+
+MVP de plugin WordPress que sincroniza reseñas de Google Business Profile via OAuth 2.0 y las muestra con shortcodes (`[huexs_google_reviews]`, `[huexs_google_rating]`) compatibles con Elementor (widget Shortcode).
+
+- Especificación fuente de verdad: `ESPECIFICACION_MVP_PLUGIN_GOOGLE_REVIEWS.md` (aportada por el propietario; ver `huexs-google-reviews/docs/DECISIONS.md`).
+- Namespace `Huexs\GoogleReviews`, prefijo `hgr_`, tablas propias `hgr_locations`/`hgr_reviews`/`hgr_sync_logs`.
+- Reseñas = caché temporal (purga a 30 días). NO filtrar reseñas por puntuación. NO usar Places API ni scraping.
+- Tests: `cd huexs-google-reviews && composer install && composer test`.
+- Docs internas del plugin en `huexs-google-reviews/docs/`.

@@ -1,0 +1,6 @@
+vendor/
+composer.lock
+.phpunit.cache/
+node_modules/
+*.zip
+.DS_Store

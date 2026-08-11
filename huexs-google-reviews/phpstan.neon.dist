@@ -1,0 +1,16 @@
+parameters:
+    level: 6
+    phpVersion: 80100
+    paths:
+        - src
+        - huexs-google-reviews.php
+        - uninstall.php
+    excludePaths:
+        - vendor
+        - tests
+    # Los símbolos de WordPress se resuelven con php-stubs/wordpress-stubs
+    # (composer require --dev php-stubs/wordpress-stubs szepeviktor/phpstan-wordpress).
+    ignoreErrors:
+        - '#Function (add_action|add_filter|add_option|update_option|get_option|delete_option|.*_transient|wp_.*|esc_.*|sanitize_.*|absint|admin_url|add_query_arg|urlencode_deep|checked|selected|submit_button|current_user_can|check_admin_referer|plugin_dir_.*|plugin_basename|load_plugin_textdomain|register_.*_hook|add_shortcode|add_menu_page|add_submenu_page|do_shortcode|shortcode_atts|dbDelta|is_wp_error|is_ssl|is_admin|get_bloginfo|get_current_user_id|number_format_i18n|_n|__|_e) not found#'
+        - '#Constant (ABSPATH|AUTH_KEY|SECURE_AUTH_KEY|HGR_.*|WP_CLI|WP_DEBUG_LOG|HOUR_IN_SECONDS|MINUTE_IN_SECONDS|DAY_IN_SECONDS|OBJECT) not found#'
+        - '#unknown class (WP_CLI|wpdb)#'
