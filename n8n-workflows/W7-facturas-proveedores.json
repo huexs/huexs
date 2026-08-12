@@ -1,0 +1,406 @@
+{
+  "name": "HUEXS W7 — Facturas proveedores (Gmail → Drive)",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "gmail-pendientes",
+      "name": "Gmail — Facturas pendientes",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        60,
+        300
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": true,
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "REPLACE_LABEL_PENDIENTES"
+          ]
+        },
+        "options": {
+          "downloadAttachments": true,
+          "dataPropertyAttachmentsPrefixName": "attachment_"
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "clasificar",
+      "name": "Clasificar proveedor y extraer PDF",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Proveedores reconocidos. Para añadir uno nuevo, copia una línea y edítala.\nconst PROVEEDORES = [\n  { slug: 'barnaretols',   remitentes: ['info@barnaretols47.es'] },\n  { slug: 'parking-huexs', remitentes: ['facturas@construll.com'] },\n];\n\nfunction cabecera(json, nombre) {\n  const directo = json[nombre] || json[nombre.toLowerCase()];\n  if (directo) return String(directo);\n  const cabeceras = (json.payload && json.payload.headers) || json.headers || [];\n  if (Array.isArray(cabeceras)) {\n    const encontrada = cabeceras.find(c => String(c.name).toLowerCase() === nombre.toLowerCase());\n    if (encontrada) return String(encontrada.value);\n  } else if (cabeceras && typeof cabeceras === 'object') {\n    const clave = Object.keys(cabeceras).find(k => k.toLowerCase() === nombre.toLowerCase());\n    if (clave) return String(cabeceras[clave]);\n  }\n  return '';\n}\n\nfunction fechaISO(json) {\n  const ms = Number(json.internalDate);\n  const fecha = Number.isFinite(ms) && ms > 0 ? new Date(ms) : new Date(cabecera(json, 'Date') || Date.now());\n  return fecha.toISOString().slice(0, 10);\n}\n\nfunction limpiar(texto) {\n  return String(texto)\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9-]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\n\nconst salida = [];\n\nfor (const item of $input.all()) {\n  const json = item.json;\n  const binarios = item.binary || {};\n  const remitente = cabecera(json, 'From').toLowerCase();\n  const asunto = cabecera(json, 'Subject');\n  const base = { messageId: json.id, threadId: json.threadId, remitente, asunto };\n\n  const proveedor = PROVEEDORES.find(p =>\n    p.remitentes.some(r => remitente.includes(String(r).toLowerCase()))\n  );\n\n  const pdfs = Object.entries(binarios).filter(([, b]) =>\n    String(b.mimeType || '').toLowerCase() === 'application/pdf' ||\n    String(b.fileName || '').toLowerCase().endsWith('.pdf')\n  );\n\n  // Sin proveedor conocido o sin PDF: no se guarda nada, se deriva a revisión.\n  if (!proveedor || pdfs.length === 0) {\n    salida.push({\n      json: {\n        ...base,\n        revisar: true,\n        motivo: !proveedor ? 'proveedor desconocido' : 'sin adjunto PDF',\n      },\n    });\n    continue;\n  }\n\n  const fecha = fechaISO(json);\n  pdfs.forEach(([, binario], indice) => {\n    const origen = limpiar(String(binario.fileName || 'factura').replace(/\\.pdf$/i, ''));\n    const sufijo = pdfs.length > 1 ? `-${indice + 1}` : '';\n    salida.push({\n      json: {\n        ...base,\n        revisar: false,\n        slug: proveedor.slug,\n        nombreFichero: `${fecha}-${proveedor.slug}${origen ? '-' + origen : ''}${sufijo}.pdf`,\n      },\n      binary: { data: binario },\n    });\n  });\n}\n\nreturn salida;\n"
+      }
+    },
+    {
+      "id": "if-revisar",
+      "name": "¿Proveedor reconocido con PDF?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-revisar",
+              "leftValue": "={{ $json.revisar }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "drive-subir",
+      "name": "Drive — Guardar factura",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        740,
+        180
+      ],
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $json.nombreFichero }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1q4NrfLmhGcnPlhdslicyh5w_LOgctD-2",
+          "mode": "id"
+        },
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_DRIVE_CREDENTIAL_ID",
+          "name": "Google Drive — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "unicos-ok",
+      "name": "Mensajes guardados (únicos)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        180
+      ],
+      "parameters": {
+        "jsCode": "// Un mensaje puede traer varias facturas: las etiquetas se aplican una sola vez.\nconst vistos = new Set();\nconst salida = [];\n\nfor (const item of $input.all()) {\n  const messageId = item.json.messageId;\n  if (!messageId || vistos.has(messageId)) continue;\n  vistos.add(messageId);\n  salida.push({ json: { messageId, asunto: item.json.asunto, motivo: item.json.motivo || '' } });\n}\n\nreturn salida;\n"
+      }
+    },
+    {
+      "id": "etiqueta-hecha",
+      "name": "Gmail — Marcar como procesada",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        180
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $json.messageId }}",
+        "labelIds": [
+          "REPLACE_LABEL_PROCESADAS"
+        ]
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "quitar-pendiente-ok",
+      "name": "Gmail — Quitar pendiente",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1400,
+        180
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "removeLabels",
+        "messageId": "={{ $json.messageId }}",
+        "labelIds": [
+          "REPLACE_LABEL_PENDIENTES"
+        ]
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "unicos-revisar",
+      "name": "Mensajes a revisar (únicos)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        440
+      ],
+      "parameters": {
+        "jsCode": "// Un mensaje puede traer varias facturas: las etiquetas se aplican una sola vez.\nconst vistos = new Set();\nconst salida = [];\n\nfor (const item of $input.all()) {\n  const messageId = item.json.messageId;\n  if (!messageId || vistos.has(messageId)) continue;\n  vistos.add(messageId);\n  salida.push({ json: { messageId, asunto: item.json.asunto, motivo: item.json.motivo || '' } });\n}\n\nreturn salida;\n"
+      }
+    },
+    {
+      "id": "aviso-revision",
+      "name": "Gmail — Aviso de revisión",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        440
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "info@huexs.com",
+        "subject": "=[Facturas] Revisar: {{ $json.asunto }}",
+        "emailType": "text",
+        "message": "=Este correo está en la etiqueta de facturas pero no se ha guardado nada.\n\nMotivo: {{ $json.motivo }}\nAsunto: {{ $json.asunto }}\n\nSi es un proveedor nuevo, añádelo en el nodo «Clasificar proveedor y extraer PDF» del workflow W7.",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "etiqueta-revision",
+      "name": "Gmail — Marcar para revisión",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        440
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $json.messageId }}",
+        "labelIds": [
+          "REPLACE_LABEL_REVISION"
+        ]
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    },
+    {
+      "id": "quitar-pendiente-revisar",
+      "name": "Gmail — Quitar pendiente (revisión)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1400,
+        440
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "removeLabels",
+        "messageId": "={{ $json.messageId }}",
+        "labelIds": [
+          "REPLACE_LABEL_PENDIENTES"
+        ]
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail — info@huexs.com"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 15 minutos": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Facturas pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — Facturas pendientes": {
+      "main": [
+        [
+          {
+            "node": "Clasificar proveedor y extraer PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar proveedor y extraer PDF": {
+      "main": [
+        [
+          {
+            "node": "¿Proveedor reconocido con PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Proveedor reconocido con PDF?": {
+      "main": [
+        [
+          {
+            "node": "Drive — Guardar factura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensajes a revisar (únicos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive — Guardar factura": {
+      "main": [
+        [
+          {
+            "node": "Mensajes guardados (únicos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensajes guardados (únicos)": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Marcar como procesada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — Marcar como procesada": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Quitar pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensajes a revisar (únicos)": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Aviso de revisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — Aviso de revisión": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Marcar para revisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — Marcar para revisión": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Quitar pendiente (revisión)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": "REPLACE_INSTANCE_ID"
+  }
+}

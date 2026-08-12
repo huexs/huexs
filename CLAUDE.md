@@ -16,6 +16,7 @@ Herramienta interna para técnicos de Huexs que trabajan instalando señalética
 | `n8n-workflows/W3-crear-recursos-manual.json` | POST → crea Drive/Trello/Contact on-demand (idempotente) |
 | `n8n-workflows/W4-subir-fotos.json` | POST foto base64 → Drive/01 Fotografías del agente |
 | `n8n-workflows/W5-trello-status.json` | POST cardId → devuelve nombre de lista Trello actual |
+| `n8n-workflows/W7-facturas-proveedores.json` | Cada 15 min: Gmail etiqueta facturas → PDF a Drive + etiquetado idempotente |
 | `n8n-workflows/SETUP.md` | Guía de configuración completa de n8n |
 
 ---
