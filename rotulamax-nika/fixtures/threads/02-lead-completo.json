@@ -1,0 +1,26 @@
+{
+  "id": "thread-002",
+  "_evidence": [
+    {
+      "providerId": "generico_gran_formato",
+      "capturedAt": "2026-08-11T08:00:00.000Z",
+      "unitCost": 45,
+      "quantity": 1,
+      "url": "https://ejemplo-proveedor.test/tarifa-lona-frontlit",
+      "method": "tariff",
+      "note": "Tarifa PDF 2026, lona frontlit 510 g con ojales"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-002",
+      "date": "2026-08-11T10:00:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Jordi Serra", "address": "compras@tallerserra.cat" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Presupuesto lonas para feria",
+      "text": "Hola,\n\nNecesito presupuesto para 2 lonas de 300 x 100 cm impresas a una cara, con ojales.\n\nCantidad: 2\nEntrega en Calle Industria 45, 08025 Barcelona.\nLas necesitamos antes del 05/09/2026.\n\nTenemos el arte final vectorizado.\n\nGracias,\nJordi Serra"
+    }
+  ]
+}

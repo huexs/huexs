@@ -1,0 +1,20 @@
+{
+  "name": "rotulamax-nika",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nika — asistente de presupuestos y operaciones de RotulaMax. Triaje de correo, expediente canonico, evidencia de proveedor y borradores para revision humana.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test tests/*.test.ts",
+    "nika": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/cli.ts",
+    "demo": "npm run nika -- replay fixtures/threads"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.0"
+  }
+}

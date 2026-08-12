@@ -1,0 +1,16 @@
+{
+  "id": "thread-004",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-004",
+      "date": "2026-08-11T07:30:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Boletín Impresión Digital", "address": "newsletter@boletinimpresion.test" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Oferta exclusiva: mejora tu posicionamiento web este agosto",
+      "headers": { "list-unsubscribe": "<https://boletinimpresion.test/baja>" },
+      "text": "Oferta exclusiva para empresas del sector. Aumentar tus ventas con nuestra campaña de marketing. Darse de baja aquí."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "thread-007",
+  "_evidence": [
+    {
+      "providerId": "generico_luminosos",
+      "capturedAt": "2026-08-11T08:00:00.000Z",
+      "unitCost": 900,
+      "quantity": 1,
+      "url": "https://ejemplo-proveedor.test/luminosos/tarifa-2026",
+      "method": "tariff"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-007",
+      "date": "2026-08-11T14:00:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Nuria Camps", "address": "expansion@grupocamps.es" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Presupuesto rótulos luminosos 3 tiendas",
+      "text": "Hola,\n\nNecesitamos presupuesto para rótulo luminoso en tres tiendas.\n\nCantidad: 3\nMedidas: 400 x 90 cm cada uno.\nEntrega en Avenida Diagonal 511, 08029 Barcelona.\n\nGracias."
+    }
+  ]
+}

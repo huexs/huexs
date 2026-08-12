@@ -1,0 +1,25 @@
+{
+  "id": "thread-005",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-005",
+      "date": "2026-08-11T12:00:00.000Z",
+      "direction": "outbound",
+      "from": { "address": "info@rotulamax.com" },
+      "to": [{ "address": "pedro@ferreteriacentral.es" }],
+      "subject": "Re: Presupuesto cartel forex",
+      "text": "Hola Pedro, adjuntamos la propuesta. Quedamos atentos."
+    },
+    {
+      "id": "m2",
+      "threadId": "thread-005",
+      "date": "2026-08-11T12:40:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Pedro Nadal", "address": "pedro@ferreteriacentral.es" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Re: Presupuesto cartel forex",
+      "text": "Recibido, muchas gracias. Lo miramos y os decimos."
+    }
+  ]
+}

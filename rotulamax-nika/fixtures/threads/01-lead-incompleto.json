@@ -1,0 +1,15 @@
+{
+  "id": "thread-001",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-001",
+      "date": "2026-08-10T09:12:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Marta Ruiz", "address": "marta.ruiz@bareldiez.es" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Presupuesto rótulo luminoso",
+      "text": "Buenos días,\n\nEstamos abriendo un local nuevo y nos gustaría un presupuesto para un rótulo luminoso para la fachada.\n\n¿Podéis darnos un precio aproximado?\n\nGracias,\nMarta"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "thread-006",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-006",
+      "date": "2026-08-11T13:00:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Ana Torres", "address": "ana@panaderiatorres.es" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Incidencia con el pedido 4471",
+      "text": "Buenas tardes,\n\nEl rótulo ha llegado defectuoso y mal impreso. Queremos la devolución o que lo repongáis esta semana.\n\nAna Torres"
+    }
+  ]
+}

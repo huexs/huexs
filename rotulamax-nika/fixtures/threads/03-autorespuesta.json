@@ -1,0 +1,26 @@
+{
+  "id": "thread-003",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-003",
+      "date": "2026-08-11T11:00:00.000Z",
+      "direction": "outbound",
+      "from": { "address": "info@rotulamax.com" },
+      "to": [{ "address": "laura@clinicasol.es" }],
+      "subject": "Re: Presupuesto vinilo escaparate",
+      "text": "Hola Laura, te adjuntamos la propuesta."
+    },
+    {
+      "id": "m2",
+      "threadId": "thread-003",
+      "date": "2026-08-11T11:00:20.000Z",
+      "direction": "inbound",
+      "from": { "name": "Laura Gil", "address": "laura@clinicasol.es" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Respuesta automática: Re: Presupuesto vinilo escaparate",
+      "headers": { "auto-submitted": "auto-replied" },
+      "text": "Estaré fuera de la oficina hasta el 25 de agosto. Para urgencias contactar con recepción."
+    }
+  ]
+}

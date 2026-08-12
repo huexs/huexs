@@ -1,0 +1,15 @@
+{
+  "id": "thread-008",
+  "messages": [
+    {
+      "id": "m1",
+      "threadId": "thread-008",
+      "date": "2026-08-11T15:00:00.000Z",
+      "direction": "inbound",
+      "from": { "name": "Sergi Puig", "address": "sergi@puigassociats.com" },
+      "to": [{ "address": "info@rotulamax.com" }],
+      "subject": "Consulta",
+      "text": "Buenas, hablamos el otro día por teléfono sobre el tema pendiente. ¿Seguimos como comentamos?"
+    }
+  ]
+}
