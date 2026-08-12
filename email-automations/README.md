@@ -51,7 +51,7 @@ sempre des de rutes locals fora del repositori.
 python -m email_automations.gmail_invoices.cli   [--dry-run] [--health-check] [--limit N]
 python -m email_automations.gmail_school.cli     [--dry-run] [--health-check] [--limit N]
 python -m email_automations.youtube_to_mail.cli  [--dry-run] [--health-check] [--initialize-without-sending]
-python -m tools.authorize                        # consentiment OAuth, un sol cop
+python -m tools.authorize [--check]              # comprova el client OAuth / consentiment
 ```
 
 Les ordres només mostren comptadors de `RunResult` i retornen 1 si algun

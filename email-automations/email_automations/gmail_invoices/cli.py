@@ -15,6 +15,7 @@ from ..adapters.storage import DriveFileStore, LocalFileStore, build_drive_servi
 from ..cli_common import (
     build_parser,
     configure_logging,
+    friendly_config_errors,
     health_ok,
     load,
     open_state,
@@ -58,6 +59,7 @@ def build_processor(config: Config) -> GmailInvoicesProcessor:
     )
 
 
+@friendly_config_errors
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser(AUTOMATION, with_limit=True).parse_args(argv)
     configure_logging(args.verbose)

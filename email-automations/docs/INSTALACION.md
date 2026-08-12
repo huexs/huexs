@@ -51,7 +51,20 @@ mkdir -p credentials && chmod 700 credentials
 chmod 600 credentials/client_secret.json
 ```
 
+El fichero se usa **tal cual sale de Google Cloud**: no hay que editar nada
+dentro. Debe crearse como tipo **"Aplicación de escritorio"** (su primera clave
+es `"installed"`); un cliente de tipo "Aplicación web" no sirve para este flujo.
+
 **Gmail personal (`oauth_user`):**
+
+Primero comprueba el fichero sin abrir el navegador:
+
+```bash
+.venv/bin/python -m tools.authorize --config config.local.json --check
+```
+
+Imprime el `client_id` enmascarado y los ámbitos que se pedirán. Si el cliente
+es del tipo equivocado, lo dice en una línea. Después, el consentimiento real:
 
 ```bash
 .venv/bin/python -m tools.authorize --config config.local.json

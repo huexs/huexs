@@ -7,6 +7,7 @@ els tests de contracte no necessitin instal·lar-les.
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Any, Sequence
@@ -59,9 +60,39 @@ def authorize_interactively(config: GoogleConfig, scopes: Sequence[str]) -> Path
     secrets_path = _existing_path(
         config.client_secrets_path, "google.client_secrets_path"
     )
+    validate_client_secrets(secrets_path)
     flow = InstalledAppFlow.from_client_secrets_file(str(secrets_path), list(scopes))
     credentials = flow.run_local_server(port=0)
     return _store_token(config, credentials)
+
+
+def validate_client_secrets(path: Path) -> str:
+    """Comprova que el fitxer és un client OAuth d'aplicació d'escriptori.
+
+    Retorna el client_id (no és secret) perquè es pugui mostrar en un missatge
+    de diagnòstic. Mai llegeix ni retorna el client_secret.
+    """
+    try:
+        content = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ConfigError(
+            f"{path} no és JSON vàlid. Torna a descarregar-lo de Google Cloud."
+        ) from exc
+    if not isinstance(content, dict):
+        raise ConfigError(f"{path} no té la forma d'un client OAuth de Google")
+    if "web" in content:
+        raise ConfigError(
+            f"{path} és un client OAuth de tipus 'Aplicació web'. Aquest flux "
+            "necessita un client de tipus 'Aplicació d'escriptori': crea'n un de "
+            "nou a Google Cloud i substitueix el fitxer."
+        )
+    section = content.get("installed")
+    if not isinstance(section, dict) or not section.get("client_id"):
+        raise ConfigError(
+            f"{path} no conté una secció 'installed' amb client_id. Descarrega el "
+            "JSON del client OAuth d'aplicació d'escriptori des de Google Cloud."
+        )
+    return str(section["client_id"])
 
 
 def _oauth_user_credentials(config: GoogleConfig, scopes: Sequence[str]) -> Any:

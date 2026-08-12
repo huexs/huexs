@@ -14,6 +14,7 @@ from ..adapters.youtube import (
 from ..cli_common import (
     build_parser,
     configure_logging,
+    friendly_config_errors,
     health_ok,
     load,
     open_state,
@@ -46,6 +47,7 @@ def build_processor(config: Config) -> YouTubeToMailProcessor:
     )
 
 
+@friendly_config_errors
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser(AUTOMATION)
     parser.add_argument(

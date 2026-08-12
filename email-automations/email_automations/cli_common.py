@@ -7,10 +7,13 @@ adjunts ni credencials.
 from __future__ import annotations
 
 import argparse
+import functools
 import logging
+import sys
 from pathlib import Path
+from typing import Callable, Sequence, TypeVar
 
-from .config import DEFAULT_CONFIG_PATH, Config, load_config
+from .config import DEFAULT_CONFIG_PATH, Config, ConfigError, load_config
 from .results import RunResult
 from .state import StateStore
 
@@ -68,6 +71,29 @@ def report(automation: str, result: RunResult) -> int:
 
 def load(args: argparse.Namespace) -> Config:
     return load_config(args.config)
+
+
+_Args = TypeVar("_Args")
+
+
+def friendly_config_errors(
+    main: Callable[[Sequence[str] | None], int],
+) -> Callable[[Sequence[str] | None], int]:
+    """Converteix un error de configuració en un missatge llegible.
+
+    Una ruta o un valor mal posats són errors de l'operador, no defectes del
+    programa: mereixen una línia clara, no una traça de pila.
+    """
+
+    @functools.wraps(main)
+    def wrapper(argv: Sequence[str] | None = None) -> int:
+        try:
+            return main(argv)
+        except ConfigError as exc:
+            print(f"error de configuració: {exc}", file=sys.stderr)
+            return 2
+
+    return wrapper
 
 
 def health_ok(automation: str, details: str) -> int:

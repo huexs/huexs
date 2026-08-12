@@ -20,6 +20,7 @@ from ..adapters.summarizer import (
 from ..cli_common import (
     build_parser,
     configure_logging,
+    friendly_config_errors,
     health_ok,
     load,
     open_state,
@@ -60,6 +61,7 @@ def build_processor(config: Config) -> GmailSchoolProcessor:
     )
 
 
+@friendly_config_errors
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser(AUTOMATION, with_limit=True).parse_args(argv)
     configure_logging(args.verbose)
